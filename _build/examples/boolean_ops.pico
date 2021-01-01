@@ -1,0 +1,8 @@
+Print(Str("A" <> "" OR "B" <> ""))
+Print(Str("" <> "" OR "B" <> ""))
+Print(Str("A" <> "" AND "B" <> ""))
+Print(Str("A" <> "" AND "" <> ""))
+Print(Str("" <> "" OR 0))
+Print(Str("" <> "" OR 1))
+Print(Str(50 AND 1))
+Print(Str(0 AND 1))
