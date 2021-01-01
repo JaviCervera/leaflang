@@ -1,6 +1,4 @@
-#include "../src/lib.h"
-#include "../src/parser.h"
-#include "../src/token.h"
+#include "../src/pico.h"
 #include "core.h"
 
 using namespace std;
