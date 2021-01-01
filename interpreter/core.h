@@ -127,7 +127,6 @@ int Callable(const char* name);
 // Resource pools
 // ------------------------------------
 
-#ifndef SWIG
 template<typename T>
 class Pool {
 public:
@@ -178,4 +177,3 @@ private:
         }
     }
 };
-#endif
