@@ -67,10 +67,20 @@ struct Token {
     const int line;
 
     Token(int type, const std::string& data, const std::string& file, int line) :
-            type(type),
-            data(data),
-            file(file),
-            line(line) {}
+            type(type), data(data), file(file), line(line) {
+    }
+    
+    // Copy constructor and assignment operator are required by some old compilers
+    Token(const Token& other) :
+            type(other.type), data(other.data), file(other.file), line(other.line) {
+    }
+    
+    const Token& operator=(const Token& other) {
+        const_cast<int&>(type) = other.type;
+        const_cast<std::string&>(data) = other.data;
+        const_cast<std::string&>(file) = other.file;
+        const_cast<int&>(line) = other.line;
+    }
 
     bool operator==(const Token& other) const {
         return type == other.type

@@ -8,6 +8,16 @@ struct Var {
 
     Var(const std::string& name, int type) : name(name), type(type) {
     }
+    
+    // Copy constructor and assignment operator are required by some old compilers
+    Var(const Var& other) : name(other.name), type(other.type) {
+    }
+    
+    const Var& operator=(const Var& other) {
+        const_cast<std::string&>(name) = other.name;
+        const_cast<int&>(type) = other.type;
+        return *this;
+    }
 };
 
 struct Function {
@@ -21,6 +31,17 @@ struct Function {
 
     Function(const std::string& name, int type, const std::vector<int>& params) :
             name(name), type(type), params(ParseParams(params)) {
+    }
+    
+    // Copy constructor and assignment operator are required by some old compilers
+    Function(const Function& other) :
+            name(other.name), type(other.type), params(other.params) {
+    }
+    
+    const Function& operator=(const Function& other) {
+        const_cast<std::string&>(name) = other.name;
+        const_cast<int&>(type) = other.type;
+        const_cast<std::vector<Var>&>(params) = other.params;
     }
 private:
     std::vector<Var> ParseParams(const std::vector<int>& iparams) {
