@@ -73,7 +73,7 @@ SUB TableFloat#(table, key$)
 SUB TableString$(table, key$)
 SUB Contains%(table, key$)
 SUB Remove(table, key$)
-SUB Size(table)
+SUB Size%(table)
 SUB Clear(table)
         
 'Functions
