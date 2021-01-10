@@ -222,7 +222,7 @@ string Parser::ParseIf(int indent) {
     }
     string else_;
     if (stream.Peek().type == TOK_ELSE) {
-        ParseElse(indent);
+        else_ = ParseElse(indent);
     }
     const string end = ParseEnd(indent);
     return generator.GenIndent(indent) + generator.GenIf(exp.code, block, elseifs, else_, end);

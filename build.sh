@@ -2,7 +2,7 @@
 cd `dirname $0`
 
 echo "Creating library wrapper..."
-cd corelib
+cd interpreter
 g++ -o a.out gencorelib.cc core.cpp ../src/definitions.cpp ../src/generator.cpp ../src/lib.cpp ../src/parser.cpp ../src/token.cpp
 ./a.out
 rm a.out
