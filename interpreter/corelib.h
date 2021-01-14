@@ -457,8 +457,9 @@ inline int _lua_Remove(lua_State* L) {
 
 inline int _lua_Size(lua_State* L) {
     int a = lua_tointeger(L, 1);
-    Size(a);
-    return 0;
+    int result = Size(a);
+    lua_pushinteger(L, result);
+    return 1;
 }
 
 inline int _lua_Clear(lua_State* L) {
@@ -665,7 +666,7 @@ inline void AddFunctions(Parser& parser) {
         "SUB TableString$(a,b$)\n"
         "SUB Contains%(a,b$)\n"
         "SUB Remove(a,b$)\n"
-        "SUB Size(a)\n"
+        "SUB Size%(a)\n"
         "SUB Clear(a)\n"
         "SUB AddIntArg(a)\n"
         "SUB AddFloatArg(a#)\n"

@@ -234,6 +234,8 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("<>");
         symbols.push_back(">=");
         symbols.push_back("<=");
+        symbols.push_back("<");
+        symbols.push_back(">");
         symbols.push_back("+");
         symbols.push_back("-");
         symbols.push_back("*");

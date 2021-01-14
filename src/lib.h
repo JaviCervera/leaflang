@@ -13,7 +13,7 @@ struct Var {
     Var(const Var& other) : name(other.name), type(other.type) {
     }
     
-    const Var& operator=(const Var& other) {
+    Var& operator=(const Var& other) {
         const_cast<std::string&>(name) = other.name;
         const_cast<int&>(type) = other.type;
         return *this;
@@ -38,10 +38,11 @@ struct Function {
             name(other.name), type(other.type), params(other.params) {
     }
     
-    const Function& operator=(const Function& other) {
+    Function& operator=(const Function& other) {
         const_cast<std::string&>(name) = other.name;
         const_cast<int&>(type) = other.type;
         const_cast<std::vector<Var>&>(params) = other.params;
+        return *this;
     }
 private:
     std::vector<Var> ParseParams(const std::vector<int>& iparams) {

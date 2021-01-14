@@ -75,11 +75,12 @@ struct Token {
             type(other.type), data(other.data), file(other.file), line(other.line) {
     }
     
-    const Token& operator=(const Token& other) {
+    Token& operator=(const Token& other) {
         const_cast<int&>(type) = other.type;
         const_cast<std::string&>(data) = other.data;
         const_cast<std::string&>(file) = other.file;
         const_cast<int&>(line) = other.line;
+        return *this;
     }
 
     bool operator==(const Token& other) const {
