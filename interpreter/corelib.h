@@ -440,6 +440,54 @@ inline int _lua_TableString(lua_State* L) {
     return 1;
 }
 
+inline int _lua_SetIndexInt(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int c = lua_tointeger(L, 3);
+    SetIndexInt(a,b,c);
+    return 0;
+}
+
+inline int _lua_SetIndexFloat(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    float c = lua_tonumber(L, 3);
+    SetIndexFloat(a,b,c);
+    return 0;
+}
+
+inline int _lua_SetIndexString(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    const char* c = lua_tostring(L, 3);
+    SetIndexString(a,b,c);
+    return 0;
+}
+
+inline int _lua_IndexInt(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = IndexInt(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_IndexFloat(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    float result = IndexFloat(a,b);
+    lua_pushnumber(L, result);
+    return 1;
+}
+
+inline int _lua_IndexString(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    const char* result = IndexString(a,b);
+    lua_pushstring(L, result);
+    return 1;
+}
+
 inline int _lua_Contains(lua_State* L) {
     int a = lua_tointeger(L, 1);
     const char* b = lua_tostring(L, 2);
@@ -581,6 +629,12 @@ static const luaL_Reg picoFuncs[] = {
     {"TableInt", _lua_TableInt},
     {"TableFloat", _lua_TableFloat},
     {"TableString", _lua_TableString},
+    {"SetIndexInt", _lua_SetIndexInt},
+    {"SetIndexFloat", _lua_SetIndexFloat},
+    {"SetIndexString", _lua_SetIndexString},
+    {"IndexInt", _lua_IndexInt},
+    {"IndexFloat", _lua_IndexFloat},
+    {"IndexString", _lua_IndexString},
     {"Contains", _lua_Contains},
     {"Remove", _lua_Remove},
     {"Size", _lua_Size},
@@ -664,6 +718,12 @@ inline void AddFunctions(Parser& parser) {
         "SUB TableInt%(a,b$)\n"
         "SUB TableFloat#(a,b$)\n"
         "SUB TableString$(a,b$)\n"
+        "SUB SetIndexInt(a,b,c)\n"
+        "SUB SetIndexFloat(a,b,c#)\n"
+        "SUB SetIndexString(a,b,c$)\n"
+        "SUB IndexInt%(a,b)\n"
+        "SUB IndexFloat#(a,b)\n"
+        "SUB IndexString$(a,b)\n"
         "SUB Contains%(a,b$)\n"
         "SUB Remove(a,b$)\n"
         "SUB Size%(a)\n"

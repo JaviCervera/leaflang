@@ -445,6 +445,36 @@ const char* TableString(const size_t table, const char* key) {
         : "";
 }
 
+void SetIndexInt(size_t table, size_t index, int value) {
+    (*_tablePool.Get(table))[Str(index)] = value;
+}
+
+void SetIndexFloat(size_t table, size_t index, float value) {
+    (*_tablePool.Get(table))[Str(index)] = value;
+}
+
+void SetIndexString(size_t table, size_t index, const char* value) {
+    (*_tablePool.Get(table))[Str(index)] = value;
+}
+
+int IndexInt(const size_t table, size_t index) {
+    return (Contains(table, Str(index)))
+        ? (*_tablePool.Get(table))[Str(index)].i
+        : 0;
+}
+
+float IndexFloat(const size_t table, size_t index) {
+    return (Contains(table, Str(index)))
+        ? (*_tablePool.Get(table))[Str(index)].f
+        : 0.0f;
+}
+
+const char* IndexString(const size_t table, size_t index) {
+    return (Contains(table, Str(index)))
+        ? (*_tablePool.Get(table))[Str(index)].s.c_str()
+        : "";
+}
+
 int Contains(const size_t table, const char* key) {
     return _tablePool.Get(table)->count(key) > 0;
 }
