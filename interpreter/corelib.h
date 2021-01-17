@@ -205,6 +205,129 @@ inline int _lua_Int(lua_State* L) {
     return 1;
 }
 
+inline int _lua_Dim(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = Dim(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_Undim(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    Undim(a);
+    return 0;
+}
+
+inline int _lua_Redim(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    Redim(a,b);
+    return 0;
+}
+
+inline int _lua_LoadDim(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    const char* b = lua_tostring(L, 2);
+    int result = LoadDim(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_SaveDim(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    const char* b = lua_tostring(L, 2);
+    SaveDim(a,b);
+    return 0;
+}
+
+inline int _lua_DimSize(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int result = DimSize(a);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_PeekByte(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = PeekByte(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_PeekShort(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = PeekShort(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_PeekInt(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = PeekInt(a,b);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+inline int _lua_PeekFloat(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    float result = PeekFloat(a,b);
+    lua_pushnumber(L, result);
+    return 1;
+}
+
+inline int _lua_PeekString(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    const char* result = PeekString(a,b);
+    lua_pushstring(L, result);
+    return 1;
+}
+
+inline int _lua_PokeByte(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int c = lua_tointeger(L, 3);
+    PokeByte(a,b,c);
+    return 0;
+}
+
+inline int _lua_PokeShort(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int c = lua_tointeger(L, 3);
+    PokeShort(a,b,c);
+    return 0;
+}
+
+inline int _lua_PokeInt(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int c = lua_tointeger(L, 3);
+    PokeInt(a,b,c);
+    return 0;
+}
+
+inline int _lua_PokeFloat(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    float c = lua_tonumber(L, 3);
+    PokeFloat(a,b,c);
+    return 0;
+}
+
+inline int _lua_PokeString(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    const char* c = lua_tostring(L, 3);
+    PokeString(a,b,c);
+    return 0;
+}
+
 inline int _lua_Len(lua_State* L) {
     const char* a = lua_tostring(L, 1);
     int result = Len(a);
@@ -598,6 +721,22 @@ static const luaL_Reg picoFuncs[] = {
     {"Sqrt", _lua_Sqrt},
     {"Tan", _lua_Tan},
     {"Int", _lua_Int},
+    {"Dim", _lua_Dim},
+    {"Undim", _lua_Undim},
+    {"Redim", _lua_Redim},
+    {"LoadDim", _lua_LoadDim},
+    {"SaveDim", _lua_SaveDim},
+    {"DimSize", _lua_DimSize},
+    {"PeekByte", _lua_PeekByte},
+    {"PeekShort", _lua_PeekShort},
+    {"PeekInt", _lua_PeekInt},
+    {"PeekFloat", _lua_PeekFloat},
+    {"PeekString", _lua_PeekString},
+    {"PokeByte", _lua_PokeByte},
+    {"PokeShort", _lua_PokeShort},
+    {"PokeInt", _lua_PokeInt},
+    {"PokeFloat", _lua_PokeFloat},
+    {"PokeString", _lua_PokeString},
     {"Len", _lua_Len},
     {"Left", _lua_Left},
     {"Right", _lua_Right},
@@ -687,6 +826,22 @@ inline void AddFunctions(Parser& parser) {
         "SUB Sqrt#(a#)\n"
         "SUB Tan#(a#)\n"
         "SUB Int%(a#)\n"
+        "SUB Dim%(a,b)\n"
+        "SUB Undim(a)\n"
+        "SUB Redim(a,b)\n"
+        "SUB LoadDim%(a,b$)\n"
+        "SUB SaveDim(a,b$)\n"
+        "SUB DimSize%(a)\n"
+        "SUB PeekByte%(a,b)\n"
+        "SUB PeekShort%(a,b)\n"
+        "SUB PeekInt%(a,b)\n"
+        "SUB PeekFloat#(a,b)\n"
+        "SUB PeekString$(a,b)\n"
+        "SUB PokeByte(a,b,c)\n"
+        "SUB PokeShort(a,b,c)\n"
+        "SUB PokeInt(a,b,c)\n"
+        "SUB PokeFloat(a,b,c#)\n"
+        "SUB PokeString(a,b,c$)\n"
         "SUB Len%(a$)\n"
         "SUB Left$(a$,b)\n"
         "SUB Right$(a$,b)\n"
