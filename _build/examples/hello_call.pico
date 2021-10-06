@@ -1,4 +1,4 @@
-SUB Printer(msg$)
+DEF Printer(msg$)
     Print(msg$)
 END
 

@@ -1,4 +1,4 @@
-SUB Message$()
+DEF Message$()
     msg$ = "Hello from function!"
     RETURN msg$
 END
