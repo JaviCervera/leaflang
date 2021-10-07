@@ -27,7 +27,7 @@ A reference points to data that is defined by an external library, or to compund
 
 Data can be stored in variables. Pico is a statically typed language, meaning that a type must be
 specified for each variable that you use. For specifying the types, Pico uses suffixes, an approach
-taking from BASIC. The suffixes are:
+taken from BASIC. The suffixes are:
 
 * `%`: Integer.
 * `#`: Real.
