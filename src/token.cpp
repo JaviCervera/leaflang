@@ -299,7 +299,7 @@ int TokenType(const string& str) {
         types["$"] = TOK_STRING;
 #ifdef ENABLE_REF
         types["!"] = TOK_REF;
-        types["none"] = TOK_NULLLITERAL;
+        types["nothing"] = TOK_NULLLITERAL;
 #endif
     }
     const string fixedStr = strmanip::lower(str.c_str());
