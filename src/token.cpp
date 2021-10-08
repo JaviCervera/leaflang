@@ -51,6 +51,9 @@ vector<Token> ParseTokens(const string& buffer, const string& filename) {
             tokens.push_back(token);
         }
     }
+    if (!IsStatementEnd(tokens.back().type)) {
+        tokens.push_back(Token(TOK_EOL, "\n", lexer.file, lexer.line));
+    }
     return tokens;
 }
 

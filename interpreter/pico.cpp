@@ -19,7 +19,7 @@ string GetFilename(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     const string filename = GetFilename(argc, argv);
-    const string file = Replace(LoadString(filename.c_str()), "\r\n", "\n");
+    const string file = Replace(Replace(LoadString(filename.c_str()), "\r\n", "\n"), "\r", "\n");
     if (file == "") {
         Error("Could not load source file or it is empty.");
     }
