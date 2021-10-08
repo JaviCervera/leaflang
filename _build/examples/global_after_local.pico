@@ -1,0 +1,21 @@
+Def Foo()
+    var$ = "Foo"
+End
+
+var$ = "A global var"
+
+Def Bar()
+    var$ = "Bar"
+End
+
+Print(var$) 'Prints "A global var"
+Foo()
+Print(var$) 'Prints "A global var"
+Bar()
+Print(var$) 'Prints "Bar"
+
+Print("")
+Print("Should have printed:")
+Print("A global var")
+Print("A global var")
+Print("Bar")

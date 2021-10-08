@@ -11,6 +11,16 @@ tables can be used to group data instead.
 As said, the language is largely inspired by BASIC, aiming to provide a syntax which is really easy
 to learn and comfortable to read. It also draws inspiration from other languages like Python.
 
+### Comments
+
+A comment is ignored by the compiler, so you can write any message on it. It starts with the `'`
+symbol, and continues to the end of the line. For example:
+
+```
+'This comment takes the entire line
+a = 50 'This comment starts after the number 50
+```
+
 ### Data types
 
 Pico can represent four types of data:
@@ -47,5 +57,45 @@ Variables initialized within functions will be local the function (so two variab
 name on different functions are actually two different variables, so their type can of course be
 different).
 
-On the other hand, variables initialized outside functions will be globally accessible. Local
-variables cannot have the same name as a global variable.
+On the other hand, variables initialized outside functions will be globally accessible *from the
+point they are initialized*. For example, in the following snippet:
+
+```
+Def Foo()
+    var$ = "Foo"
+End
+
+var$ = "A global var"
+
+Def Bar()
+    var$ = "Bar"
+End
+
+Print(var) 'Prints "A global var"
+Foo()
+Print(var) 'Prints "A global var"
+Bar()
+Print(var) 'Prints "Bar"
+```
+
+This means that when the `Foo` function is defined, `var$` has not yet been declared as a global,
+so the function modifies a local variable instead. On the other hand, when `Bar` is called, `var`
+has already been defined as a global, so the function modifies that global.
+
+To learn more about functions, read the corresponding section.
+
+### Statements
+
+...
+
+### Functions
+
+...
+
+### Conditionals
+
+...
+
+### Loops
+
+...

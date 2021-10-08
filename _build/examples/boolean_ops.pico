@@ -16,3 +16,6 @@ Print ("(" + DQ + DQ + " <> " + DQ + DQ + " OR 0) IS " + BoolStr ("" <> "" OR 0)
 Print ("(" + DQ + DQ + " <> " + DQ + DQ + " OR 1) IS " + BoolStr ("" <> "" OR 1))
 Print ("(50 AND 1) IS " + BoolStr (50 AND 1))
 Print ("(0 AND 1) IS " + BoolStr (0 AND 1))
+
+Print("")
+Print("Previous expressions should have been: TRUE TRUE TRUE FALSE FALSE TRUE TRUE FALSE")
