@@ -9,9 +9,7 @@
 #define TOK_INTLITERAL 1
 #define TOK_REALLITERAL 2
 #define TOK_STRINGLITERAL 3
-#ifdef ENABLE_REF
 #define TOK_NULLLITERAL 4
-#endif
 
 // Operators
 #define TOK_NOT 10
@@ -56,9 +54,7 @@
 #define TOK_INT 60
 #define TOK_REAL 61
 #define TOK_STRING 62
-#ifdef ENABLE_REF
 #define TOK_REF 63
-#endif
 
 struct Token {
     const int type;

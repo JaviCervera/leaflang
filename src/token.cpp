@@ -82,11 +82,7 @@ bool IsUnaryOp(int type) {
 }
 
 bool IsType(int type) {
-#ifdef ENABLE_REF
     return type >= TOK_INT && type <= TOK_REF;
-#else
-    return type >= TOK_INT && type <= TOK_STRING;
-#endif
 }
 
 int GetType(int type) {
@@ -97,10 +93,8 @@ int GetType(int type) {
         return TYPE_REAL;
     case TOK_STRING:
         return TYPE_STRING;
-#ifdef ENABLE_REF
     case TOK_REF:
         return TYPE_REF;
-#endif
     default:
         return TYPE_VOID;
     }
@@ -251,9 +245,7 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("%");
         symbols.push_back("#");
         symbols.push_back("$");
-#ifdef ENABLE_REF
         symbols.push_back("!");
-#endif
     }
     for (size_t i = 0; i < symbols.size(); ++i) {
         string str = "";
@@ -300,10 +292,8 @@ int TokenType(const string& str) {
         types["%"] = TOK_INT;
         types["#"] = TOK_REAL;
         types["$"] = TOK_STRING;
-#ifdef ENABLE_REF
         types["!"] = TOK_REF;
         types["nothing"] = TOK_NULLLITERAL;
-#endif
     }
     const string fixedStr = strmanip::lower(str.c_str());
     return (types.count(fixedStr) > 0) ? types[fixedStr] : TOK_ID;

@@ -8,7 +8,5 @@
 #define TYPE_INT -1
 #define TYPE_REAL -2
 #define TYPE_STRING -3
-#ifdef ENABLE_REF
 #define TYPE_REF -4
-#endif
 #define TYPE_VOID -5

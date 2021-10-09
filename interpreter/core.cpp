@@ -23,17 +23,13 @@ struct Any {
     Any(float number) : f(number), type(TYPE_REAL) { }
     Any(const char* str) : s(str), type(TYPE_STRING) {}
     Any(const std::string& str) : s(str), type(TYPE_STRING) {}
-#ifdef ENABLE_REF
     Any(void* ref) : r(ref), type(TYPE_REF) {}
-#endif
     Any(const Any& other) { *this = other; }
     
     int ToInt() const;
     float ToReal() const;
     std::string ToString() const;
-#ifdef ENABLE_REF
     void* ToRef() const;
-#endif
 };
 
 struct Table : public map<string, Any> {
@@ -67,7 +63,6 @@ string Any::ToString() const {
     }
 }
 
-#ifdef ENABLE_REF
 void* Any::ToRef() const {
     switch (type) {
     case TYPE_INT: return NULL;
@@ -76,7 +71,6 @@ void* Any::ToRef() const {
     default: return r;
     }
 }
-#endif
 
 string Table::ToString() {
     string content;

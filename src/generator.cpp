@@ -131,10 +131,8 @@ string Generator::GenLiteral(const Token& token) const {
         return token.data;
     case TOK_STRINGLITERAL:
         return "\"" + token.data + "\"";
-#ifdef ENABLE_REF
     case TOK_NULLLITERAL:
         return "nil";
-#endif
     default:
         return "<unknown>";
     }
