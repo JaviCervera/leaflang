@@ -1,7 +1,8 @@
 .DS_Store
 .vscode
-_build/bin
+_build/bin/*
 _build/examples/*
+!_build/bin/*.js
 !_build/examples/*.pico
 _CMAKE
 interpreter/corelib.h
