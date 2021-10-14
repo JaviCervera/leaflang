@@ -288,7 +288,7 @@ int TokenType(const string& str) {
         types["step"] = TOK_STEP;
         types["while"] = TOK_WHILE;
         types["return"] = TOK_RETURN;
-        types["def"] = TOK_FUNCTION;
+        types["function"] = TOK_FUNCTION;
         types["%"] = TOK_INT;
         types["#"] = TOK_REAL;
         types["$"] = TOK_STRING;

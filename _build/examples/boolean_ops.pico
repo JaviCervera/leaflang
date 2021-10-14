@@ -1,6 +1,6 @@
 DQ$ = Chr$ (34)
 
-DEF BoolStr$ (v)
+FUNCTION BoolStr$ (v)
     IF v
         RETURN "TRUE"
     ELSE

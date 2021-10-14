@@ -61,13 +61,13 @@ On the other hand, variables initialized outside functions will be globally acce
 point they are initialized*. For example, in the following snippet:
 
 ```
-Def Foo()
+Function Foo()
     var$ = "Foo"
 End
 
 var$ = "A global var"
 
-Def Bar()
+Function Bar()
     var$ = "Bar"
 End
 

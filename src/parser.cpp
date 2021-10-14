@@ -51,7 +51,7 @@ string Parser::ParseFunctionDef() {
 }
 
 Function Parser::ParseFunctionHeader() {
-    stream.Skip(1); // def
+    stream.Skip(1); // function
     const string name = ParseNewId();
     const int returnType = ParseReturnType();
     const vector<Var> params = ParseParams();

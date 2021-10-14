@@ -1,10 +1,10 @@
-Def Foo()
+Function Foo()
     var$ = "Foo"
 End
 
 var$ = "A global var"
 
-Def Bar()
+Function Bar()
     var$ = "Bar"
 End
 

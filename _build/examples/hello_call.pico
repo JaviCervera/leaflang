@@ -1,4 +1,4 @@
-DEF Printer(msg$)
+FUNCTION Printer(msg$)
     Print(msg$)
 END
 
