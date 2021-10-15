@@ -68,7 +68,8 @@ int main(int argc, char** argv) {
     if (file == "") Error("Could not load source file or it is empty.");
 
     // Setup parser
-    Parser parser(ParseTokens(file, srcFilename));
+    const vector<Token> tokens = ParseTokens(file, srcFilename);
+    Parser parser(tokens);
     const string basePath = StripLastPathElement(GetBinDir());
     const string coreModuleInfo = LoadFile(AppendElementToPath(basePath, "modules/core/module.txt"));
     parser.ParseLibrary(ParseTokens(coreModuleInfo, "core"));
