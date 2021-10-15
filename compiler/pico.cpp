@@ -44,7 +44,7 @@ string StripLastPathElement(const string& path) {
         return path;
     } else {
         const vector<string> components = split(replaceall(path, "\\", "/"), '/');
-        return accumulate(components.begin(), components.end() - 1, string("/"));
+        return accumulate(components.begin(), components.end() - 1, string("/")).substr(1);
     }
 }
 
