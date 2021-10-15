@@ -140,7 +140,7 @@ string Generator::GenParams(const Function& func) {
 }
 
 string Generator::GenFuncId(const string& id) {
-    return "pico." + id;
+    return id;
 }
 
 string Generator::GenVarId(const string& id) {
