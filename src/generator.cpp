@@ -63,8 +63,8 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
     const string op =
         (token.type == TOK_OR) ? " || " :
         (token.type == TOK_AND) ? " && " :
-        (token.type == TOK_EQUAL) ? " == " :
-        (token.type == TOK_NOTEQUAL) ? " != " :
+        (token.type == TOK_EQUAL) ? " === " :
+        (token.type == TOK_NOTEQUAL) ? " !== " :
         (token.type == TOK_LESSER) ? " < " :
         (token.type == TOK_LEQUAL) ? " <= " :
         (token.type == TOK_GREATER) ? " > " :
