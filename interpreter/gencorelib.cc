@@ -73,6 +73,8 @@ string GenTypeName(int type) {
         return "float ";
     case TYPE_STRING:
         return "const char* ";
+    case TYPE_REF:
+        return "void* ";
     default:
         return "";
     }
@@ -86,6 +88,8 @@ string GenLuaArg(const Var& param) {
         return "lua_tonumber";
     case TYPE_STRING:
         return "lua_tostring";
+    case TYPE_REF:
+        return "(void*)lua_topointer";
     default:
         return "";
     }
@@ -113,6 +117,8 @@ string GenLuaReturn(int type) {
         return "    lua_pushnumber(L, result);\n";
     case TYPE_STRING:
         return "    lua_pushstring(L, result);\n";
+    case TYPE_REF:
+        return "    lua_pushlightuserdata(L, result);\n";
     default:
         return "";
     }
