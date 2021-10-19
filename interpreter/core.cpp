@@ -82,6 +82,8 @@ string Table::ToString() {
     return "{" + content + "}";
 }
 
+extern "C" {
+
 // ------------------------------------
 // App
 // ------------------------------------
@@ -637,4 +639,6 @@ const char* CallString(const char* name) {
 
 int Callable(const char* name) {
     return 0;
+}
+
 }

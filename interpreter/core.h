@@ -19,6 +19,10 @@ struct Memory;
 struct Table;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // ------------------------------------
 // App
 // ------------------------------------
@@ -163,3 +167,7 @@ int CallInt(const char* name);
 float CallFloat(const char* name);
 const char* CallString(const char* name);
 int Callable(const char* name);
+
+#ifdef __cplusplus
+}
+#endif
