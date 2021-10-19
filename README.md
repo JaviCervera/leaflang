@@ -42,7 +42,7 @@ taken from BASIC. The suffixes are:
 * `%`: Integer.
 * `#`: Real.
 * `$`: String.
-* `!`: Reference.
+* `@`: Reference.
 
 Variables are not declared, but they need to be assigned before they can be accessed (failing to do
 so will cause a compilation error). On this first assignment (which is called initialization), the
@@ -61,15 +61,15 @@ On the other hand, variables initialized outside functions will be globally acce
 point they are initialized*. For example, in the following snippet:
 
 ```
-Function Foo()
+function Foo()
     var$ = "Foo"
-End
+end
 
 var$ = "A global var"
 
-Function Bar()
+function Bar()
     var$ = "Bar"
-End
+end
 
 Print(var) 'Prints "A global var"
 Foo()
