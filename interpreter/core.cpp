@@ -135,7 +135,7 @@ Table* DirContents(const char* path) {
     Table* table = DimTable();
     int i = 0;
     for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        SetIndexString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
+        SetIndexString(table, i++, (*it).c_str());
     }
     return table;
 }
@@ -410,24 +410,24 @@ const char* Trim(const char* str) {
     return result.c_str();
 }
 
-const char* Join(size_t table, const char* separator) {
+const char* Join(Table* table, const char* separator) {
     static string result;
     result = "";
     const int size = Size(table);
     for (int i = 0; i < size; ++i) {
         if (i > 0) result += separator;
-        result += TableString(table, strmanip::fromint(i).c_str());
+        result += IndexString(table, i);
     }
     return result.c_str();
 }
 
-size_t Split(size_t table, const char* str, const char* separator) {
+Table* Split(const char* str, const char* separator) {
     const char delim = (Len(separator) > 0) ? separator[0] : ' ';
     const vector<string> split = strmanip::split(str, delim);
-    table = DimTable(table);
+    Table* table = DimTable();
     int i = 0;
     for (vector<string>::const_iterator it = split.begin(); it != split.end(); ++it) {
-        SetTableString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
+        SetIndexString(table, i++, (*it).c_str());
     }
     return table;
 }
