@@ -11,6 +11,8 @@
 #endif
 #endif
 
+struct Table;
+
 // ------------------------------------
 // App
 // ------------------------------------
@@ -118,28 +120,28 @@ void SaveString(const char* filename, const char* str, int append);
 // Table
 // ------------------------------------
 
-size_t DimTable(size_t index);
-void UndimTable(size_t table);
-void SetTableInt(size_t table, const char* key, int value);
-void SetTableFloat(size_t table, const char* key, float value);
-void SetTableString(size_t table, const char* key, const char* value);
-void SetTableRef(size_t table, const char* key, void* value);
-int TableInt(const size_t table, const char* key);
-float TableFloat(const size_t table, const char* key);
-const char* TableString(const size_t table, const char* key);
-void* TableRef(const size_t table, const char* key);
-void SetIndexInt(size_t table, size_t index, int value);
-void SetIndexFloat(size_t table, size_t index, float value);
-void SetIndexString(size_t table, size_t index, const char* value);
-void SetIndexRef(size_t table, size_t index, void* value);
-int IndexInt(const size_t table, size_t index);
-float IndexFloat(const size_t table, size_t index);
-const char* IndexString(const size_t table, size_t index);
-void* IndexRef(const size_t table, size_t index);
-int Contains(const size_t table, const char* key);
-void Remove(size_t table, const char* key);
-int Size(const size_t table);
-void Clear(size_t table);
+Table* DimTable();
+void UndimTable(Table* table);
+void SetTableInt(Table* table, const char* key, int value);
+void SetTableFloat(Table* table, const char* key, float value);
+void SetTableString(Table* table, const char* key, const char* value);
+void SetTableRef(Table* table, const char* key, void* value);
+int TableInt(const Table* table, const char* key);
+float TableFloat(const Table* table, const char* key);
+const char* TableString(const Table* table, const char* key);
+void* TableRef(const Table* table, const char* key);
+void SetIndexInt(Table* table, size_t index, int value);
+void SetIndexFloat(Table* table, size_t index, float value);
+void SetIndexString(Table* table, size_t index, const char* value);
+void SetIndexRef(Table* table, size_t index, void* value);
+int IndexInt(const Table* table, size_t index);
+float IndexFloat(const Table* table, size_t index);
+const char* IndexString(const Table* table, size_t index);
+void* IndexRef(const Table* table, size_t index);
+int Contains(const Table* table, const char* key);
+void Remove(Table* table, const char* key);
+int Size(const Table* table);
+void Clear(Table* table);
 
 // ------------------------------------
 // Callable

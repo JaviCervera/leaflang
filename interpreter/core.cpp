@@ -507,112 +507,110 @@ void SaveString(const char* filename, const char* str, int append) {
 // Table
 // ------------------------------------
 
-static void DeleteTable(Table* table) {
+Table* DimTable() {
+    return new Table();
+}
+
+void UndimTable(Table* table) {
     delete table;
 }
 
-static Pool<Table*> _tablePool(DeleteTable);
-
-size_t DimTable(size_t index) {
-    return _tablePool.Insert(index, new Table());
+void SetTableInt(Table* table, const char* key, int value) {
+    (*table)[key] = value;
 }
 
-void UndimTable(size_t table) {
-    _tablePool.Remove(table);
+void SetTableFloat(Table* table, const char* key, float value) {
+    (*table)[key] = value;
 }
 
-void SetTableInt(size_t table, const char* key, int value) {
-    (*_tablePool.Get(table))[key] = value;
+void SetTableString(Table* table, const char* key, const char* value) {
+    (*table)[key] = value;
 }
 
-void SetTableFloat(size_t table, const char* key, float value) {
-    (*_tablePool.Get(table))[key] = value;
+void SetTableRef(Table* table, const char* key, void* value) {
+    (*table)[key] = value;
 }
 
-void SetTableString(size_t table, const char* key, const char* value) {
-    (*_tablePool.Get(table))[key] = value;
-}
-
-void SetTableRef(size_t table, const char* key, void* value) {
-
-}
-
-int TableInt(const size_t table, const char* key) {
+int TableInt(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].i
+        ? (*(Table*)table)[key].i
         : 0;
 }
 
-float TableFloat(const size_t table, const char* key) {
+float TableFloat(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].f
+        ? (*(Table*)table)[key].f
         : 0.0f;
 }
 
-const char* TableString(const size_t table, const char* key) {
+const char* TableString(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].s.c_str()
+        ? (*(Table*)table)[key].s.c_str()
         : "";
 }
 
-void* TableRef(const size_t table, const char* key) {
-
+void* TableRef(const Table* table, const char* key) {
+    return (Contains(table, key))
+        ? (*(Table*)table)[key].r
+        : NULL;
 }
 
-void SetIndexInt(size_t table, size_t index, int value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void SetIndexInt(Table* table, size_t index, int value) {
+    (*table)[Str(index)] = value;
 }
 
-void SetIndexFloat(size_t table, size_t index, float value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void SetIndexFloat(Table* table, size_t index, float value) {
+    (*table)[Str(index)] = value;
 }
 
-void SetIndexString(size_t table, size_t index, const char* value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void SetIndexString(Table* table, size_t index, const char* value) {
+    (*table)[Str(index)] = value;
 }
 
-void SetIndexRef(size_t table, size_t index, void* value) {
-
+void SetIndexRef(Table* table, size_t index, void* value) {
+    (*table)[Str(index)] = value;
 }
 
-int IndexInt(const size_t table, size_t index) {
+int IndexInt(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].i
+        ? (*(Table*)table)[Str(index)].i
         : 0;
 }
 
-float IndexFloat(const size_t table, size_t index) {
+float IndexFloat(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].f
+        ? (*(Table*)table)[Str(index)].f
         : 0.0f;
 }
 
-const char* IndexString(const size_t table, size_t index) {
+const char* IndexString(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].s.c_str()
+        ? (*(Table*)table)[Str(index)].s.c_str()
         : "";
 }
 
-void* IndexRef(const size_t table, size_t index) {
-
+void* IndexRef(const Table* table, size_t index) {
+    return (Contains(table, Str(index)))
+        ? (*(Table*)table)[Str(index)].r
+        : NULL;
 }
 
-int Contains(const size_t table, const char* key) {
-    return _tablePool.Get(table)->count(key) > 0;
+int Contains(const Table* table, const char* key) {
+    return table->count(key) > 0;
 }
 
-void Remove(size_t table, const char* key) {
+void Remove(Table* table, const char* key) {
     if (Contains(table, key)) {
-        _tablePool.Get(table)->erase(key);
+        table->erase(key);
     }
 }
 
-int Size(const size_t table) {
-    return _tablePool.Get(table)->size();
+int Size(const Table* table) {
+    return table->size();
 }
 
-void Clear(size_t table) {
-    return _tablePool.Get(table)->clear();
+void Clear(Table* table) {
+    return table->clear();
 }
 
 // ------------------------------------
