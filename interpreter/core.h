@@ -11,6 +11,7 @@
 #endif
 #endif
 
+struct Memory;
 struct Table;
 
 // ------------------------------------
@@ -71,22 +72,22 @@ int Int(float num);
 // Memory
 // ------------------------------------
 
-size_t Dim(size_t index, int size);
-void Undim(size_t index);
-void Redim(size_t index, int size);
-size_t LoadDim(size_t index, const char* filename);
-void SaveDim(size_t index, const char* filename);
-int DimSize(size_t index);
-int PeekByte(size_t index, int offset);
-int PeekShort(size_t index, int offset);
-int PeekInt(size_t index, int offset);
-float PeekFloat(size_t index, int offset);
-const char* PeekString(size_t index, int offset);
-void PokeByte(size_t index, int offset, int val);
-void PokeShort(size_t index, int offset, int val);
-void PokeInt(size_t index, int offset, int val);
-void PokeFloat(size_t index, int offset, float val);
-void PokeString(size_t index, int offset, const char* val);
+Memory* Dim(int size);
+void Undim(Memory* mem);
+void Redim(Memory* mem, int size);
+Memory* LoadDim(const char* filename);
+void SaveDim(Memory* mem, const char* filename);
+int DimSize(Memory* mem);
+int PeekByte(Memory* mem, int offset);
+int PeekShort(Memory* mem, int offset);
+int PeekInt(Memory* mem, int offset);
+float PeekFloat(Memory* mem, int offset);
+const char* PeekString(Memory* mem, int offset);
+void PokeByte(Memory* mem, int offset, int val);
+void PokeShort(Memory* mem, int offset, int val);
+void PokeInt(Memory* mem, int offset, int val);
+void PokeFloat(Memory* mem, int offset, float val);
+void PokeString(Memory* mem, int offset, const char* val);
 
 // ------------------------------------
 // String

@@ -248,112 +248,104 @@ int Int(float num) {
 // Memory
 // ------------------------------------
 
-struct Memblock {
+struct Memory {
     char* ptr;
     size_t size;
 
-    Memblock(size_t size) : size(size) { ptr = (char*)calloc(1, size); }
-
-    ~Memblock() { free(this->ptr); }
-
+    Memory(size_t size) : size(size) { ptr = (char*)calloc(1, size); }
+    ~Memory() { free(this->ptr); }
     void Resize(size_t size) { ptr = (char*)realloc(ptr, size); this->size = size; }
 };
 
-static void DeleteMem(Memblock* mem) {
+Memory* Dim(int size) {
+    return new Memory(size);
+}
+
+void Undim(Memory* mem) {
     delete mem;
 }
 
-static Pool<Memblock*> _memPool(DeleteMem);
-
-size_t Dim(size_t index, int size) {
-    return _memPool.Insert(index, new Memblock(size));
+void Redim(Memory* mem, int size) {
+    mem->Resize(size);
 }
 
-void Undim(size_t index) {
-    _memPool.Remove(index);
-}
-
-void Redim(size_t index, int size) {
-    _memPool.Get(index)->Resize(size);
-}
-
-size_t LoadDim(size_t index, const char* filename) {
+Memory* LoadDim(const char* filename) {
     FILE* f = fopen(filename, "rb");
-    if (!f) return -1;
+    if (!f) return NULL;
     fseek(f, 0, SEEK_END);
     size_t size = (size_t)ftell(f);
     fseek(f, 0, SEEK_SET);
-    index = Dim(index, size);
-    fread(_memPool.Get(index)->ptr, size, 1, f);
+    Memory* mem = Dim(size);
+    fread(mem->ptr, size, 1, f);
     fclose(f);
-    return index;
+    return mem;
 }
 
-void SaveDim(size_t index, const char* filename) {
+void SaveDim(Memory* mem, const char* filename) {
     FILE* f = fopen(filename, "wb");
     if (!f) return;
-    fwrite(_memPool.Get(index)->ptr, DimSize(index), 1, f);
+    fwrite(mem->ptr, DimSize(mem), 1, f);
     fclose(f);
 }
 
-int DimSize(size_t index) {
-    return (int)_memPool.Get(index)->size;
+int DimSize(Memory* mem) {
+    return (int)mem->size;
 }
 
-int PeekByte(size_t index, int offset) {
+int PeekByte(Memory* mem, int offset) {
     unsigned char v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return (int)v;
 }
 
-int PeekShort(size_t index, int offset) {
+int PeekShort(Memory* mem, int offset) {
     unsigned short v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return (int)v;
 }
 
-int PeekInt(size_t index, int offset) {
+int PeekInt(Memory* mem, int offset) {
     int v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-float PeekFloat(size_t index, int offset) {
+float PeekFloat(Memory* mem, int offset) {
     float v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-const char* PeekString(size_t index, int offset) {
+const char* PeekString(Memory* mem, int offset) {
     static string result;
     int c;
-    while (offset < DimSize(index) && (c = PeekByte(index, offset)) != 0) {
+    while (offset < DimSize(mem) && (c = PeekByte(mem, offset)) != 0) {
         result += (char)c;
         ++offset;
     }
     return result.c_str();
 }
 
-void PokeByte(size_t index, int offset, int val) {
+void PokeByte(Memory* mem, int offset, int val) {
     unsigned char* b = (unsigned char*)&val;
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &b[3], sizeof(unsigned char));
+    memcpy(&(mem->ptr[offset]), &b[3], sizeof(unsigned char));
 }
 
-void PokeShort(size_t index, int offset, int val) {
+void PokeShort(Memory* mem, int offset, int val) {
     unsigned short* s = (unsigned short*)&val;
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &s[1], sizeof(unsigned short));
+    memcpy(&(mem->ptr[offset]), &s[1], sizeof(unsigned short));
 }
 
-void PokeInt(size_t index, int offset, int val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &val, sizeof(val));
+void PokeInt(Memory* mem, int offset, int val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeFloat(size_t index, int offset, float val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &val, sizeof(val));
+void PokeFloat(Memory* mem, int offset, float val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeString(size_t index, int offset, const char* val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), val, strlen(val) + 1);
+void PokeString(Memory* mem, int offset, const char* val) {
+    memcpy(&(mem->ptr[offset]), val, strlen(val) + 1);
 }
 
 // ------------------------------------
