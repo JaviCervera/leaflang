@@ -1,4 +1,5 @@
 #include <cmath>
+#define CORE_IMPL
 #include "core.h"
 #include "../src/swan/console.hh"
 #include "../src/swan/dir.hh"

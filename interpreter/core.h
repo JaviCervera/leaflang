@@ -11,8 +11,13 @@
 #endif
 #endif
 
+#ifndef CORE_IMPL
+typedef void Memory;
+typedef void Table;
+#else
 struct Memory;
 struct Table;
+#endif
 
 // ------------------------------------
 // App
