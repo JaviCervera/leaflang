@@ -9,9 +9,6 @@
 using namespace std;
 using namespace swan;
 
-#define DEG2RAD 0.01745329f
-#define RAD2DEG 57.29578f
-
 struct Any {
     int i;
     float f;
@@ -173,15 +170,15 @@ void DeleteFile(const char* filename) {
 // ------------------------------------
 
 float ASin(float x) {
-    return asin(x) * RAD2DEG;
+    return asin(x);
 }
 
 float ATan(float x) {
-    return atan(x) * RAD2DEG;
+    return atan(x);
 }
 
 float ATan2(float x, float y) {
-    return atan2(x, y) * RAD2DEG;
+    return atan2(x, y);
 }
 
 float Abs(float x) {
@@ -197,7 +194,7 @@ float Clamp(float x, float min, float max) {
 }
 
 float Cos(float x) {
-    return cos(x * DEG2RAD);
+    return cos(x);
 }
 
 float Exp(float x) {
@@ -229,7 +226,7 @@ float Sgn(float x) {
 }
 
 float Sin(float x) {
-    return sin(x * DEG2RAD);
+    return sin(x);
 }
 
 float Sqrt(float x) {
@@ -237,7 +234,7 @@ float Sqrt(float x) {
 }
 
 float Tan(float x) {
-    return tan(x * DEG2RAD);
+    return tan(x);
 }
 
 int Int(float num) {
