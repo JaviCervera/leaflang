@@ -11,12 +11,24 @@
 #endif
 #endif
 
+#ifndef CORE_IMPL
+typedef void Memory;
+typedef void Table;
+#else
+struct Memory;
+struct Table;
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // ------------------------------------
 // App
 // ------------------------------------
 
 const char* AppName();
-size_t AppArgs(size_t table);
+Table* AppArgs();
 const char* Run(const char* command);
 
 // ------------------------------------
@@ -30,7 +42,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-size_t DirContents(size_t table, const char* path);
+Table* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);
@@ -69,22 +81,24 @@ int Int(float num);
 // Memory
 // ------------------------------------
 
-size_t Dim(size_t index, int size);
-void Undim(size_t index);
-void Redim(size_t index, int size);
-size_t LoadDim(size_t index, const char* filename);
-void SaveDim(size_t index, const char* filename);
-int DimSize(size_t index);
-int PeekByte(size_t index, int offset);
-int PeekShort(size_t index, int offset);
-int PeekInt(size_t index, int offset);
-float PeekFloat(size_t index, int offset);
-const char* PeekString(size_t index, int offset);
-void PokeByte(size_t index, int offset, int val);
-void PokeShort(size_t index, int offset, int val);
-void PokeInt(size_t index, int offset, int val);
-void PokeFloat(size_t index, int offset, float val);
-void PokeString(size_t index, int offset, const char* val);
+Memory* Dim(int size);
+void Undim(Memory* mem);
+void Redim(Memory* mem, int size);
+Memory* LoadDim(const char* filename);
+void SaveDim(Memory* mem, const char* filename);
+int DimSize(Memory* mem);
+int PeekByte(Memory* mem, int offset);
+int PeekShort(Memory* mem, int offset);
+int PeekInt(Memory* mem, int offset);
+float PeekFloat(Memory* mem, int offset);
+const char* PeekString(Memory* mem, int offset);
+void* PeekRef(Memory* mem, int offset);
+void PokeByte(Memory* mem, int offset, int val);
+void PokeShort(Memory* mem, int offset, int val);
+void PokeInt(Memory* mem, int offset, int val);
+void PokeFloat(Memory* mem, int offset, float val);
+void PokeString(Memory* mem, int offset, const char* val);
+void PokeRef(Memory* mem, int offset, void* val);
 
 // ------------------------------------
 // String
@@ -99,8 +113,8 @@ const char* Upper(const char* str);
 int Find(const char* str, const char* find, int offset);
 const char* Replace(const char* str, const char* find, const char* replace);
 const char* Trim(const char* str);
-const char* Join(size_t table, const char* separator);
-size_t Split(size_t table, const char* str, const char* separator);
+const char* Join(Table* table, const char* separator);
+Table* Split(const char* str, const char* separator);
 const char* StripExt(const char* filename);
 const char* StripDir(const char* filename);
 const char* ExtractExt(const char* filename);
@@ -118,24 +132,28 @@ void SaveString(const char* filename, const char* str, int append);
 // Table
 // ------------------------------------
 
-size_t DimTable(size_t index);
-void UndimTable(size_t table);
-void SetTableInt(size_t table, const char* key, int value);
-void SetTableFloat(size_t table, const char* key, float value);
-void SetTableString(size_t table, const char* key, const char* value);
-int TableInt(const size_t table, const char* key);
-float TableFloat(const size_t table, const char* key);
-const char* TableString(const size_t table, const char* key);
-void SetIndexInt(size_t table, size_t index, int value);
-void SetIndexFloat(size_t table, size_t index, float value);
-void SetIndexString(size_t table, size_t index, const char* value);
-int IndexInt(const size_t table, size_t index);
-float IndexFloat(const size_t table, size_t index);
-const char* IndexString(const size_t table, size_t index);
-int Contains(const size_t table, const char* key);
-void Remove(size_t table, const char* key);
-int Size(const size_t table);
-void Clear(size_t table);
+Table* DimTable();
+void UndimTable(Table* table);
+void SetTableInt(Table* table, const char* key, int value);
+void SetTableFloat(Table* table, const char* key, float value);
+void SetTableString(Table* table, const char* key, const char* value);
+void SetTableRef(Table* table, const char* key, void* value);
+int TableInt(const Table* table, const char* key);
+float TableFloat(const Table* table, const char* key);
+const char* TableString(const Table* table, const char* key);
+void* TableRef(const Table* table, const char* key);
+void SetIndexInt(Table* table, size_t index, int value);
+void SetIndexFloat(Table* table, size_t index, float value);
+void SetIndexString(Table* table, size_t index, const char* value);
+void SetIndexRef(Table* table, size_t index, void* value);
+int IndexInt(const Table* table, size_t index);
+float IndexFloat(const Table* table, size_t index);
+const char* IndexString(const Table* table, size_t index);
+void* IndexRef(const Table* table, size_t index);
+int Contains(const Table* table, const char* key);
+void Remove(Table* table, const char* key);
+int Size(const Table* table);
+void Clear(Table* table);
 
 // ------------------------------------
 // Callable
@@ -150,57 +168,6 @@ float CallFloat(const char* name);
 const char* CallString(const char* name);
 int Callable(const char* name);
 
-// ------------------------------------
-// Resource pools
-// ------------------------------------
-
-template<typename T>
-class Pool {
-public:
-    Pool(void (* deleter)(T) = NULL) : deleter(deleter) {
-    }
-
-    size_t Insert(size_t index, const T& object) {
-        if (Exists(index)) {
-            Remove(index);
-        }
-        index = FixIndex(index);
-        objects[index] = object;
-        return index;
-    }
-
-    void Remove(size_t index) {
-        if (Exists(index)) {
-            if (deleter) deleter(objects[index]);
-            objects.erase(index);
-        }
-    }
-
-    bool Exists(size_t index) const {
-        return index >= 0 && objects.count(index) > 0;
-    }
-
-    T& Get(size_t index) {
-        static T dummy;
-        if (Exists(index)) {
-            return objects[index];
-        } else {
-            return dummy;
-        }
-    }
-private:
-    std::map<size_t, T> objects;
-    void (* deleter)(T);
-
-    size_t FixIndex(size_t index) const {
-        if (index == -1) {
-            while (true) {
-                if (!Exists(++index)) {
-                    return index;
-                }
-            }
-        } else {
-            return index;
-        }
-    }
-};
+#ifdef __cplusplus
+}
+#endif

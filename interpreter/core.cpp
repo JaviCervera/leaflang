@@ -1,4 +1,5 @@
 #include <cmath>
+#define CORE_IMPL
 #include "core.h"
 #include "../src/swan/console.hh"
 #include "../src/swan/dir.hh"
@@ -8,9 +9,6 @@
 
 using namespace std;
 using namespace swan;
-
-#define DEG2RAD 0.01745329f
-#define RAD2DEG 57.29578f
 
 struct Any {
     int i;
@@ -84,19 +82,19 @@ string Table::ToString() {
     return "{" + content + "}";
 }
 
+extern "C" {
+
 // ------------------------------------
 // App
 // ------------------------------------
 
-#define APPARGS_TABLE 65535
-
 static string pico_appName;
-static Table pico_appArgs;
+static Table* pico_appArgs = DimTable();
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = argv[0];
     for (int i = 1; i < argc; ++i) {
-        pico_appArgs[strmanip::fromint(pico_appArgs.size())] = argv[i];
+        SetIndexString(pico_appArgs, i - 1, argv[i]);
     }
 }
 
@@ -104,13 +102,8 @@ const char* AppName() {
     return pico_appName.c_str();
 }
 
-size_t AppArgs(size_t table) {
-    table = DimTable(table);
-    for (int i = 0; i < pico_appArgs.size(); ++i) {
-        const string index = strmanip::fromint(i);
-        SetTableString(table, index.c_str(), pico_appArgs[index].s.c_str());
-    }
-    return table;
+Table* AppArgs() {
+    return pico_appArgs;
 }
 
 const char* Run(const char* command) {
@@ -137,12 +130,12 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-size_t DirContents(size_t table, const char* path) {
+Table* DirContents(const char* path) {
     const vector<string> contents = dir::contents(path);
-    table = DimTable(table);
+    Table* table = DimTable();
     int i = 0;
     for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        SetTableString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
+        SetIndexString(table, i++, (*it).c_str());
     }
     return table;
 }
@@ -180,15 +173,15 @@ void DeleteFile(const char* filename) {
 // ------------------------------------
 
 float ASin(float x) {
-    return asin(x) * RAD2DEG;
+    return asin(x);
 }
 
 float ATan(float x) {
-    return atan(x) * RAD2DEG;
+    return atan(x);
 }
 
 float ATan2(float x, float y) {
-    return atan2(x, y) * RAD2DEG;
+    return atan2(x, y);
 }
 
 float Abs(float x) {
@@ -204,7 +197,7 @@ float Clamp(float x, float min, float max) {
 }
 
 float Cos(float x) {
-    return cos(x * DEG2RAD);
+    return cos(x);
 }
 
 float Exp(float x) {
@@ -236,7 +229,7 @@ float Sgn(float x) {
 }
 
 float Sin(float x) {
-    return sin(x * DEG2RAD);
+    return sin(x);
 }
 
 float Sqrt(float x) {
@@ -244,7 +237,7 @@ float Sqrt(float x) {
 }
 
 float Tan(float x) {
-    return tan(x * DEG2RAD);
+    return tan(x);
 }
 
 int Int(float num) {
@@ -255,112 +248,114 @@ int Int(float num) {
 // Memory
 // ------------------------------------
 
-struct Memblock {
+struct Memory {
     char* ptr;
     size_t size;
 
-    Memblock(size_t size) : size(size) { ptr = (char*)calloc(1, size); }
-
-    ~Memblock() { free(this->ptr); }
-
+    Memory(size_t size) : size(size) { ptr = (char*)calloc(1, size); }
+    ~Memory() { free(this->ptr); }
     void Resize(size_t size) { ptr = (char*)realloc(ptr, size); this->size = size; }
 };
 
-static void DeleteMem(Memblock* mem) {
+Memory* Dim(int size) {
+    return new Memory(size);
+}
+
+void Undim(Memory* mem) {
     delete mem;
 }
 
-static Pool<Memblock*> _memPool(DeleteMem);
-
-size_t Dim(size_t index, int size) {
-    return _memPool.Insert(index, new Memblock(size));
+void Redim(Memory* mem, int size) {
+    mem->Resize(size);
 }
 
-void Undim(size_t index) {
-    _memPool.Remove(index);
-}
-
-void Redim(size_t index, int size) {
-    _memPool.Get(index)->Resize(size);
-}
-
-size_t LoadDim(size_t index, const char* filename) {
+Memory* LoadDim(const char* filename) {
     FILE* f = fopen(filename, "rb");
-    if (!f) return -1;
+    if (!f) return NULL;
     fseek(f, 0, SEEK_END);
     size_t size = (size_t)ftell(f);
     fseek(f, 0, SEEK_SET);
-    index = Dim(index, size);
-    fread(_memPool.Get(index)->ptr, size, 1, f);
+    Memory* mem = Dim(size);
+    fread(mem->ptr, size, 1, f);
     fclose(f);
-    return index;
+    return mem;
 }
 
-void SaveDim(size_t index, const char* filename) {
+void SaveDim(Memory* mem, const char* filename) {
     FILE* f = fopen(filename, "wb");
     if (!f) return;
-    fwrite(_memPool.Get(index)->ptr, DimSize(index), 1, f);
+    fwrite(mem->ptr, DimSize(mem), 1, f);
     fclose(f);
 }
 
-int DimSize(size_t index) {
-    return (int)_memPool.Get(index)->size;
+int DimSize(Memory* mem) {
+    return (int)mem->size;
 }
 
-int PeekByte(size_t index, int offset) {
+int PeekByte(Memory* mem, int offset) {
     unsigned char v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return (int)v;
 }
 
-int PeekShort(size_t index, int offset) {
+int PeekShort(Memory* mem, int offset) {
     unsigned short v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return (int)v;
 }
 
-int PeekInt(size_t index, int offset) {
+int PeekInt(Memory* mem, int offset) {
     int v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-float PeekFloat(size_t index, int offset) {
+float PeekFloat(Memory* mem, int offset) {
     float v;
-    memcpy(&v, &_memPool.Get(index)->ptr[offset], sizeof(v));
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-const char* PeekString(size_t index, int offset) {
+const char* PeekString(Memory* mem, int offset) {
     static string result;
     int c;
-    while (offset < DimSize(index) && (c = PeekByte(index, offset)) != 0) {
+    while (offset < DimSize(mem) && (c = PeekByte(mem, offset)) != 0) {
         result += (char)c;
         ++offset;
     }
     return result.c_str();
 }
 
-void PokeByte(size_t index, int offset, int val) {
+void* PeekRef(Memory* mem, int offset) {
+    void* v;
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
+    return v;
+}
+
+void PokeByte(Memory* mem, int offset, int val) {
     unsigned char* b = (unsigned char*)&val;
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &b[3], sizeof(unsigned char));
+    memcpy(&(mem->ptr[offset]), &b[3], sizeof(unsigned char));
 }
 
-void PokeShort(size_t index, int offset, int val) {
+void PokeShort(Memory* mem, int offset, int val) {
     unsigned short* s = (unsigned short*)&val;
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &s[1], sizeof(unsigned short));
+    memcpy(&(mem->ptr[offset]), &s[1], sizeof(unsigned short));
 }
 
-void PokeInt(size_t index, int offset, int val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &val, sizeof(val));
+void PokeInt(Memory* mem, int offset, int val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeFloat(size_t index, int offset, float val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), &val, sizeof(val));
+void PokeFloat(Memory* mem, int offset, float val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeString(size_t index, int offset, const char* val) {
-    memcpy(&(_memPool.Get(index)->ptr[offset]), val, strlen(val) + 1);
+void PokeString(Memory* mem, int offset, const char* val) {
+    memcpy(&(mem->ptr[offset]), val, strlen(val) + 1);
+}
+
+void PokeRef(Memory* mem, int offset, void* val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
 // ------------------------------------
@@ -417,24 +412,24 @@ const char* Trim(const char* str) {
     return result.c_str();
 }
 
-const char* Join(size_t table, const char* separator) {
+const char* Join(Table* table, const char* separator) {
     static string result;
     result = "";
     const int size = Size(table);
     for (int i = 0; i < size; ++i) {
         if (i > 0) result += separator;
-        result += TableString(table, strmanip::fromint(i).c_str());
+        result += IndexString(table, i);
     }
     return result.c_str();
 }
 
-size_t Split(size_t table, const char* str, const char* separator) {
+Table* Split(const char* str, const char* separator) {
     const char delim = (Len(separator) > 0) ? separator[0] : ' ';
     const vector<string> split = strmanip::split(str, delim);
-    table = DimTable(table);
+    Table* table = DimTable();
     int i = 0;
     for (vector<string>::const_iterator it = split.begin(); it != split.end(); ++it) {
-        SetTableString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
+        SetIndexString(table, i++, (*it).c_str());
     }
     return table;
 }
@@ -507,96 +502,110 @@ void SaveString(const char* filename, const char* str, int append) {
 // Table
 // ------------------------------------
 
-static void DeleteTable(Table* table) {
+Table* DimTable() {
+    return new Table();
+}
+
+void UndimTable(Table* table) {
     delete table;
 }
 
-static Pool<Table*> _tablePool(DeleteTable);
-
-size_t DimTable(size_t index) {
-    return _tablePool.Insert(index, new Table());
+void SetTableInt(Table* table, const char* key, int value) {
+    (*table)[key] = value;
 }
 
-void UndimTable(size_t table) {
-    _tablePool.Remove(table);
+void SetTableFloat(Table* table, const char* key, float value) {
+    (*table)[key] = value;
 }
 
-void SetTableInt(size_t table, const char* key, int value) {
-    (*_tablePool.Get(table))[key] = value;
+void SetTableString(Table* table, const char* key, const char* value) {
+    (*table)[key] = value;
 }
 
-void SetTableFloat(size_t table, const char* key, float value) {
-    (*_tablePool.Get(table))[key] = value;
+void SetTableRef(Table* table, const char* key, void* value) {
+    (*table)[key] = value;
 }
 
-void SetTableString(size_t table, const char* key, const char* value) {
-    (*_tablePool.Get(table))[key] = value;
-}
-
-int TableInt(const size_t table, const char* key) {
+int TableInt(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].i
+        ? (*(Table*)table)[key].i
         : 0;
 }
 
-float TableFloat(const size_t table, const char* key) {
+float TableFloat(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].f
+        ? (*(Table*)table)[key].f
         : 0.0f;
 }
 
-const char* TableString(const size_t table, const char* key) {
+const char* TableString(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*_tablePool.Get(table))[key].s.c_str()
+        ? (*(Table*)table)[key].s.c_str()
         : "";
 }
 
-void SetIndexInt(size_t table, size_t index, int value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void* TableRef(const Table* table, const char* key) {
+    return (Contains(table, key))
+        ? (*(Table*)table)[key].r
+        : NULL;
 }
 
-void SetIndexFloat(size_t table, size_t index, float value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void SetIndexInt(Table* table, size_t index, int value) {
+    (*table)[Str(index)] = value;
 }
 
-void SetIndexString(size_t table, size_t index, const char* value) {
-    (*_tablePool.Get(table))[Str(index)] = value;
+void SetIndexFloat(Table* table, size_t index, float value) {
+    (*table)[Str(index)] = value;
 }
 
-int IndexInt(const size_t table, size_t index) {
+void SetIndexString(Table* table, size_t index, const char* value) {
+    (*table)[Str(index)] = value;
+}
+
+void SetIndexRef(Table* table, size_t index, void* value) {
+    (*table)[Str(index)] = value;
+}
+
+int IndexInt(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].i
+        ? (*(Table*)table)[Str(index)].i
         : 0;
 }
 
-float IndexFloat(const size_t table, size_t index) {
+float IndexFloat(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].f
+        ? (*(Table*)table)[Str(index)].f
         : 0.0f;
 }
 
-const char* IndexString(const size_t table, size_t index) {
+const char* IndexString(const Table* table, size_t index) {
     return (Contains(table, Str(index)))
-        ? (*_tablePool.Get(table))[Str(index)].s.c_str()
+        ? (*(Table*)table)[Str(index)].s.c_str()
         : "";
 }
 
-int Contains(const size_t table, const char* key) {
-    return _tablePool.Get(table)->count(key) > 0;
+void* IndexRef(const Table* table, size_t index) {
+    return (Contains(table, Str(index)))
+        ? (*(Table*)table)[Str(index)].r
+        : NULL;
 }
 
-void Remove(size_t table, const char* key) {
+int Contains(const Table* table, const char* key) {
+    return table->count(key) > 0;
+}
+
+void Remove(Table* table, const char* key) {
     if (Contains(table, key)) {
-        _tablePool.Get(table)->erase(key);
+        table->erase(key);
     }
 }
 
-int Size(const size_t table) {
-    return _tablePool.Get(table)->size();
+int Size(const Table* table) {
+    return table->size();
 }
 
-void Clear(size_t table) {
-    return _tablePool.Get(table)->clear();
+void Clear(Table* table) {
+    return table->clear();
 }
 
 // ------------------------------------
@@ -630,4 +639,6 @@ const char* CallString(const char* name) {
 
 int Callable(const char* name) {
     return 0;
+}
+
 }
