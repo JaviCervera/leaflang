@@ -88,15 +88,13 @@ string Table::ToString() {
 // App
 // ------------------------------------
 
-#define APPARGS_TABLE 65535
-
 static string pico_appName;
-static Table pico_appArgs;
+static Table* pico_appArgs = DimTable();
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = argv[0];
     for (int i = 1; i < argc; ++i) {
-        pico_appArgs[strmanip::fromint(pico_appArgs.size())] = argv[i];
+        SetIndexString(pico_appArgs, i - 1, argv[i]);
     }
 }
 
@@ -104,13 +102,8 @@ const char* AppName() {
     return pico_appName.c_str();
 }
 
-size_t AppArgs(size_t table) {
-    table = DimTable(table);
-    for (int i = 0; i < pico_appArgs.size(); ++i) {
-        const string index = strmanip::fromint(i);
-        SetTableString(table, index.c_str(), pico_appArgs[index].s.c_str());
-    }
-    return table;
+Table* AppArgs() {
+    return pico_appArgs;
 }
 
 const char* Run(const char* command) {

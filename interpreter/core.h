@@ -18,7 +18,7 @@ struct Table;
 // ------------------------------------
 
 const char* AppName();
-size_t AppArgs(size_t table);
+Table* AppArgs();
 const char* Run(const char* command);
 
 // ------------------------------------
