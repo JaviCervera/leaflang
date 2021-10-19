@@ -32,7 +32,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-size_t DirContents(size_t table, const char* path);
+Table* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);

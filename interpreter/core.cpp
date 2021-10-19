@@ -130,12 +130,12 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-size_t DirContents(size_t table, const char* path) {
+Table* DirContents(const char* path) {
     const vector<string> contents = dir::contents(path);
-    table = DimTable(table);
+    Table* table = DimTable();
     int i = 0;
     for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        SetTableString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
+        SetIndexString(table, strmanip::fromint(i++).c_str(), (*it).c_str());
     }
     return table;
 }
