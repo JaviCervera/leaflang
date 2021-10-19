@@ -88,11 +88,13 @@ int PeekShort(Memory* mem, int offset);
 int PeekInt(Memory* mem, int offset);
 float PeekFloat(Memory* mem, int offset);
 const char* PeekString(Memory* mem, int offset);
+void* PeekRef(Memory* mem, int offset);
 void PokeByte(Memory* mem, int offset, int val);
 void PokeShort(Memory* mem, int offset, int val);
 void PokeInt(Memory* mem, int offset, int val);
 void PokeFloat(Memory* mem, int offset, float val);
 void PokeString(Memory* mem, int offset, const char* val);
+void PokeRef(Memory* mem, int offset, void* val);
 
 // ------------------------------------
 // String

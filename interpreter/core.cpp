@@ -324,6 +324,12 @@ const char* PeekString(Memory* mem, int offset) {
     return result.c_str();
 }
 
+void* PeekRef(Memory* mem, int offset) {
+    void* v;
+    memcpy(&v, &mem->ptr[offset], sizeof(v));
+    return v;
+}
+
 void PokeByte(Memory* mem, int offset, int val) {
     unsigned char* b = (unsigned char*)&val;
     memcpy(&(mem->ptr[offset]), &b[3], sizeof(unsigned char));
@@ -344,6 +350,10 @@ void PokeFloat(Memory* mem, int offset, float val) {
 
 void PokeString(Memory* mem, int offset, const char* val) {
     memcpy(&(mem->ptr[offset]), val, strlen(val) + 1);
+}
+
+void PokeRef(Memory* mem, int offset, void* val) {
+    memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
 // ------------------------------------
