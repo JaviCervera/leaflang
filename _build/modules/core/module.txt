@@ -1,21 +1,5 @@
-'App
-FUNCTION AppName$()
-FUNCTION AppArgs@()
-FUNCTION Run$(command$)
-
 'Console
-FUNCTION Input$(prompt$)
 FUNCTION Print(msg$)
-
-'Dir
-FUNCTION DirContents@(path$)
-FUNCTION CurrentDir$()
-FUNCTION ChangeDir(dir$)
-FUNCTION FullPath$(filename$)
-
-'File
-FUNCTION FileType%(filename$)
-FUNCTION DeleteFile(filename$)
 
 'Math
 FUNCTION ASin#(x#)
@@ -36,24 +20,6 @@ FUNCTION Sin#(x#)
 FUNCTION Sqrt#(x#)
 FUNCTION Tan#(x#)
 FUNCTION Int%(x#)
-
-'Memory
-FUNCTION Dim@(size)
-FUNCTION Undim(memblock@)
-FUNCTION Redim(memblock@, size)
-FUNCTION LoadDim@(filename$)
-FUNCTION SaveDim(memblock@, filename$)
-FUNCTION DimSize%(memblock@)
-FUNCTION PeekByte%(memblock@, offset)
-FUNCTION PeekShort%(memblock@, offset)
-FUNCTION PeekInt%(memblock@, offset)
-FUNCTION PeekFloat#(memblock@, offset)
-FUNCTION PeekString$(memblock@, offset)
-FUNCTION PokeByte(memblock@, offset, v)
-FUNCTION PokeShort(memblock@, offset, v)
-FUNCTION PokeInt(memblock@, offset, v)
-FUNCTION PokeFloat(memblock@, offset, v#)
-FUNCTION PokeString(memblock@, offset, v$)
 
 'String
 FUNCTION Len%(str_$)
