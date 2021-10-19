@@ -533,6 +533,10 @@ void SetTableString(size_t table, const char* key, const char* value) {
     (*_tablePool.Get(table))[key] = value;
 }
 
+void SetTableRef(size_t table, const char* key, void* value) {
+
+}
+
 int TableInt(const size_t table, const char* key) {
     return (Contains(table, key))
         ? (*_tablePool.Get(table))[key].i
@@ -551,6 +555,10 @@ const char* TableString(const size_t table, const char* key) {
         : "";
 }
 
+void* TableRef(const size_t table, const char* key) {
+
+}
+
 void SetIndexInt(size_t table, size_t index, int value) {
     (*_tablePool.Get(table))[Str(index)] = value;
 }
@@ -561,6 +569,10 @@ void SetIndexFloat(size_t table, size_t index, float value) {
 
 void SetIndexString(size_t table, size_t index, const char* value) {
     (*_tablePool.Get(table))[Str(index)] = value;
+}
+
+void SetIndexRef(size_t table, size_t index, void* value) {
+
 }
 
 int IndexInt(const size_t table, size_t index) {
@@ -579,6 +591,10 @@ const char* IndexString(const size_t table, size_t index) {
     return (Contains(table, Str(index)))
         ? (*_tablePool.Get(table))[Str(index)].s.c_str()
         : "";
+}
+
+void* IndexRef(const size_t table, size_t index) {
+
 }
 
 int Contains(const size_t table, const char* key) {
