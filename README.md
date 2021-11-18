@@ -45,23 +45,33 @@ A reference points to data that is defined by an external library, or to compund
 
 ### Variables
 
-Data can be stored in variables. Pico is a statically typed language, meaning that a type must be
-specified for each variable that you use. For specifying the types, Pico uses suffixes, an approach
-taken from BASIC. The suffixes are:
+Data can be stored in variables. Variables are not declared, but they need to be assigned before
+they can be accessed (failing to do so will cause a compilation error). On this first assignment
+(which is called initialization), the type of the variable will be inferred from the type of the
+expression assigned to it. For example:
+
+```
+integer = 50
+real = 21.4
+text = "Hello"
+```
+
+When assigning a value to a variable, the type of the value must be compatible with the type of the
+variable (for example, a string value cannot be assigned to an integer variable). To assign an
+incompatible type, expression must be cast. A cast is performed by adding a suffix to the end of an
+expression, an approach taken from BASIC. The suffixes are:
 
 * `%`: Integer.
 * `#`: Real.
 * `$`: String.
-* `@`: Reference.
 
-Variables are not declared, but they need to be assigned before they can be accessed (failing to do
-so will cause a compilation error). On this first assignment (which is called initialization), the
-type must be specified suffixed to the name of the variable. If the typer is omitted, it will be
-assumed that it is an integer. On further appearances, type suffix can be omitted, or it must match
-that of initialization.
+For example:
 
-The type specified must be compatible with the value assigned (for example, a string value cannot
-be assigned to an integer variable).
+```
+integer = "128"%
+real = "36.12"#
+string = 5$
+```
 
 Variables initialized within functions will be local the function (so two variables with the same
 name on different functions are actually two different variables, so their type can of course be
@@ -72,23 +82,23 @@ point they are initialized*. For example, in the following snippet:
 
 ```
 function Foo()
-    var$ = "Foo"
+    var = "Foo"
 end
 
-var$ = "A global var"
+var = "A global var"
 
 function Bar()
-    var$ = "Bar"
+    var = "Bar"
 end
 
-Print(var) 'Prints "A global var"
+Print(var) // Prints "A global var"
 Foo()
-Print(var) 'Prints "A global var"
+Print(var) // Prints "A global var"
 Bar()
-Print(var) 'Prints "Bar"
+Print(var) // Prints "Bar"
 ```
 
-This means that when the `Foo` function is defined, `var$` has not yet been declared as a global,
+This means that when the `Foo` function is defined, `var` has not yet been declared as a global,
 so the function modifies a local variable instead. On the other hand, when `Bar` is called, `var`
 has already been defined as a global, so the function modifies that global.
 
