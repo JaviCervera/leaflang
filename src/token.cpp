@@ -298,11 +298,13 @@ int TokenType(const string& str) {
         types[")"] = TOK_CLOSEPAREN;
         types["end"] = TOK_END;
         types["if"] = TOK_IF;
+        types["then"] = TOK_THEN;
         types["elseif"] = TOK_ELSEIF;
         types["else"] = TOK_ELSE;
         types["for"] = TOK_FOR;
         types["to"] = TOK_TO;
         types["step"] = TOK_STEP;
+        types["do"] = TOK_DO;
         types["while"] = TOK_WHILE;
         types["return"] = TOK_RETURN;
         types["function"] = TOK_FUNCTION;

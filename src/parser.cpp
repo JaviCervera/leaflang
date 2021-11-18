@@ -210,6 +210,7 @@ std::string Parser::ParseControlStatement(int indent) {
 string Parser::ParseIf(int indent) {
     stream.Skip(1); // if
     const Expression exp = ParseExp();
+    CheckThen();
     const string block = ParseBlock(indent + 1);
     string elseifs;
     while (stream.Peek().type == TOK_ELSEIF) {
@@ -223,9 +224,17 @@ string Parser::ParseIf(int indent) {
     return generator.GenIndent(indent) + generator.GenIf(exp.code, block, elseifs, else_, end);
 }
 
+void Parser::CheckThen() {
+    const Token& token = stream.Next();
+    if (token.type != TOK_THEN) {
+        ErrorEx("Expected 'then', got '" + token.data + "'", token.file, token.line);
+    }
+}
+
 string Parser::ParseElseIf(int indent) {
     stream.Skip(1); //elseif
     const Expression exp = ParseExp();
+    CheckThen();
     const string block = ParseBlock(indent + 1);
     return generator.GenIndent(indent) + generator.GenElseIf(exp.code, block);
 }
@@ -253,6 +262,7 @@ string Parser::ParseFor(int indent) {
     CheckTypes(var.type, to.type, varToken);
     const Expression step = ParseStep();
     CheckTypes(var.type, step.type, varToken);
+    CheckDo();
     const string block = ParseBlock(indent + 1);
     const string end = ParseEnd(indent);
     return generator.GenIndent(indent) + generator.GenFor(var, assignment, to.code, step.code, block, end);
@@ -275,9 +285,17 @@ Expression Parser::ParseStep() {
     }
 }
 
+void Parser::CheckDo() {
+    const Token& token = stream.Next();
+    if (token.type != TOK_DO) {
+        ErrorEx("Expected 'do', got '" + token.data + "'", token.file, token.line);
+    }
+}
+
 string Parser::ParseWhile(int indent) {
     stream.Skip(1); // while
     const Expression exp = ParseExp();
+    CheckDo();
     const string block = ParseBlock(indent + 1);
     const string end = ParseEnd(indent);
     return generator.GenIndent(indent) + generator.GenWhile(exp.code, block, end);
