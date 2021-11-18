@@ -57,6 +57,7 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
+    Expression ParseCastExp();
     Expression ParseUnaryExp();
     Expression ParseGroupExp();
     Expression ParseAtomicExp();

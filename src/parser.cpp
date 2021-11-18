@@ -413,7 +413,7 @@ Expression Parser::ParseAddExp() {
 }
 
 Expression Parser::ParseMulExp() {
-    Expression exp = ParseUnaryExp();
+    Expression exp = ParseCastExp();
     while (stream.Peek().type == TOK_MUL || stream.Peek().type == TOK_DIV
             || stream.Peek().type == TOK_MOD) {
         const Token& token = stream.Next();
@@ -421,12 +421,29 @@ Expression Parser::ParseMulExp() {
             ErrorEx("Multiplication and division can only be applied to numeric types",
                 token.file, token.line);
         }
-        const Expression exp2 = ParseUnaryExp();
+        const Expression exp2 = ParseCastExp();
         CheckTypes(exp.type, exp2.type, token);
         const int expType = BalanceTypes(exp.type, exp2.type);
         exp = Expression(expType, generator.GenBinaryExp(expType, token, exp.code, exp2.code));
     }
     return exp;
+}
+
+Expression Parser::ParseCastExp() {
+    const Expression exp = ParseUnaryExp();
+    if (IsType(stream.Peek().type)) {
+        const Token& typeToken = stream.Next();
+        const int tokenType = GetType(typeToken.type);
+        if (exp.type < TYPE_STRING || exp.type > 0) {
+            ErrorEx("Can only cast numeric and string types", typeToken.file, typeToken.line);
+        }
+        if (tokenType < TYPE_STRING || tokenType > 0) {
+            ErrorEx("Can only cast to numeric and string types", typeToken.file, typeToken.line);
+        }
+        return Expression(tokenType, generator.GenCastExp(tokenType, exp.type, exp.code));
+    } else {
+        return exp;
+    }
 }
 
 Expression Parser::ParseUnaryExp() {

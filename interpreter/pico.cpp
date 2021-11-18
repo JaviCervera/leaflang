@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
 void Run(const string& code) {
     lua_State* L = luaL_newstate();
     luaL_requiref(L, "_G", luaopen_base, true); lua_pop(L, 1);
+    luaL_requiref(L, "math", luaopen_math, true); lua_pop(L, 1);
     luaL_requiref(L, "table", luaopen_table, true); lua_pop(L, 1);
     LoadLuaFunctions(L);
     if (luaL_dostring(L, code.c_str())) {
