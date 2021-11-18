@@ -16,14 +16,14 @@ Print(Replace("- Previous expressions should have been: '', '', '', 'b', '', 'a'
 Print("- Should print 1: " + true$)
 Print("- Should print 0: " + false$)
 
-if "A"
+if "A" then
     Print("Ok")
 else
     Print("Should not print this")
 end
 
 counter = 3
-while counter
+while counter do
     Print(counter$)
     counter = counter - 1
 end

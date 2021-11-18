@@ -40,12 +40,14 @@ private:
     void ParseStatementEnd();
     std::string ParseControlStatement(int indent);
     std::string ParseIf(int indent);
+    void CheckThen();
     std::string ParseElseIf(int indent);
     std::string ParseElse(int indent);
     std::string ParseEnd(int indent);
     std::string ParseFor(int indent);
     Expression ParseTo();
     Expression ParseStep();
+    void CheckDo();
     std::string ParseWhile(int indent);
     std::string ParseReturn(int indent);
     std::string ParseVarDef();

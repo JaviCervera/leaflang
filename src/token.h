@@ -39,18 +39,20 @@
 
 // Control statements
 #define TOK_IF 40
-#define TOK_ELSEIF 41
-#define TOK_ELSE 42
-#define TOK_FOR 43
-#define TOK_TO 44
-#define TOK_STEP 45
-#define TOK_WHILE 46
-#define TOK_RETURN 47
-#define TOK_FUNCTION 48
-#define TOK_END 49
+#define TOK_THEN 41
+#define TOK_ELSEIF 42
+#define TOK_ELSE 43
+#define TOK_FOR 44
+#define TOK_TO 45
+#define TOK_STEP 46
+#define TOK_DO 47
+#define TOK_WHILE 48
+#define TOK_RETURN 49
+#define TOK_FUNCTION 50
+#define TOK_END 51
 
 // Identifiers
-#define TOK_ID 50
+#define TOK_ID 55
 
 // Type tags
 #define TOK_INT 60
