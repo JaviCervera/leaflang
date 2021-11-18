@@ -162,7 +162,7 @@ string StartLibrary(const string& funcName) {
 }
 
 string GenFunction(const Function* func) {
-    string result = "        \"FUNCTION ";
+    string result = "        \"function ";
     result += func->name;
     result += GenTypeSuffix(func->type, false) + "(";
     for (size_t i = 0; i < func->params.size(); ++i) {

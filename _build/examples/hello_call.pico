@@ -1,11 +1,11 @@
-FUNCTION Printer(msg$)
+function Printer(msg$)
     Print(msg)
-END
+end
 
-IF Callable("Printer")
+if Callable("Printer")
     Print("Printer is callable")
     AddStringArg("Hello, call!")
     Call("Printer")
-ELSE
+else
     Print("Printer is not callable")
-END
+end

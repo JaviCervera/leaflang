@@ -1,23 +1,23 @@
 DQ = Chr(34)
 
-FUNCTION BoolStr$(v)
-    IF v
-        RETURN "TRUE"
-    ELSE
-        RETURN "FALSE"
-    END
-END
+function BoolStr$(v)
+    if v
+        return "true"
+    else
+        return "false"
+    end
+end
 
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" OR "B" <> ""))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("" <> "" OR "B" <> ""))
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" AND "B" <> ""))
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" AND "" <> ""))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR 0) IS " + BoolStr("" <> "" OR 0))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR 1) IS " + BoolStr("" <> "" OR 1))
-Print("(50 AND 1) IS " + BoolStr(50 AND 1))
-Print("(0 AND 1) IS " + BoolStr(0 AND 1))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " or " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" or "B" <> ""))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " or " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("" <> "" or "B" <> ""))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " and " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" and "B" <> ""))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " and " + DQ + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" and "" <> ""))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " or 0) is " + BoolStr("" <> "" or 0))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " or 1) is " + BoolStr("" <> "" or 1))
+Print("(50 and 1) is " + BoolStr(50 and 1))
+Print("(0 and 1) is " + BoolStr(0 and 1))
 
 Print("")
-Print("Previous expressions should have been: TRUE TRUE TRUE FALSE FALSE TRUE TRUE FALSE")
-Print("Should print 1: " + Str(TRUE))
-Print("Should print 0: " + Str(FALSE))
+Print("Previous expressions should have been: true true true false false true true false")
+Print("Should print 1: " + true$)
+Print("Should print 0: " + false$)
