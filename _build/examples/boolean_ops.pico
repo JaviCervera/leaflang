@@ -19,3 +19,5 @@ Print ("(0 AND 1) IS " + BoolStr (0 AND 1))
 
 Print("")
 Print("Previous expressions should have been: TRUE TRUE TRUE FALSE FALSE TRUE TRUE FALSE")
+Print("Should print 1: " + Str(TRUE))
+Print("Should print 0: " + Str(FALSE))

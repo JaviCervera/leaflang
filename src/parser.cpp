@@ -476,6 +476,9 @@ Expression Parser::ParseAtomicExp() {
         return Expression(TYPE_STRING, generator.GenLiteral(token));
     case TOK_NULLLITERAL:
         return Expression(TYPE_REF, generator.GenLiteral(token));
+    case TOK_TRUELITERAL:
+    case TOK_FALSELITERAL:
+        return Expression(TYPE_INT, generator.GenLiteral(token));
     case TOK_ID:
         return (stream.Peek().type == TOK_OPENPAREN || (IsType(stream.Peek().type) && stream.Peek(1).type == TOK_OPENPAREN))
             ? ParseFunctionCall(token)

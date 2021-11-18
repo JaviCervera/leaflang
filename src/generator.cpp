@@ -133,6 +133,10 @@ string Generator::GenLiteral(const Token& token) const {
         return "\"" + token.data + "\"";
     case TOK_NULLLITERAL:
         return "nil";
+    case TOK_TRUELITERAL:
+        return "1";
+    case TOK_FALSELITERAL:
+        return "0";
     default:
         return "<unknown>";
     }
