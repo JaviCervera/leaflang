@@ -1,1 +1,7 @@
+// Example with two statements in one line
+
+/*
+    Multiple line comments are also supported
+*/
+
 Print("One statement"); Print("Another statement")

@@ -34,6 +34,7 @@ struct Lexer {
 Token NextToken(Lexer& lexer);
 Token SkipBlank(Lexer& lexer);
 bool IsSlComment(const Lexer& lexer);
+bool IsMlComment(const Lexer& lexer);
 bool IsNumber(char c);
 bool IsAlpha(char c);
 string CheckSymbol(const Lexer& lexer);
@@ -200,9 +201,21 @@ Token NextToken(Lexer& lexer) {
 }
 
 Token SkipBlank(Lexer& lexer) {
-    while (lexer.Char() == ' ' || lexer.Char() == '\t' || lexer.Char() == '\n' || IsSlComment(lexer)) {
+    while (lexer.Char() == ' ' || lexer.Char() == '\t'
+            || lexer.Char() == '\n' || IsSlComment(lexer) || IsMlComment(lexer)) {
         if (IsSlComment(lexer)) {
             while (lexer.Valid() && lexer.Char() != '\n') lexer.offset++;
+        }
+        if (IsMlComment(lexer)) {
+            lexer.offset += 2;
+            while (lexer.Valid() && (lexer.Char() != '*' || lexer.Char(1) != '/')) {
+                if (lexer.Char() == '\n') lexer.line++;
+                lexer.offset++;
+            }
+            if (lexer.Char(1) != '/') {
+                ErrorEx("Comment must be closed", lexer.file, lexer.line);
+            }
+            lexer.offset++;
         }
         const bool isEol = lexer.Char() == '\n';
         if (isEol) lexer.line++;
@@ -213,7 +226,11 @@ Token SkipBlank(Lexer& lexer) {
 }
 
 bool IsSlComment(const Lexer& lexer) {
-    return lexer.Char() == '\'';
+    return lexer.Char() == '/' && lexer.Char(1) == '/';
+}
+
+bool IsMlComment(const Lexer& lexer) {
+    return lexer.Char() == '/' && lexer.Char(1) == '*';
 }
 
 bool IsNumber(char c) {
