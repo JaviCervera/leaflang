@@ -1,23 +1,29 @@
-DQ = Chr(34)
+Print("- " + ("" and ""))
+Print("- " + ("a" and ""))
+Print("- " + ("" and "b"))
+Print("- " + ("a" and "b"))
 
-function BoolStr$(v)
-    if v
-        return "true"
-    else
-        return "false"
-    end
+Print("- " + ("" or ""))
+Print("- " + ("a" or ""))
+Print("- " + ("" or "b"))
+Print("- " + ("a" or "b"))
+
+Print("- (1 and 50) is " + (1 and 50)$)
+Print("- (0 or 1) is " + (0 or 1)$)
+
+Print(Replace("- Previous expressions should have been: '', '', '', 'b', '', 'a', 'b', 'a', 50, 1", "'", Chr(34)))
+
+Print("- Should print 1: " + true$)
+Print("- Should print 0: " + false$)
+
+if "A"
+    Print("Ok")
+else
+    Print("Should not print this")
 end
 
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " or " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" or "B" <> ""))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " or " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("" <> "" or "B" <> ""))
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " and " + DQ + "B" + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" and "B" <> ""))
-Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " and " + DQ + DQ + " <> " + DQ + DQ + ") is " + BoolStr("A" <> "" and "" <> ""))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " or 0) is " + BoolStr("" <> "" or 0))
-Print("(" + DQ + DQ + " <> " + DQ + DQ + " or 1) is " + BoolStr("" <> "" or 1))
-Print("(50 and 1) is " + BoolStr(50 and 1))
-Print("(0 and 1) is " + BoolStr(0 and 1))
-
-Print("")
-Print("Previous expressions should have been: true true true false false true true false")
-Print("Should print 1: " + true$)
-Print("Should print 0: " + false$)
+counter = 3
+while counter
+    Print(counter$)
+    counter = counter - 1
+end

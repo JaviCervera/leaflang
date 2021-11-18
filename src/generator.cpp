@@ -5,9 +5,9 @@ using namespace swan;
 
 string Generator::GenProgram(const vector<string>& functions, const vector<string>& program, const Definitions& _) const {
     const string headerStr =
-        "function _bool(a) if a ~= false and a ~= nil and a ~= 0 then return true else return false end end\n"
-        "function _and(a, b) if _bool(a) and _bool(b) then return 1 else return 0 end end\n"
-        "function _or(a, b) if _bool(a) or _bool(b) then return 1 else return 0 end end\n"
+        "function _bool(a) if a ~= false and a ~= nil and a ~= 0 and a ~= \"\" then return true else return false end end\n"
+        "function _and(a, b) if _bool(a) then return b else return a end end\n"
+        "function _or(a, b) if _bool(a) then return a else return b end end\n"
         "function _not(a) if _bool(a) then return 0 else return 1 end end\n"
         "function _int2int(v) return v end\n"
         "function _int2real(v) return v + 0.0 end\n"

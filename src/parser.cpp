@@ -174,13 +174,7 @@ const string& Parser::CheckId(const Token& token) const {
 } 
 
 void Parser::CheckTypes(int expected, int got, const Token& token) {
-    if (!AreCompatible(expected, got, false)) {
-        ErrorEx("Incompatible types", token.file, token.line);
-    }
-}
-
-void Parser::CheckTypesForArg(int expected, int got, const Token& token) {
-    if (!AreCompatible(expected, got, true)) {
+    if (!AreCompatible(expected, got)) {
         ErrorEx("Incompatible types", token.file, token.line);
     }
 }
@@ -338,14 +332,12 @@ Expression Parser::ParseOrExp() {
     Expression exp = ParseAndExp();
     while (stream.Peek().type == TOK_OR) {
         const Token& token = stream.Next();
-        if (exp.type != TYPE_INT) {
-            ErrorEx("Boolean operators can only be applied to integer types", token.file, token.line);
-        }
         const Expression exp2 = ParseAndExp();
-        if (exp2.type != TYPE_INT) {
-            ErrorEx("Boolean operators can only be applied to integer types", token.file, token.line);
+        if (!AreCompatible(exp.type, exp2.type)) {
+            ErrorEx("Boolean operands must be of compatible types", token.file, token.line);
         }
-        exp = Expression(TYPE_INT, generator.GenBinaryExp(TYPE_INT, token, exp.code, exp2.code));      
+        const int balancedTypes = BalanceTypes(exp.type, exp2.type);
+        exp = Expression(balancedTypes, generator.GenBinaryExp(balancedTypes, token, exp.code, exp2.code));      
     }
     return exp;
 }
@@ -354,14 +346,12 @@ Expression Parser::ParseAndExp() {
     Expression exp = ParseEqualExp();
     while (stream.Peek().type == TOK_AND) {
         const Token& token = stream.Next();
-        if (exp.type != TYPE_INT) {
-            ErrorEx("Boolean operators can only be applied to integer types", token.file, token.line);
-        }
         const Expression exp2 = ParseEqualExp();
-        if (exp2.type != TYPE_INT) {
-            ErrorEx("Boolean operators can only be applied to integer types", token.file, token.line);
+        if (!AreCompatible(exp.type, exp2.type)) {
+            ErrorEx("Boolean operands must be of compatible types", token.file, token.line);
         }
-        exp = Expression(TYPE_INT, generator.GenBinaryExp(TYPE_INT, token, exp.code, exp2.code));
+        const int balancedTypes = BalanceTypes(exp.type, exp2.type);
+        exp = Expression(balancedTypes, generator.GenBinaryExp(balancedTypes, token, exp.code, exp2.code));
     }
     return exp;
 }
@@ -530,7 +520,7 @@ Expression Parser::ParseArgs(const Function* func) {
 
 Expression Parser::ParseArg(int paramType, const Token& token) {
     const Expression exp = ParseExp();
-    CheckTypesForArg(exp.type, paramType, token);
+    CheckTypes(exp.type, paramType, token);
     return exp;
 }
 
