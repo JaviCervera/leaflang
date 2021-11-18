@@ -190,8 +190,8 @@ void Parser::ParseStatementEnd() {
     const bool hasEol = stream.SkipEols();
     if (!hasEol) {
         const Token& token = stream.Next();
-        if (token.type != TOK_COLON) {
-            ErrorEx("Expected ':' or new line, got '" + token.data + "'", token.file, token.line);
+        if (token.type != TOK_SEMICOLON) {
+            ErrorEx("Expected ';' or new line, got '" + token.data + "'", token.file, token.line);
         }
     }
 }
@@ -302,7 +302,7 @@ string Parser::ParseReturn(int indent) {
             returnToken.file, returnToken.line);
     }
     Expression exp(TOK_EOF, "");
-    if (stream.Peek().type != TOK_COLON) {
+    if (stream.Peek().type != TOK_SEMICOLON) {
         if (currentFunc->type == TYPE_VOID) {
             ErrorEx("Function cannot return a value", returnToken.file, returnToken.line);
         }
