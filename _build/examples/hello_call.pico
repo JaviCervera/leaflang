@@ -1,5 +1,5 @@
 FUNCTION Printer(msg$)
-    Print(msg$)
+    Print(msg)
 END
 
 IF Callable("Printer")

@@ -77,7 +77,7 @@ vector<Var> Parser::ParseParams() {
     ParseOpenParen();
     while (stream.Peek().type == TOK_ID) {
         const string name = ParseNewId();
-        const int type = ParseVarType();
+        const int type = ParseParamType();
         Var param(name, type);
         definitions.AddLocal(param);
         params.push_back(param);
@@ -91,6 +91,14 @@ void Parser::ParseOpenParen() {
     const Token& token = stream.Next();
     if (token.type != TOK_OPENPAREN) {
         ErrorEx("Expected '(', got '" + token.data + "'", token.file, token.line);
+    }
+}
+
+int Parser::ParseParamType() {
+    if (IsType(stream.Peek().type)) {
+        return GetType(stream.Next().type);
+    } else {
+        return TYPE_INT;
     }
 }
 
@@ -135,31 +143,22 @@ string Parser::ParseStatement(int indent) {
 bool Parser::IsAssignment() const {
     const Token& current = stream.Peek();
     const Token& next = stream.Peek(1);
-    const Token& after = stream.Peek(2);
-    return current.type == TOK_ID && (next.type == TOK_ASSIGN || after.type == TOK_ASSIGN);
+    return current.type == TOK_ID && next.type == TOK_ASSIGN;
 }
 
 string Parser::ParseAssignment() {
-    string assignment;
     const Token& nameToken = stream.Peek();
     const string varName = CheckId(nameToken);
-    if (definitions.FindFunction(varName)) {
+    if (definitions.FindFunction(varName) || FindLibFunction(lib, varName) != -1) {
         ErrorEx("Cannot assign to a function", nameToken.file, nameToken.line);
     }
     const Var* var = definitions.FindVar(varName);
+    string assignment;
     if (var == NULL) {
         assignment = ParseVarDef();
     } else {
-        stream.Skip(1); // name
-        const Token token = stream.Next();
-        if (IsType(token.type)) {
-            if (var->type != GetType(token.type)) {
-                ErrorEx("Can't change type of variable", token.file, token.line);
-            }
-            stream.Skip(1);
-        } else if (token.type != TOK_ASSIGN) {
-            ErrorEx("Expected '=' or variable type", token.file, token.line);
-        }
+        stream.Skip(2); // name =
+        const Token token = stream.Peek();
         const Expression exp = ParseExp();
         CheckTypes(var->type, exp.type, token);
         assignment = generator.GenAssignment(*var, exp.type, exp.code);
@@ -317,28 +316,18 @@ string Parser::ParseReturn(int indent) {
 
 string Parser::ParseVarDef() {
     const string name = ParseNewId();
-    int varType = ParseVarType();
     const Token& assignToken = stream.Next();
     if (assignToken.type != TOK_ASSIGN) {
         ErrorEx("Variables must be initialized", assignToken.file, assignToken.line);
     }
     const Expression exp = ParseExp();
-    CheckTypes(varType, exp.type, assignToken);
-    const VarDef def(Var(name, varType), exp);
+    const VarDef def(Var(name, exp.type), exp);
     if (currentFunc == NULL) {
         definitions.AddGlobal(def.var);
     } else {
         definitions.AddLocal(def.var);
     }
     return generator.GenVarDef(def.var, def.initExp.type, def.initExp.code, currentFunc == NULL);
-}
-
-int Parser::ParseVarType() {
-    if (IsType(stream.Peek().type)) {
-        return GetType(stream.Next().type);
-    } else {
-        return TYPE_INT;
-    }
 }
 
 Expression Parser::ParseExp() {
@@ -480,7 +469,7 @@ Expression Parser::ParseAtomicExp() {
     case TOK_FALSELITERAL:
         return Expression(TYPE_INT, generator.GenLiteral(token));
     case TOK_ID:
-        return (stream.Peek().type == TOK_OPENPAREN || (IsType(stream.Peek().type) && stream.Peek(1).type == TOK_OPENPAREN))
+        return (stream.Peek().type == TOK_OPENPAREN)
             ? ParseFunctionCall(token)
             : ParseVarAccess(token);
     default:
@@ -496,12 +485,6 @@ Expression Parser::ParseFunctionCall(const Token& nameToken) {
         : definitions.FindFunction(nameToken.data);
     if (func == NULL) {
         ErrorEx("Unknown function", nameToken.file, nameToken.line);
-    }
-    if (IsType(stream.Peek().type)) {
-        const Token& typeToken = stream.Next();
-        if (GetType(typeToken.type) != func->type) {
-            ErrorEx("Wrong type for function", typeToken.file, typeToken.line);
-        }
     }
     const Expression args = ParseArgs(func);
     return Expression(func->type, generator.GenFunctionCall(*func, args.code));
@@ -537,12 +520,6 @@ Expression Parser::ParseArg(int paramType, const Token& token) {
 Expression Parser::ParseVarAccess(const Token& nameToken) {
     const Var* var = definitions.FindVar(nameToken.data);
     if (var != NULL) {
-        if (IsType(stream.Peek().type)) {
-            const Token& typeToken = stream.Next();
-            if (GetType(typeToken.type) != var->type) {
-                ErrorEx("Wrong type for var", typeToken.file, typeToken.line);
-            }
-        }
         return Expression(var->type, generator.GenVar(*var));
     } else {
         if (definitions.FindFunction(nameToken.data) != NULL) {
