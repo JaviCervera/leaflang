@@ -1,23 +1,23 @@
-'App
+// App
 FUNCTION AppName$()
 FUNCTION AppArgs@()
 FUNCTION Run$(command$)
 
-'Console
+// Console
 FUNCTION Input$(prompt$)
 FUNCTION Print(msg$)
 
-'Dir
+// Dir
 FUNCTION DirContents@(path$)
 FUNCTION CurrentDir$()
 FUNCTION ChangeDir(dir$)
 FUNCTION FullPath$(filename$)
 
-'File
+// File
 FUNCTION FileType%(filename$)
 FUNCTION DeleteFile(filename$)
 
-'Math
+// Math
 FUNCTION ASin#(x#)
 FUNCTION ATan#(x#)
 FUNCTION ATan2#(x#, y#)
@@ -37,7 +37,7 @@ FUNCTION Sqrt#(x#)
 FUNCTION Tan#(x#)
 FUNCTION Int%(x#)
 
-'Memory
+// Memory
 FUNCTION Dim@(size)
 FUNCTION Undim(mem@)
 FUNCTION Redim(mem@, size)
@@ -57,7 +57,7 @@ FUNCTION PokeFloat(mem@, offset, v#)
 FUNCTION PokeString(mem@, offset, v$)
 FUNCTION PokeRef(mem@, offset, v@)
 
-'String
+// String
 FUNCTION Len%(str_$)
 FUNCTION Left$(str_$, count)
 FUNCTION Right$(str_$, count)
@@ -82,7 +82,7 @@ FUNCTION ValF#(str_$)
 FUNCTION LoadString$(filename$)
 FUNCTION SaveString(filename$, str_$, append)
 
-'Table
+// Table
 FUNCTION DimTable@()
 FUNCTION UndimTable(table@)
 FUNCTION SetTableInt(table@, key$, v)
@@ -106,7 +106,7 @@ FUNCTION Remove(table@, key$)
 FUNCTION Size%(table@)
 FUNCTION Clear(table@)
         
-'Functions
+// Functions
 FUNCTION AddIntArg(arg)
 FUNCTION AddFloatArg(arg#)
 FUNCTION AddStringArg(arg$)
