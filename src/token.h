@@ -99,5 +99,5 @@ bool IsUnaryOp(int type);
 bool IsType(int type);
 int GetType(int type);
 bool IsStatementEnd(int type);
-bool AreCompatible(int type1, int type2, bool acceptAny);
+bool AreCompatible(int type1, int type2);
 int BalanceTypes(int type1, int type2);

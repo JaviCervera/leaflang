@@ -105,7 +105,7 @@ bool IsStatementEnd(int type) {
     return type == TOK_EOL || type == TOK_SEMICOLON;
 }
 
-bool AreCompatible(int type1, int type2, bool acceptAny) {
+bool AreCompatible(int type1, int type2) {
     if (type1 == type2 && type2 != TYPE_VOID) {
         return true;
     } else if (type1 == TYPE_INT && type2 == TYPE_REAL) {

@@ -37,7 +37,6 @@ private:
     std::string ParseAssignment();
     const std::string& CheckId(const Token& token) const;
     void CheckTypes(int expected, int got, const Token& token);
-    void CheckTypesForArg(int expected, int got, const Token& token);
     void ParseStatementEnd();
     std::string ParseControlStatement(int indent);
     std::string ParseIf(int indent);
