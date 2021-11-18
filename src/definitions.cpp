@@ -20,9 +20,8 @@ void Definitions::ClearLocals() {
 }
 
 const Function* Definitions::FindFunction(const string& name) const {
-    const string fixedName = strmanip::lower(name);
     for (size_t i = 0; i < functions.size(); ++i) {
-        if (strmanip::lower(functions[i].name) == fixedName) {
+        if (functions[i].name == name) {
             return &functions[i];
         }
     }
@@ -42,16 +41,14 @@ const Function* Definitions::GetFunction(size_t index) const {
 }
 
 const Var* Definitions::FindVar(const string& name) const {
-    const string fixedName = strmanip::lower(name);
-    const Var* local = FindLocal(fixedName);
+    const Var* local = FindLocal(name);
     return (local != NULL)
         ? local
-        : FindGlobal(fixedName);
+        : FindGlobal(name);
 }
 
 const bool Definitions::IsGlobal(const string& name) const {
-    const string fixedName = strmanip::lower(name);
-    return FindGlobal(fixedName) != NULL;
+    return FindGlobal(name) != NULL;
 }
 
 size_t Definitions::NumGlobals() const {
@@ -66,18 +63,18 @@ const Var* Definitions::GetGlobal(size_t index) const {
     }
 }
 
-const Var* Definitions::FindLocal(const string& fixedName) const {
+const Var* Definitions::FindLocal(const string& name) const {
     for (size_t i = 0; i < locals.size(); ++i) {
-        if (strmanip::lower(locals[i].name) == fixedName) {
+        if (locals[i].name == name) {
             return &locals[i];
         }
     }
     return NULL;
 }
 
-const Var* Definitions::FindGlobal(const string& fixedName) const {
+const Var* Definitions::FindGlobal(const string& name) const {
     for (size_t i = 0; i < globals.size(); ++i) {
-        if (strmanip::lower(globals[i].name) == fixedName) {
+        if (globals[i].name == name) {
             return &globals[i];
         }
     }

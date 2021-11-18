@@ -1,6 +1,6 @@
 # ![pico](logo.png) The Pico programming language
 
-A super simple interpreted language inspired by BASIC. It transpiles to Lua, and comes with a
+A super simple interpreted language inspired by Lua and BASIC. It transpiles to Lua, and comes with a
 custom interpreter that, in the future, will be able to load modules from dynamic libraries.
 
 The language is imperative and supports classic procedural programming. It has no structs, but
@@ -8,7 +8,7 @@ tables can be used to group data instead.
 
 ## Language syntax
 
-As said, the language is largely inspired by BASIC, aiming to provide a syntax which is really easy
+As said, the language is largely inspired by Lua and BASIC, aiming to provide a syntax which is really easy
 to learn and comfortable to read. It also draws inspiration from other languages like Python.
 
 ### Comments

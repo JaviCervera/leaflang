@@ -1,12 +1,12 @@
-Function Foo()
+function Foo()
     var = "Foo"
-End
+end
 
 var = "A global var"
 
-Function Bar()
+function Bar()
     var = "Bar"
-End
+end
 
 Print(var) // Prints "A global var"
 Foo()

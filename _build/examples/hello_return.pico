@@ -1,6 +1,6 @@
-FUNCTION Message$()
+function Message$()
     msg = "Hello from function!"
-    RETURN msg
-END
+    return msg
+end
 
 Print(Message())
