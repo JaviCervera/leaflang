@@ -13,12 +13,22 @@ to learn and comfortable to read. It also draws inspiration from other languages
 
 ### Comments
 
-A comment is ignored by the compiler, so you can write any message on it. It starts with the `'`
+A comment is ignored by the compiler, so you can write any message on it. It starts with the `//`
 symbol, and continues to the end of the line. For example:
 
 ```
-'This comment takes the entire line
-a = 50 'This comment starts after the number 50
+// This comment takes the entire line
+a = 50 // This comment starts after the number 50
+```
+
+Multiline comments are also supported. They start with `/*`, and continue until `*/`, even if
+it is on a different line.
+
+```
+/*
+    This comment spans across
+    multiple lines.
+*/
 ```
 
 ### Data types
@@ -95,6 +105,15 @@ To learn more about functions, read the corresponding section.
 ### Conditionals
 
 ...
+
+There is no specific boolean type, all types can be evaluated as booleans instead:
+
+* Integers: `0` is false, all others true.
+* Real numbers: `0.0` is false, all others true.
+* Strings: `""` (empty string) is false, all others true.
+* References: `null` is false, all others true.
+
+There are two literals, `true` and `false`, with the values `1` and `0` respectively.
 
 ### Loops
 
