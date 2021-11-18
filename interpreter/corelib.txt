@@ -35,7 +35,6 @@ FUNCTION Sgn#(x#)
 FUNCTION Sin#(x#)
 FUNCTION Sqrt#(x#)
 FUNCTION Tan#(x#)
-FUNCTION Int%(x#)
 
 // Memory
 FUNCTION Dim@(size)
@@ -75,10 +74,6 @@ FUNCTION ExtractExt$(filename$)
 FUNCTION ExtractDir$(filename$)
 FUNCTION Asc%(str_$, index)
 FUNCTION Chr$(code)
-FUNCTION Str$(val)
-FUNCTION StrF$(val#)
-FUNCTION Val%(str_$)
-FUNCTION ValF#(str_$)
 FUNCTION LoadString$(filename$)
 FUNCTION SaveString(filename$, str_$, append)
 

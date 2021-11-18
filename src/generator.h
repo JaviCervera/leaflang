@@ -20,6 +20,7 @@ public:
     std::string GenVarDef(const Var& var, int expType, const std::string& exp, bool isGlobal) const;
     std::string GenAssignment(const Var& var, int expType, const std::string& exp) const;
     std::string GenBinaryExp(int expType, const Token& token, const std::string& left, const std::string& right) const;
+    std::string GenCastExp(int castType, int expType, const std::string& exp) const;
     std::string GenUnaryExp(const Token& token, const std::string& exp) const;
     std::string GenGroupExp(const std::string& exp) const;
     std::string GenFunctionCall(const Function& func, const std::string& args) const;
