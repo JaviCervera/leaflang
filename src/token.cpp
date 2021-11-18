@@ -294,6 +294,8 @@ int TokenType(const string& str) {
         types["$"] = TOK_STRING;
         types["@"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;
+        types["true"] = TOK_TRUELITERAL;
+        types["false"] = TOK_FALSELITERAL;
     }
     const string fixedStr = strmanip::lower(str.c_str());
     return (types.count(fixedStr) > 0) ? types[fixedStr] : TOK_ID;

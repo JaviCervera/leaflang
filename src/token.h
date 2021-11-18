@@ -10,6 +10,8 @@
 #define TOK_REALLITERAL 2
 #define TOK_STRINGLITERAL 3
 #define TOK_NULLLITERAL 4
+#define TOK_TRUELITERAL 5
+#define TOK_FALSELITERAL 6
 
 // Operators
 #define TOK_NOT 10
