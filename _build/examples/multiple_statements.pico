@@ -5,3 +5,5 @@
 */
 
 Print("One statement"); Print("Another statement")
+
+function Foo() a = 0 end

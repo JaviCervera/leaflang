@@ -41,7 +41,6 @@ string Parser::ParseFunctionDef() {
     const Function func = ParseFunctionHeader();
     definitions.AddFunction(func);
     currentFunc = definitions.FindFunction(func.name);
-    ParseStatementEnd();
     const string block = ParseBlock(1);
     ParseEnd(0);
     const string code = generator.GenFunctionDef(func, block);
@@ -182,10 +181,12 @@ void Parser::CheckTypes(int expected, int got, const Token& token) {
 void Parser::ParseStatementEnd() {
     const bool hasEol = stream.SkipEols();
     if (!hasEol) {
-        const Token& token = stream.Next();
-        if (token.type != TOK_SEMICOLON) {
+        const Token& token = stream.Peek();
+        if (token.type != TOK_SEMICOLON && token.type != TOK_END
+                && token.type != TOK_ELSEIF && token.type != TOK_ELSE) {
             ErrorEx("Expected ';' or new line, got '" + token.data + "'", token.file, token.line);
         }
+        if (token.type == TOK_SEMICOLON) stream.Skip(1);
     }
 }
 
@@ -209,7 +210,6 @@ std::string Parser::ParseControlStatement(int indent) {
 string Parser::ParseIf(int indent) {
     stream.Skip(1); // if
     const Expression exp = ParseExp();
-    ParseStatementEnd();
     const string block = ParseBlock(indent + 1);
     string elseifs;
     while (stream.Peek().type == TOK_ELSEIF) {
@@ -226,14 +226,12 @@ string Parser::ParseIf(int indent) {
 string Parser::ParseElseIf(int indent) {
     stream.Skip(1); //elseif
     const Expression exp = ParseExp();
-    ParseStatementEnd();
     const string block = ParseBlock(indent + 1);
     return generator.GenIndent(indent) + generator.GenElseIf(exp.code, block);
 }
 
 string Parser::ParseElse(int indent) {
     stream.Skip(1); //else
-    ParseStatementEnd();
     const string block = ParseBlock(indent + 1);
     return generator.GenIndent(indent) + generator.GenElse(block);
 }
@@ -243,7 +241,6 @@ string Parser::ParseEnd(int indent) {
     if (token.type != TOK_END) {
         ErrorEx("Expected 'end', got '" + token.data + "'", token.file, token.line);
     }
-    ParseStatementEnd();
     return generator.GenIndent(indent) + generator.GenEnd();
 }
 
@@ -256,7 +253,6 @@ string Parser::ParseFor(int indent) {
     CheckTypes(var.type, to.type, varToken);
     const Expression step = ParseStep();
     CheckTypes(var.type, step.type, varToken);
-    ParseStatementEnd();
     const string block = ParseBlock(indent + 1);
     const string end = ParseEnd(indent);
     return generator.GenIndent(indent) + generator.GenFor(var, assignment, to.code, step.code, block, end);
@@ -282,7 +278,6 @@ Expression Parser::ParseStep() {
 string Parser::ParseWhile(int indent) {
     stream.Skip(1); // while
     const Expression exp = ParseExp();
-    ParseStatementEnd();
     const string block = ParseBlock(indent + 1);
     const string end = ParseEnd(indent);
     return generator.GenIndent(indent) + generator.GenWhile(exp.code, block, end);
