@@ -1,2 +1,2 @@
-name$ = "Pico"
-Print("Hello, " + name$ + "!")
+name = "Pico"
+Print("Hello, " + name + "!")

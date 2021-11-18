@@ -28,6 +28,7 @@ private:
     const std::string& ParseNewId();
     std::vector<Var> ParseParams();
     void ParseOpenParen();
+    int ParseParamType();
     void ParseCloseParen();
     int ParseReturnType();
     std::string ParseBlock(int indent);
@@ -49,7 +50,6 @@ private:
     std::string ParseWhile(int indent);
     std::string ParseReturn(int indent);
     std::string ParseVarDef();
-    int ParseVarType();
     Expression ParseExp();
     Expression ParseOrExp();
     Expression ParseAndExp();
@@ -57,6 +57,7 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
+    Expression ParseCastExp();
     Expression ParseUnaryExp();
     Expression ParseGroupExp();
     Expression ParseAtomicExp();

@@ -1,18 +1,18 @@
 Function Foo()
-    var$ = "Foo"
+    var = "Foo"
 End
 
-var$ = "A global var"
+var = "A global var"
 
 Function Bar()
-    var$ = "Bar"
+    var = "Bar"
 End
 
-Print(var$) 'Prints "A global var"
+Print(var) // Prints "A global var"
 Foo()
-Print(var$) 'Prints "A global var"
+Print(var) // Prints "A global var"
 Bar()
-Print(var$) 'Prints "Bar"
+Print(var) // Prints "Bar"
 
 Print("")
 Print("Should have printed:")

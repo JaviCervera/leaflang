@@ -1,6 +1,6 @@
-DQ$ = Chr$ (34)
+DQ = Chr(34)
 
-FUNCTION BoolStr$ (v)
+FUNCTION BoolStr$(v)
     IF v
         RETURN "TRUE"
     ELSE
@@ -8,14 +8,14 @@ FUNCTION BoolStr$ (v)
     END
 END
 
-Print ("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr ("A" <> "" OR "B" <> ""))
-Print ("(" + DQ + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr ("" <> "" OR "B" <> ""))
-Print ("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr ("A" <> "" AND "B" <> ""))
-Print ("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + DQ + " <> " + DQ + DQ + ") IS " + BoolStr ("A" <> "" AND "" <> ""))
-Print ("(" + DQ + DQ + " <> " + DQ + DQ + " OR 0) IS " + BoolStr ("" <> "" OR 0))
-Print ("(" + DQ + DQ + " <> " + DQ + DQ + " OR 1) IS " + BoolStr ("" <> "" OR 1))
-Print ("(50 AND 1) IS " + BoolStr (50 AND 1))
-Print ("(0 AND 1) IS " + BoolStr (0 AND 1))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" OR "B" <> ""))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("" <> "" OR "B" <> ""))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + "B" + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" AND "B" <> ""))
+Print("(" + DQ + "A" + DQ + " <> " + DQ + DQ + " AND " + DQ + DQ + " <> " + DQ + DQ + ") IS " + BoolStr("A" <> "" AND "" <> ""))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR 0) IS " + BoolStr("" <> "" OR 0))
+Print("(" + DQ + DQ + " <> " + DQ + DQ + " OR 1) IS " + BoolStr("" <> "" OR 1))
+Print("(50 AND 1) IS " + BoolStr(50 AND 1))
+Print("(0 AND 1) IS " + BoolStr(0 AND 1))
 
 Print("")
 Print("Previous expressions should have been: TRUE TRUE TRUE FALSE FALSE TRUE TRUE FALSE")

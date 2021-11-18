@@ -9,6 +9,15 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _and(a, b) if _bool(a) and _bool(b) then return 1 else return 0 end end\n"
         "function _or(a, b) if _bool(a) or _bool(b) then return 1 else return 0 end end\n"
         "function _not(a) if _bool(a) then return 0 else return 1 end end\n"
+        "function _int2int(v) return v end\n"
+        "function _int2real(v) return v + 0.0 end\n"
+        "function _int2string(v) return tostring(v) end\n"
+        "function _real2int(v) return math.floor(v) end\n"
+        "function _real2real(v) return v end\n"
+        "function _real2string(v) return tostring(v) end\n"
+        "function _string2int(v) return _or(tonumber(v), 0) end\n"
+        "function _string2real(v) return _or(tonumber(v), 0) + 0.0 end\n"
+        "function _string2string(v) return v end\n"
         "_args = {}\n"
         "function pico.AddIntArg(v) _args[#_args+1] = v end\n"
         "function pico.AddFloatArg(v) _args[#_args+1] = v end\n"
@@ -98,6 +107,12 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (left + op + right);
 }
 
+string Generator::GenCastExp(int castType, int expType, const std::string& exp) const {
+    const string expTypeName = GenType(expType);
+    const string castTypeName = GenType(castType);
+    return "_" + expTypeName + "2" + castTypeName + "(" + exp + ")";
+}
+
 string Generator::GenUnaryExp(const Token& token, const string& exp) const {
     if (token.type == TOK_NOT) return ("_not(" + exp + ")") ;
     else return "-" + exp;
@@ -162,6 +177,19 @@ string Generator::GenParams(const Function& func) {
         if (i < func.params.size() - 1) params += ", ";
     }
     return "(" + params + ")";
+}
+
+string Generator::GenType(int type) {
+    switch (type) {
+        case TYPE_INT:
+            return "int";
+        case TYPE_REAL:
+            return "real";
+        case TYPE_STRING:
+            return "string";
+        default:
+            return ""; // Should not get here
+    }
 }
 
 string Generator::GenFuncId(const string& id) {

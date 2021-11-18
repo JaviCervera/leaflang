@@ -1,6 +1,6 @@
 FUNCTION Message$()
-    msg$ = "Hello from function!"
-    RETURN msg$
+    msg = "Hello from function!"
+    RETURN msg
 END
 
-Print(Message$())
+Print(Message())
