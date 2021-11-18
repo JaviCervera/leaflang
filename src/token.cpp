@@ -101,7 +101,7 @@ int GetType(int type) {
 }
 
 bool IsStatementEnd(int type) {
-    return type == TOK_EOL || type == TOK_COLON;
+    return type == TOK_EOL || type == TOK_SEMICOLON;
 }
 
 bool AreCompatible(int type1, int type2, bool acceptAny) {
@@ -239,7 +239,7 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("/");
         symbols.push_back("=");
         symbols.push_back(",");
-        symbols.push_back(":");
+        symbols.push_back(";");
         symbols.push_back("(");
         symbols.push_back(")");
         symbols.push_back("%");
@@ -276,7 +276,7 @@ int TokenType(const string& str) {
         types["mod"] = TOK_MOD;
         types["="] = TOK_ASSIGN;
         types[","] = TOK_COMMA;
-        types[":"] = TOK_COLON;
+        types[";"] = TOK_SEMICOLON;
         types["("] = TOK_OPENPAREN;
         types[")"] = TOK_CLOSEPAREN;
         types["end"] = TOK_END;
