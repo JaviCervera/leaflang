@@ -94,6 +94,8 @@ int GetType(int type) {
         return TYPE_REAL;
     case TOK_STRING:
         return TYPE_STRING;
+    case TOK_TABLE:
+        return TYPE_TABLE;
     case TOK_REF:
         return TYPE_REF;
     default:
@@ -262,6 +264,7 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("%");
         symbols.push_back("#");
         symbols.push_back("$");
+        symbols.push_back("!");
         symbols.push_back("@");
     }
     for (size_t i = 0; i < symbols.size(); ++i) {
@@ -311,6 +314,7 @@ int TokenType(const string& str) {
         types["%"] = TOK_INT;
         types["#"] = TOK_REAL;
         types["$"] = TOK_STRING;
+        types["!"] = TOK_TABLE;
         types["@"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;
         types["true"] = TOK_TRUELITERAL;

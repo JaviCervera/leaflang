@@ -3,8 +3,9 @@
 using namespace std;
 using namespace swan;
 
-string Generator::GenProgram(const vector<string>& functions, const vector<string>& program, const Definitions& _) const {
+string Generator::GenProgram(const vector<string>& functions, const vector<string>& program, const Definitions& definitions) const {
     const string headerStr =
+        "function _onassign(old,new) pico._IncRef(new); pico._DecRef(old); return new end\n"
         "function _bool(a) if a ~= false and a ~= nil and a ~= 0 and a ~= \"\" then return true else return false end end\n"
         "function _and(a, b) if _bool(a) then return b else return a end end\n"
         "function _or(a, b) if _bool(a) then return a else return b end end\n"
@@ -20,11 +21,11 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _string2string(v) return v end\n"
         "_args = {}\n"
         "function pico.AddIntArg(v) _args[#_args+1] = v end\n"
-        "function pico.AddFloatArg(v) _args[#_args+1] = v end\n"
+        "function pico.AddRealArg(v) _args[#_args+1] = v end\n"
         "function pico.AddStringArg(v) _args[#_args+1] = v end\n"
         "function pico.Call(f) local ret = pico[f](table.unpack(_args)) _args = {} return ret end\n"
         "function pico.CallInt(f) return Int(pico.CallFloat(f)) end\n"
-        "function pico.CallFloat(f) return tonumber(pico.Call(f)) end\n"
+        "function pico.CallReal(f) return tonumber(pico.Call(f)) end\n"
         "function pico.CallString(f) return tostring(pico.Call(f)) end\n"
         "function pico.Callable(f) return type(pico[f]) == \"function\" end\n";
     string functionsStr;
@@ -35,11 +36,19 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
     for (size_t i = 0; i < program.size(); ++i) {
         programStr += program[i];
     }
-    return headerStr + functionsStr + programStr + "\n";
+    return headerStr
+        + functionsStr
+        + programStr
+        + GenFunctionCleanup(NULL, definitions.GetGlobals())
+        + "\n";
 }
 
-string Generator::GenFunctionDef(const Function& func, const string& block) const {
-    return GenFunctionHeader(func) + block + "end\n";
+string Generator::GenFunctionDef(const Function& func, const string& block, const Definitions& definitions) const {
+    return GenFunctionHeader(func)
+        + block
+        + GenIndent(1)
+        + GenStatement(GenFunctionCleanup(&func, definitions.GetLocals()))
+        + "end\n";
 }
 
 string Generator::GenStatement(const string& exp) const {
@@ -73,8 +82,11 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
     return "while _bool(" + exp + ") do\n" + block + end;
 }
 
-string Generator::GenReturn(int funcType, const string& exp) const {
-    return "return " + exp + "\n";
+string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
+    return GenFunctionCleanup(func, definitions.GetLocals(), exp)
+        + "do return "
+        + ((func->type == TYPE_TABLE) ? ("pico._AutoDec(" + exp + ")") : exp)
+        + " end\n";
 }
 
 string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool isGlobal) const {
@@ -82,7 +94,12 @@ string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool
 }
 
 string Generator::GenAssignment(const Var& var, int expType, const string& exp) const {
-    return GenVarId(var.name) + " = " + exp;
+    const string varId = GenVarId(var.name);
+    if (expType == TYPE_TABLE) {
+        return varId + " = _onassign(" + varId + ", " + exp + ")";
+    } else {
+        return varId + " = " + exp;
+    }
 }
 
 string Generator::GenBinaryExp(int expType, const Token& token, const string& left, const string& right) const {
@@ -198,4 +215,35 @@ string Generator::GenFuncId(const string& id) {
 
 string Generator::GenVarId(const string& id) {
     return "__pico__" + id;
+}
+
+string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& varsInScope, string exclude) {
+    vector<Var> vars = GetTableVars(varsInScope);
+    if (func) {
+        const vector<Var> params = GetTableVars(func->params);
+        for (size_t i = 0; i < params.size(); ++i) {
+            if (GenVarId(params[i].name) != exclude) {
+                vars.push_back(params[i]);
+            }
+        }
+    }
+    string str = "pico._DoAutoDec() ";
+    for (size_t i = 0; i < vars.size(); ++i) {
+        const Var& var = vars[i];
+        if (GenVarId(var.name) != exclude) {
+            str += "pico._DecRef(" + GenVarId(var.name) + ") ";
+        }
+    }
+    return str;
+}
+
+std::vector<Var> Generator::GetTableVars(const std::vector<Var>& vars) {
+    std::vector<Var> result;
+    for (size_t i = 0; i < vars.size(); ++i) {
+        const Var& var = vars[i];
+        if (var.type == TYPE_TABLE) {
+            result.push_back(var);
+        }
+    }
+    return result;
 }

@@ -51,16 +51,12 @@ const bool Definitions::IsGlobal(const string& name) const {
     return FindGlobal(name) != NULL;
 }
 
-size_t Definitions::NumGlobals() const {
-    return globals.size();
+const vector<Var>& Definitions::GetGlobals() const {
+    return globals;
 }
 
-const Var* Definitions::GetGlobal(size_t index) const {
-    if (index >= 0 && index < NumGlobals()) {
-        return &globals[index];
-    } else {
-        return NULL;
-    }
+const vector<Var>& Definitions::GetLocals() const {
+    return locals;
 }
 
 const Var* Definitions::FindLocal(const string& name) const {
