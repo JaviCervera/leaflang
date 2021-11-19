@@ -612,6 +612,7 @@ void SetTableString(Table* table, const char* key, const char* value) {
 }
 
 void SetTableTable(Table* table, const char* key, Table* value) {
+    _IncRef(value);
     _ClearTableKey(table, key);
     (*table)[key] = value;
 }
