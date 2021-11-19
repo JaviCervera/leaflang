@@ -23,10 +23,15 @@ private:
     std::string code;
     const Function* currentFunc;
     
+    void ScanFunctions();
+    Function ScanFunctionHeader();
+    const std::string& ScanFunctionName();
+    void SkipFunction();
     std::string ParseFunctionDef();
     Function ParseFunctionHeader();
-    const std::string& ParseNewId();
+    const std::string& ParseFunctionName();
     std::vector<Var> ParseParams();
+    const std::string& ParseVar();
     void ParseOpenParen();
     int ParseParamType();
     void ParseCloseParen();

@@ -7,6 +7,7 @@ Parser::Parser(const vector<Token>& tokens) : stream(tokens), currentFunc(NULL) 
 }
 
 void Parser::Parse() {
+    ScanFunctions();
     vector<string> functions;
     vector<string> program;
     while (stream.HasNext()) {
@@ -26,7 +27,7 @@ void Parser::ParseLibrary(const vector<Token>& tokens) {
     while (stream.HasNext()) {
         const Token& token = stream.Peek();
         if (token.type == TOK_FUNCTION) {
-            const Function func = ParseFunctionHeader();
+            const Function func = ScanFunctionHeader();
             ParseStatementEnd();
             definitions.ClearLocals();
             lib.push_back(func);
@@ -37,9 +38,63 @@ void Parser::ParseLibrary(const vector<Token>& tokens) {
     stream = prevStream;
 }
 
+void Parser::ScanFunctions() {
+    TokenStream prevStream = stream;
+    stream = TokenStream(*prevStream.tokens);
+    while (stream.HasNext()) {
+        const Token& token = stream.Peek();
+        if (token.type == TOK_FUNCTION) {
+            const Function func = ScanFunctionHeader();
+            definitions.AddFunction(func);
+            SkipFunction();
+            definitions.ClearLocals();
+        } else {
+            stream.Skip(1);
+        }
+    }
+    stream = prevStream;
+}
+
+Function Parser::ScanFunctionHeader() {
+    stream.Skip(1); // function
+    const string name = ScanFunctionName();
+    const int returnType = ParseReturnType();
+    const vector<Var> params = ParseParams();
+    return Function(name, returnType, params);
+}
+
+const string& Parser::ScanFunctionName() {
+    const Token& nameToken = stream.Next();
+    if (nameToken.type != TOK_ID) {
+        ErrorEx("Expected identifier, got '" + nameToken.data + "'", nameToken.file, nameToken.line);
+    } else if (FindLibFunction(lib, nameToken.data) != -1) {
+        ErrorEx("Identifier already used as library function: " + nameToken.data, nameToken.file, nameToken.line);
+    } else if (definitions.FindFunction(nameToken.data) != NULL) {
+        ErrorEx("Identifier already used as function: " + nameToken.data, nameToken.file, nameToken.line);
+    }
+    return nameToken.data;
+}
+
+void Parser::SkipFunction() {
+    int block = 1;
+    while (block > 0 && stream.HasNext()) {
+        const Token& token = stream.Next();
+        switch (token.type) {
+            case TOK_FUNCTION:
+            case TOK_IF:
+            case TOK_FOR:
+            case TOK_WHILE:
+                ++block;
+                break;
+            case TOK_END:
+                --block;
+                break;
+        }
+    }
+}
+
 string Parser::ParseFunctionDef() {
     const Function func = ParseFunctionHeader();
-    definitions.AddFunction(func);
     currentFunc = definitions.FindFunction(func.name);
     const string block = ParseBlock(1);
     ParseEnd(0);
@@ -51,13 +106,38 @@ string Parser::ParseFunctionDef() {
 
 Function Parser::ParseFunctionHeader() {
     stream.Skip(1); // function
-    const string name = ParseNewId();
+    const string name = ParseFunctionName();
     const int returnType = ParseReturnType();
     const vector<Var> params = ParseParams();
     return Function(name, returnType, params);
 }
 
-const string& Parser::ParseNewId() {
+const string& Parser::ParseFunctionName() {
+    const Token& nameToken = stream.Next();
+    if (nameToken.type != TOK_ID) {
+        ErrorEx("Expected identifier, got '" + nameToken.data + "'", nameToken.file, nameToken.line);
+    } else if (definitions.FindVar(nameToken.data) != NULL) {
+        ErrorEx("Identifier already used for variable: " + nameToken.data, nameToken.file, nameToken.line);
+    }
+    return nameToken.data;
+}
+
+vector<Var> Parser::ParseParams() {
+    vector<Var> params;
+    ParseOpenParen();
+    while (stream.Peek().type == TOK_ID) {
+        const string name = ParseVar();
+        const int type = ParseParamType();
+        Var param(name, type);
+        definitions.AddLocal(param);
+        params.push_back(param);
+        if (stream.Peek().type == TOK_COMMA) stream.Skip(1);
+    }
+    ParseCloseParen();
+    return params;
+}
+
+const string& Parser::ParseVar() {
     const Token& nameToken = stream.Next();
     if (nameToken.type != TOK_ID) {
         ErrorEx("Expected identifier, got '" + nameToken.data + "'", nameToken.file, nameToken.line);
@@ -69,21 +149,6 @@ const string& Parser::ParseNewId() {
         ErrorEx("Identifier already used for variable: " + nameToken.data, nameToken.file, nameToken.line);
     }
     return nameToken.data;
-}
-
-vector<Var> Parser::ParseParams() {
-    vector<Var> params;
-    ParseOpenParen();
-    while (stream.Peek().type == TOK_ID) {
-        const string name = ParseNewId();
-        const int type = ParseParamType();
-        Var param(name, type);
-        definitions.AddLocal(param);
-        params.push_back(param);
-        if (stream.Peek().type == TOK_COMMA) stream.Skip(1);
-    }
-    ParseCloseParen();
-    return params;
 }
 
 void Parser::ParseOpenParen() {
@@ -322,7 +387,7 @@ string Parser::ParseReturn(int indent) {
 }
 
 string Parser::ParseVarDef() {
-    const string name = ParseNewId();
+    const string name = ParseVar();
     const Token& assignToken = stream.Next();
     if (assignToken.type != TOK_ASSIGN) {
         ErrorEx("Variables must be initialized", assignToken.file, assignToken.line);
