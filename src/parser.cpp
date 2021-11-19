@@ -162,7 +162,8 @@ int Parser::ParseParamType() {
     if (IsType(stream.Peek().type)) {
         return GetType(stream.Next().type);
     } else {
-        return TYPE_INT;
+        ErrorEx("Expected parameter type", stream.Peek().file, stream.Peek().line);
+        return TYPE_VOID;
     }
 }
 
