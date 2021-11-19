@@ -1,0 +1,6 @@
+function Message$()
+    msg = "Hello from function!"
+    return msg
+end
+
+Print(Message())

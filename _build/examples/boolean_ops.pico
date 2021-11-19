@@ -1,0 +1,29 @@
+Print("- " + ("" and ""))
+Print("- " + ("a" and ""))
+Print("- " + ("" and "b"))
+Print("- " + ("a" and "b"))
+
+Print("- " + ("" or ""))
+Print("- " + ("a" or ""))
+Print("- " + ("" or "b"))
+Print("- " + ("a" or "b"))
+
+Print("- (1 and 50) is " + (1 and 50)$)
+Print("- (0 or 1) is " + (0 or 1)$)
+
+Print(Replace("- Previous expressions should have been: '', '', '', 'b', '', 'a', 'b', 'a', 50, 1", "'", Chr(34)))
+
+Print("- Should print 1: " + true$)
+Print("- Should print 0: " + false$)
+
+if "A" then
+    Print("Ok")
+else
+    Print("Should not print this")
+end
+
+counter = 3
+while counter do
+    Print(counter$)
+    counter = counter - 1
+end

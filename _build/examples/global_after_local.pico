@@ -1,0 +1,21 @@
+function Foo()
+    var = "Foo"
+end
+
+var = "A global var"
+
+function Bar()
+    var = "Bar"
+end
+
+Print(var) // Prints "A global var"
+Foo()
+Print(var) // Prints "A global var"
+Bar()
+Print(var) // Prints "Bar"
+
+Print("")
+Print("Should have printed:")
+Print("A global var")
+Print("A global var")
+Print("Bar")

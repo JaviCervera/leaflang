@@ -1,0 +1,11 @@
+function Printer(msg$)
+    Print(msg)
+end
+
+if Callable("Printer") then
+    Print("Printer is callable")
+    AddStringArg("Hello, call!")
+    Call("Printer")
+else
+    Print("Printer is not callable")
+end
