@@ -1,0 +1,19 @@
+Print(Foo())
+
+function Foo$()
+  return "Foo"
+end
+
+// If the following block is uncommented,
+// it should not compile:
+
+/*
+function Foo$()
+  return "Bar"
+end
+
+function Baz()
+  Foo = "Foo"
+  Print(Foo)
+end
+*/
