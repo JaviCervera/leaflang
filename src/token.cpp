@@ -264,6 +264,7 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("%");
         symbols.push_back("#");
         symbols.push_back("$");
+        symbols.push_back("!");
         symbols.push_back("@");
     }
     for (size_t i = 0; i < symbols.size(); ++i) {

@@ -1,0 +1,3 @@
+table = DimTable()
+SetTableString(table, "msg", "Hello")
+Print(TableString(table, "msg"))
