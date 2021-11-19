@@ -58,7 +58,8 @@
 #define TOK_INT 60
 #define TOK_REAL 61
 #define TOK_STRING 62
-#define TOK_REF 63
+#define TOK_TABLE 63
+#define TOK_REF 64
 
 struct Token {
     const int type;
