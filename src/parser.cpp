@@ -15,7 +15,7 @@ void Parser::Parse() {
         if (token.type == TOK_FUNCTION) {
             functions.push_back(ParseFunctionDef());
         } else {
-            program.push_back(ParseStatement(1));
+            program.push_back(ParseStatement(0));
         }
     }
     code = generator.GenProgram(functions, program, definitions);
@@ -98,7 +98,7 @@ string Parser::ParseFunctionDef() {
     currentFunc = definitions.FindFunction(func.name);
     const string block = ParseBlock(1);
     ParseEnd(0);
-    const string code = generator.GenFunctionDef(func, block);
+    const string code = generator.GenFunctionDef(func, block, definitions);
     definitions.ClearLocals();
     currentFunc = NULL;
     return code;
@@ -384,7 +384,7 @@ string Parser::ParseReturn(int indent) {
         ErrorEx("Function must return a value", returnToken.file, returnToken.line);
     }
     ParseStatementEnd();
-    return generator.GenIndent(indent) + generator.GenReturn(currentFunc->type, exp.code);
+    return generator.GenIndent(indent) + generator.GenReturn(currentFunc, exp.code, definitions);
 }
 
 string Parser::ParseVarDef() {

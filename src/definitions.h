@@ -14,8 +14,8 @@ public:
     const Function* GetFunction(size_t index) const;
     const Var* FindVar(const std::string& name) const;
     const bool IsGlobal(const std::string& name) const;
-    size_t NumGlobals() const;
-    const Var* GetGlobal(size_t index) const;
+    const std::vector<Var>& GetGlobals() const;
+    const std::vector<Var>& GetLocals() const;
 private:
     std::vector<Function> functions;
     std::vector<Var> globals;

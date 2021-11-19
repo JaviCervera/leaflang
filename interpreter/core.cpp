@@ -14,6 +14,7 @@ struct Any {
     int i;
     float f;
     std::string s;
+    Table* t;
     void* r;
     int type;
 
@@ -21,14 +22,59 @@ struct Any {
     Any(float number) : f(number), type(TYPE_REAL) { }
     Any(const char* str) : s(str), type(TYPE_STRING) {}
     Any(const std::string& str) : s(str), type(TYPE_STRING) {}
+    Any(Table* table) : t(table), type(TYPE_TABLE) {}
     Any(void* ref) : r(ref), type(TYPE_REF) {}
     Any(const Any& other) { *this = other; }
     
     int ToInt() const;
     float ToReal() const;
     std::string ToString() const;
+    Table* ToTable() const;
     void* ToRef() const;
 };
+
+typedef void(* RefCounterDeleter)(void*);
+
+struct RefCounter {
+    RefCounter(RefCounterDeleter deleter) : counter(1), deleter(deleter) {
+        AutoDec();
+    }
+
+    size_t Inc() {
+        return ++counter;
+    }
+
+    size_t Dec() {
+        const size_t count = --counter;
+        if (count <= 0 && deleter) deleter(GetPtr());
+        return count;
+    }
+
+    void AutoDec() {
+        autoDecs.push_back(this);
+    }
+
+    void* GetPtr() {
+        return this + 1;
+    }
+
+    static RefCounter* FromPtr(void* ptr) {
+        return (RefCounter*)ptr - 1;
+    }
+
+    static void DoAutoDec() {
+        for (size_t i = 0; i < autoDecs.size(); ++i) {
+            autoDecs[i]->Dec();
+        }
+        autoDecs.clear();
+    }
+private:
+    static vector<RefCounter*> autoDecs;
+    size_t counter;
+    RefCounterDeleter deleter;
+};
+
+vector<RefCounter*> RefCounter::autoDecs;
 
 struct Table : public map<string, Any> {
     string ToString();
@@ -57,7 +103,18 @@ string Any::ToString() const {
     case TYPE_INT: return strmanip::fromint(i);
     case TYPE_REAL: return strmanip::fromdouble(f);
     case TYPE_STRING: return s;
+    case TYPE_TABLE: return t->ToString();
     default: return "";
+    }
+}
+
+Table* Any::ToTable() const {
+    switch (type) {
+    case TYPE_INT: return NULL;
+    case TYPE_REAL: return NULL;
+    case TYPE_STRING: return NULL;
+    case TYPE_REF: return (Table*)r;
+    default: return t;
     }
 }
 
@@ -66,6 +123,7 @@ void* Any::ToRef() const {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
     case TYPE_STRING: return (void*)s.c_str();
+    case TYPE_TABLE: return t;
     default: return r;
     }
 }
@@ -89,7 +147,7 @@ extern "C" {
 // ------------------------------------
 
 static string pico_appName;
-static Table* pico_appArgs = DimTable();
+static Table* pico_appArgs = (Table*)_IncRef(DimTable());
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = argv[0];
@@ -110,6 +168,24 @@ const char* Run(const char* command) {
     static string result;
     result = platform::run(command);
     return result.c_str();
+}
+
+void* _IncRef(void* ptr) {
+    if (ptr) RefCounter::FromPtr(ptr)->Inc();
+    return ptr;
+}
+
+void _DecRef(void* ptr) {
+    if (ptr) RefCounter::FromPtr(ptr)->Dec();
+}
+
+void* _AutoDec(void* ptr) {
+    if (ptr) RefCounter::FromPtr(ptr)->AutoDec();
+    return ptr;
+}
+
+void _DoAutoDec() {
+    RefCounter::DoAutoDec();
 }
 
 // ------------------------------------
@@ -310,7 +386,7 @@ int PeekInt(Memory* mem, int offset) {
     return v;
 }
 
-float PeekFloat(Memory* mem, int offset) {
+float PeekReal(Memory* mem, int offset) {
     float v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
@@ -346,7 +422,7 @@ void PokeInt(Memory* mem, int offset, int val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeFloat(Memory* mem, int offset, float val) {
+void PokeReal(Memory* mem, int offset, float val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
@@ -502,27 +578,46 @@ void SaveString(const char* filename, const char* str, int append) {
 // Table
 // ------------------------------------
 
-Table* DimTable() {
-    return new Table();
+void _DestroyTable(Table* table) {
+    table->~Table();
+    free(RefCounter::FromPtr(table));
 }
 
-void UndimTable(Table* table) {
-    delete table;
+Table* DimTable() {
+    RefCounter* rc = (RefCounter*)malloc(sizeof(RefCounter) + sizeof(Table));
+    new (rc) RefCounter((RefCounterDeleter)_DestroyTable);
+    new (rc->GetPtr()) Table();
+    return (Table*)rc->GetPtr();
+}
+
+void _ClearTableKey(Table* table, const char* key) {
+    if (Contains(table, key) && (*(Table*)table)[key].type == TYPE_TABLE) {
+        _DecRef((*(Table*)table)[key].t);
+    }
 }
 
 void SetTableInt(Table* table, const char* key, int value) {
+    _ClearTableKey(table, key);
     (*table)[key] = value;
 }
 
-void SetTableFloat(Table* table, const char* key, float value) {
+void SetTableReal(Table* table, const char* key, float value) {
+    _ClearTableKey(table, key);
     (*table)[key] = value;
 }
 
 void SetTableString(Table* table, const char* key, const char* value) {
+    _ClearTableKey(table, key);
+    (*table)[key] = value;
+}
+
+void SetTableTable(Table* table, const char* key, Table* value) {
+    _ClearTableKey(table, key);
     (*table)[key] = value;
 }
 
 void SetTableRef(Table* table, const char* key, void* value) {
+    _ClearTableKey(table, key);
     (*table)[key] = value;
 }
 
@@ -532,7 +627,7 @@ int TableInt(const Table* table, const char* key) {
         : 0;
 }
 
-float TableFloat(const Table* table, const char* key) {
+float TableReal(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].f
         : 0.0f;
@@ -544,6 +639,12 @@ const char* TableString(const Table* table, const char* key) {
         : "";
 }
 
+Table* TableTable(const Table* table, const char* key) {
+    return (Contains(table, key))
+        ? (*(Table*)table)[key].t
+        : NULL;
+}
+
 void* TableRef(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].r
@@ -551,43 +652,43 @@ void* TableRef(const Table* table, const char* key) {
 }
 
 void SetIndexInt(Table* table, size_t index, int value) {
-    (*table)[Str(index)] = value;
+    SetTableInt(table, Str(index), value);
 }
 
-void SetIndexFloat(Table* table, size_t index, float value) {
-    (*table)[Str(index)] = value;
+void SetIndexReal(Table* table, size_t index, float value) {
+    SetTableReal(table, Str(index), value);
 }
 
 void SetIndexString(Table* table, size_t index, const char* value) {
-    (*table)[Str(index)] = value;
+    SetTableString(table, Str(index), value);
+}
+
+void SetIndexTable(Table* table, size_t index, Table* value) {
+    SetTableTable(table, Str(index), value);
 }
 
 void SetIndexRef(Table* table, size_t index, void* value) {
-    (*table)[Str(index)] = value;
+    SetTableRef(table, Str(index), value);
 }
 
 int IndexInt(const Table* table, size_t index) {
-    return (Contains(table, Str(index)))
-        ? (*(Table*)table)[Str(index)].i
-        : 0;
+    return TableInt(table, Str(index));
 }
 
-float IndexFloat(const Table* table, size_t index) {
-    return (Contains(table, Str(index)))
-        ? (*(Table*)table)[Str(index)].f
-        : 0.0f;
+float IndexReal(const Table* table, size_t index) {
+    return TableReal(table, Str(index));
 }
 
 const char* IndexString(const Table* table, size_t index) {
-    return (Contains(table, Str(index)))
-        ? (*(Table*)table)[Str(index)].s.c_str()
-        : "";
+    return TableString(table, Str(index));
+}
+
+Table* IndexTable(const Table* table, size_t index) {
+    return TableTable(table, Str(index));
 }
 
 void* IndexRef(const Table* table, size_t index) {
-    return (Contains(table, Str(index)))
-        ? (*(Table*)table)[Str(index)].r
-        : NULL;
+    return TableRef(table, Str(index));
 }
 
 int Contains(const Table* table, const char* key) {
@@ -615,7 +716,7 @@ void Clear(Table* table) {
 void AddIntArg(int arg) {
 }
 
-void AddFloatArg(float arg) {
+void AddRealArg(float arg) {
 }
 
 void AddStringArg(const char* arg) {
@@ -628,7 +729,7 @@ int CallInt(const char* name) {
     return 0;
 }
 
-float CallFloat(const char* name) {
+float CallReal(const char* name) {
     return 0.0f;
 }
 

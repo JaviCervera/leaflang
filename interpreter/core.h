@@ -13,11 +13,10 @@
 
 #ifndef CORE_IMPL
 typedef void Memory;
-typedef void Table;
 #else
 struct Memory;
-struct Table;
 #endif
+struct Table;
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +29,10 @@ extern "C" {
 const char* AppName();
 Table* AppArgs();
 const char* Run(const char* command);
+void* _IncRef(void* ptr);
+void _DecRef(void* ptr);
+void* _AutoDec(void* ptr);
+void _DoAutoDec();
 
 // ------------------------------------
 // Console
@@ -90,13 +93,13 @@ int DimSize(Memory* mem);
 int PeekByte(Memory* mem, int offset);
 int PeekShort(Memory* mem, int offset);
 int PeekInt(Memory* mem, int offset);
-float PeekFloat(Memory* mem, int offset);
+float PeekReal(Memory* mem, int offset);
 const char* PeekString(Memory* mem, int offset);
 void* PeekRef(Memory* mem, int offset);
 void PokeByte(Memory* mem, int offset, int val);
 void PokeShort(Memory* mem, int offset, int val);
 void PokeInt(Memory* mem, int offset, int val);
-void PokeFloat(Memory* mem, int offset, float val);
+void PokeReal(Memory* mem, int offset, float val);
 void PokeString(Memory* mem, int offset, const char* val);
 void PokeRef(Memory* mem, int offset, void* val);
 
@@ -133,22 +136,25 @@ void SaveString(const char* filename, const char* str, int append);
 // ------------------------------------
 
 Table* DimTable();
-void UndimTable(Table* table);
 void SetTableInt(Table* table, const char* key, int value);
-void SetTableFloat(Table* table, const char* key, float value);
+void SetTableReal(Table* table, const char* key, float value);
 void SetTableString(Table* table, const char* key, const char* value);
+void SetTableTable(Table* table, const char* key, Table* value);
 void SetTableRef(Table* table, const char* key, void* value);
 int TableInt(const Table* table, const char* key);
-float TableFloat(const Table* table, const char* key);
+float TableReal(const Table* table, const char* key);
 const char* TableString(const Table* table, const char* key);
+Table* TableTable(const Table* table, const char* key);
 void* TableRef(const Table* table, const char* key);
 void SetIndexInt(Table* table, size_t index, int value);
-void SetIndexFloat(Table* table, size_t index, float value);
+void SetIndexReal(Table* table, size_t index, float value);
 void SetIndexString(Table* table, size_t index, const char* value);
+void SetIndexTable(Table* table, size_t index, Table* value);
 void SetIndexRef(Table* table, size_t index, void* value);
 int IndexInt(const Table* table, size_t index);
-float IndexFloat(const Table* table, size_t index);
+float IndexReal(const Table* table, size_t index);
 const char* IndexString(const Table* table, size_t index);
+Table* IndexTable(const Table* table, size_t index);
 void* IndexRef(const Table* table, size_t index);
 int Contains(const Table* table, const char* key);
 void Remove(Table* table, const char* key);
@@ -160,11 +166,11 @@ void Clear(Table* table);
 // ------------------------------------
 
 void AddIntArg(int arg);
-void AddFloatArg(float arg);
+void AddRealArg(float arg);
 void AddStringArg(const char* arg);
 void Call(const char* name);
 int CallInt(const char* name);
-float CallFloat(const char* name);
+float CallReal(const char* name);
 const char* CallString(const char* name);
 int Callable(const char* name);
 

@@ -155,7 +155,9 @@ string GenLibrary(const Parser& parser, const string& funcName) {
     string output = StartLibrary(funcName);
     const Lib& lib = parser.GetLib();
     for (size_t i = 0; i < lib.size(); ++i) {
-        output += GenFunction(&lib[i]);
+        if (lib[i].name[0] != '_') {
+            output += GenFunction(&lib[i]);
+        }
     }
     output += EndLibrary();
     return output;
