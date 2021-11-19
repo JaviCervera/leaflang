@@ -15,7 +15,7 @@ string GenLuaRegister(const Parser& parser, const string& tableName, const strin
 string GenLibrary(const Parser& parser, const string& funcName);
 string StartLibrary(const string& funcName);
 string GenFunction(const Function* func);
-string GenTypeSuffix(int type, bool ignoreInt);
+string GenTypeSuffix(int type);
 string EndLibrary();
 
 int main(int argc, char* argv[]) {
@@ -164,23 +164,25 @@ string StartLibrary(const string& funcName) {
 string GenFunction(const Function* func) {
     string result = "        \"function ";
     result += func->name;
-    result += GenTypeSuffix(func->type, false) + "(";
+    result += GenTypeSuffix(func->type) + "(";
     for (size_t i = 0; i < func->params.size(); ++i) {
-        result += Chr(i + 97) + GenTypeSuffix(func->params[i].type, true);
+        result += Chr(i + 97) + GenTypeSuffix(func->params[i].type);
         if (i < func->params.size() - 1) result += ",";
     }
     result += ")\\n\"\n";
     return result;
 }
 
-string GenTypeSuffix(int type, bool ignoreInt) {
+string GenTypeSuffix(int type) {
     switch (type) {
     case TYPE_INT:
-        return ignoreInt ? "" : "%";
+        return "%";
     case TYPE_REAL:
         return "#";
     case TYPE_STRING:
         return "$";
+    case TYPE_REF:
+        return "@";
     default:
         return "";
     }
