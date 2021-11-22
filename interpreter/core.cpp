@@ -77,6 +77,7 @@ private:
 vector<RefCounter*> RefCounter::autoDecs;
 
 struct Table : public map<string, Any> {
+    ~Table();
     string ToString();
 };
 
@@ -125,6 +126,14 @@ void* Any::ToRef() const {
     case TYPE_STRING: return (void*)s.c_str();
     case TYPE_TABLE: return t;
     default: return r;
+    }
+}
+
+Table::~Table() {
+    for (Table::iterator it = begin(); it != end(); ++it) {
+        if (it->second.type == TYPE_TABLE) {
+            _DecRef(it->second.t);
+        }
     }
 }
 
