@@ -76,4 +76,5 @@ private:
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);
     Expression ParseVarAccess(const Token& nameToken);
+    Expression ParseTableAccess(const Expression& tableExp);
 };

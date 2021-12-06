@@ -666,7 +666,16 @@ Expression Parser::ParseArg(int paramType, const Token& token) {
 Expression Parser::ParseVarAccess(const Token& nameToken) {
     const Var* var = definitions.FindVar(nameToken.data);
     if (var != NULL) {
-        return Expression(var->type, generator.GenVar(*var));
+        const Expression& exp = Expression(var->type, generator.GenVar(*var));
+        const Token& nextToken = stream.Peek();
+        if (nextToken.type == TOK_OPENBRACKET) {
+            if (var->type != TYPE_TABLE) {
+                ErrorEx("Only tables can be indexed", nameToken.file, nameToken.line);
+            }
+            return ParseTableAccess(exp);
+        } else {
+            return exp;
+        }
     } else {
         if (definitions.FindFunction(nameToken.data) != NULL) {
             ErrorEx("Expected '(' in function call", nameToken.file, nameToken.line);
@@ -675,6 +684,33 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
         }
         return Expression(TYPE_VOID, "");
     }
+}
+
+Expression Parser::ParseTableAccess(const Expression& tableExp) {
+    int type = tableExp.type;
+    string tableCode = tableExp.code;
+    Expression indexExp(TYPE_VOID, "");
+    while (stream.Peek().type == TOK_OPENBRACKET) {
+        stream.Skip(1); // [
+        const Token& expToken = stream.Peek();
+        indexExp = ParseExp();
+        if (indexExp.type != TYPE_INT && indexExp.type != TYPE_STRING) {
+            ErrorEx("Only int and string expressions can be used as table indices", expToken.file, expToken.line);
+        }
+        const Token& closeToken = stream.Next();
+        if (closeToken.type != TOK_CLOSEBRACKET) {
+            ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+        }
+        if (stream.Peek().type == TOK_OPENBRACKET) {
+            tableCode = generator.GenTableAccess(type, tableCode, indexExp);
+        }
+    }
+    const Token& typeToken = stream.Next();
+    if (!IsType(typeToken.type)) {
+        ErrorEx("Expected type suffix at end of table indexing", typeToken.file, typeToken.line);
+    }
+    type = GetType(typeToken.type);
+    return Expression(type, generator.GenTableAccess(type, tableCode, indexExp));
 }
 
 const Lib& Parser::GetLib() const {

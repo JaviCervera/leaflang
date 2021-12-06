@@ -232,6 +232,30 @@ string Generator::GenLiteral(const Token& token) const {
     }
 }
 
+string Generator::GenTableAccess(int type, const string& tableCode, const Expression& indexExp) const {
+    string funcName = "";
+    switch (type) {
+    case TYPE_INT:
+        funcName = "_TableInt";
+        break;
+    case TYPE_REAL:
+        funcName = "_TableReal";
+        break;
+    case TYPE_STRING:
+        funcName = "_TableString";
+        break;
+    case TYPE_TABLE:
+        funcName = "_TableTable";
+        break;
+    case TYPE_REF:
+        funcName = "_TableRef";
+        break;
+    }
+    return "pico." + funcName + "("
+        + tableCode
+        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
+}
+
 string Generator::GenIndent(int level) const {
     const string space = "    ";
     string indent;
