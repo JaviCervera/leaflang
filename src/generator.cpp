@@ -232,7 +232,7 @@ string Generator::GenLiteral(const Token& token) const {
     }
 }
 
-string Generator::GenTableAccess(int type, const string& tableCode, const Expression& indexExp) const {
+string Generator::GenTableGetter(int type, const string& tableCode, const Expression& indexExp) const {
     string funcName = "";
     switch (type) {
     case TYPE_INT:
@@ -254,6 +254,31 @@ string Generator::GenTableAccess(int type, const string& tableCode, const Expres
     return "pico." + funcName + "("
         + tableCode
         + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
+}
+
+string Generator::GenTableSetter(const string& tableCode, const Expression& indexExp, const Expression& valueExp) const {
+    string funcName = "";
+    switch (valueExp.type) {
+    case TYPE_INT:
+        funcName = "_SetTableInt";
+        break;
+    case TYPE_REAL:
+        funcName = "_SetTableReal";
+        break;
+    case TYPE_STRING:
+        funcName = "_SetTableString";
+        break;
+    case TYPE_TABLE:
+        funcName = "_SetTableTable";
+        break;
+    case TYPE_REF:
+        funcName = "_SetTableRef";
+        break;
+    }
+    return "pico." + funcName + "("
+        + tableCode
+        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")"))
+        + ", " + valueExp.code + ")";
 }
 
 string Generator::GenIndent(int level) const {

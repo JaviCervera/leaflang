@@ -39,6 +39,7 @@ private:
     std::string ParseBlock(int indent);
     std::string ParseStatement(int indent);
     bool IsAssignment() const;
+    int OffsetAfterIndexing(int offset) const;
     std::string ParseAssignment();
     const std::string& CheckId(const Token& token) const;
     void CheckTypes(int expected, int got, const Token& token);
@@ -76,5 +77,5 @@ private:
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);
     Expression ParseVarAccess(const Token& nameToken);
-    Expression ParseTableAccess(const Expression& tableExp);
+    Expression ParseTableAccess(const Expression& tableExp, bool isSetter);
 };

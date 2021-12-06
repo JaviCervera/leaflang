@@ -29,7 +29,8 @@ public:
     std::string GenArgs(const Function& func, const std::vector<Expression>& args) const;
     std::string GenVar(const Var& var) const;
     std::string GenLiteral(const Token& token) const;
-    std::string GenTableAccess(int type, const std::string& tableCode, const Expression& indexExp) const;
+    std::string GenTableGetter(int type, const std::string& tableCode, const Expression& indexExp) const;
+    std::string GenTableSetter(const std::string& tableCode, const Expression& indexExp, const Expression& valueExp) const;
     std::string GenIndent(int level) const;
 private:
     static std::string GenFunctionHeader(const Function& func);
