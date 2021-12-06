@@ -31,7 +31,7 @@ private:
     Function ParseFunctionHeader();
     const std::string& ParseFunctionName();
     std::vector<Var> ParseParams();
-    const std::string& ParseVar();
+    const std::string& ParseVarName();
     void ParseOpenParen();
     int ParseParamType();
     void ParseCloseParen();
@@ -39,6 +39,7 @@ private:
     std::string ParseBlock(int indent);
     std::string ParseStatement(int indent);
     bool IsAssignment() const;
+    int OffsetAfterIndexing(int offset) const;
     std::string ParseAssignment();
     const std::string& CheckId(const Token& token) const;
     void CheckTypes(int expected, int got, const Token& token);
@@ -63,6 +64,10 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
+    Expression ParseTableExp();
+    Expression ParseListExp();
+    Expression ParseDictExp();
+    void ParseDictEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
     Expression ParseCastExp();
     Expression ParseUnaryExp();
     Expression ParseGroupExp();
@@ -72,4 +77,5 @@ private:
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);
     Expression ParseVarAccess(const Token& nameToken);
+    Expression ParseTableAccess(const Expression& tableExp, bool isSetter);
 };

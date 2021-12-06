@@ -126,7 +126,7 @@ vector<Var> Parser::ParseParams() {
     vector<Var> params;
     ParseOpenParen();
     while (stream.Peek().type == TOK_ID) {
-        const string name = ParseVar();
+        const string name = ParseVarName();
         const int type = ParseParamType();
         Var param(name, type);
         definitions.AddLocal(param);
@@ -137,7 +137,7 @@ vector<Var> Parser::ParseParams() {
     return params;
 }
 
-const string& Parser::ParseVar() {
+const string& Parser::ParseVarName() {
     const Token& nameToken = stream.Next();
     if (nameToken.type != TOK_ID) {
         ErrorEx("Expected identifier, got '" + nameToken.data + "'", nameToken.file, nameToken.line);
@@ -206,9 +206,20 @@ string Parser::ParseStatement(int indent) {
 }
 
 bool Parser::IsAssignment() const {
-    const Token& current = stream.Peek();
-    const Token& next = stream.Peek(1);
-    return current.type == TOK_ID && next.type == TOK_ASSIGN;
+    const Token& idToken = stream.Peek();
+    const Token& assignToken = stream.Peek(OffsetAfterIndexing(1));
+    return idToken.type == TOK_ID && assignToken.type == TOK_ASSIGN;
+}
+
+int Parser::OffsetAfterIndexing(int offset) const {
+    while (stream.Peek(offset).type == TOK_OPENBRACKET) {
+        ++offset;
+        while (stream.HasNext() && stream.Peek(offset).type != TOK_CLOSEBRACKET) {
+            ++offset;
+        }
+        ++offset;
+    }
+    return offset;
 }
 
 string Parser::ParseAssignment() {
@@ -218,17 +229,20 @@ string Parser::ParseAssignment() {
         ErrorEx("Cannot assign to a function", nameToken.file, nameToken.line);
     }
     const Var* var = definitions.FindVar(varName);
-    string assignment;
-    if (var == NULL) {
-        assignment = ParseVarDef();
+    if (var == NULL) return ParseVarDef();
+    stream.Skip(1); // name
+    if (stream.Peek().type == TOK_OPENBRACKET) {
+        if (var->type != TYPE_TABLE) {
+            ErrorEx("Only tables can be indexed", nameToken.file, nameToken.line);
+        }
+        return ParseTableAccess(Expression(var->type, generator.GenVar(*var)), true).code;
     } else {
-        stream.Skip(2); // name =
+        stream.Skip(1); // =
         const Token token = stream.Peek();
         const Expression exp = ParseExp();
         CheckTypes(var->type, exp.type, token);
-        assignment = generator.GenAssignment(*var, exp.type, exp.code);
+        return generator.GenAssignment(*var, exp.type, exp.code);
     }
-    return assignment;
 }
 
 const string& Parser::CheckId(const Token& token) const {
@@ -388,7 +402,7 @@ string Parser::ParseReturn(int indent) {
 }
 
 string Parser::ParseVarDef() {
-    const string name = ParseVar();
+    const string name = ParseVarName();
     const Token& assignToken = stream.Next();
     if (assignToken.type != TOK_ASSIGN) {
         ErrorEx("Variables must be initialized", assignToken.file, assignToken.line);
@@ -482,7 +496,7 @@ Expression Parser::ParseAddExp() {
 }
 
 Expression Parser::ParseMulExp() {
-    Expression exp = ParseCastExp();
+    Expression exp = ParseTableExp();
     while (stream.Peek().type == TOK_MUL || stream.Peek().type == TOK_DIV
             || stream.Peek().type == TOK_MOD) {
         const Token& token = stream.Next();
@@ -490,12 +504,72 @@ Expression Parser::ParseMulExp() {
             ErrorEx("Multiplication and division can only be applied to numeric types",
                 token.file, token.line);
         }
-        const Expression exp2 = ParseCastExp();
+        const Expression exp2 = ParseTableExp();
         CheckTypes(exp.type, exp2.type, token);
         const int expType = BalanceTypes(exp.type, exp2.type);
         exp = Expression(expType, generator.GenBinaryExp(expType, token, exp.code, exp2.code));
     }
     return exp;
+}
+
+Expression Parser::ParseTableExp() {
+    if (stream.Peek().type == TOK_OPENBRACKET) {
+        return ParseListExp();
+    } else if (stream.Peek().type == TOK_OPENBRACE) {
+        return ParseDictExp();
+    } else {
+        return ParseCastExp();
+    }
+}
+
+Expression Parser::ParseListExp() {
+    vector<Expression> values;
+    stream.Skip(1); // [
+    if (stream.Peek().type != TOK_CLOSEBRACKET) {
+        values.push_back(ParseExp());
+        while (stream.Peek().type == TOK_COMMA) {
+            stream.Skip(1); // ,
+            values.push_back(ParseExp());
+        }
+    }
+    const Token& closeToken = stream.Next();
+    if (closeToken.type != TOK_CLOSEBRACKET) {
+        ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+    }
+    return Expression(TYPE_TABLE, generator.GenList(values));
+}
+
+Expression Parser::ParseDictExp() {
+    vector<Expression> keys;
+    vector<Expression> values;
+    stream.Skip(1); // {
+    if (stream.Peek().type != TOK_CLOSEBRACE) {
+        ParseDictEntry(keys, values);
+        while (stream.Peek().type == TOK_COMMA) {
+            stream.Skip(1); // ,
+            ParseDictEntry(keys, values);
+        }
+    }
+    const Token& closeToken = stream.Next();
+    if (closeToken.type != TOK_CLOSEBRACE) {
+        ErrorEx("Expected '}', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+    }
+    return Expression(TYPE_TABLE, generator.GenDict(keys, values));
+}
+
+void Parser::ParseDictEntry(vector<Expression>& keys, vector<Expression>& values) {
+    const Token& keyToken = stream.Peek();
+    const Expression keyExp = ParseExp();
+    if (keyExp.type != TYPE_STRING) {
+        ErrorEx("Expected string expression as key.", keyToken.file, keyToken.line);
+    }
+    const Token& colonToken = stream.Next();
+    if (colonToken.type != TOK_COLON) {
+        ErrorEx("Expected ':', got '" + colonToken.data + "'", colonToken.file, colonToken.line);
+    }
+    const Expression valueExp = ParseExp();
+    keys.push_back(keyExp);
+    values.push_back(valueExp);
 }
 
 Expression Parser::ParseCastExp() {
@@ -606,7 +680,16 @@ Expression Parser::ParseArg(int paramType, const Token& token) {
 Expression Parser::ParseVarAccess(const Token& nameToken) {
     const Var* var = definitions.FindVar(nameToken.data);
     if (var != NULL) {
-        return Expression(var->type, generator.GenVar(*var));
+        const Expression& exp = Expression(var->type, generator.GenVar(*var));
+        const Token& nextToken = stream.Peek();
+        if (nextToken.type == TOK_OPENBRACKET) {
+            if (var->type != TYPE_TABLE) {
+                ErrorEx("Only tables can be indexed", nameToken.file, nameToken.line);
+            }
+            return ParseTableAccess(exp, false);
+        } else {
+            return exp;
+        }
     } else {
         if (definitions.FindFunction(nameToken.data) != NULL) {
             ErrorEx("Expected '(' in function call", nameToken.file, nameToken.line);
@@ -614,6 +697,39 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
             ErrorEx("Variable has not been initialized: " + nameToken.data, nameToken.file, nameToken.line);
         }
         return Expression(TYPE_VOID, "");
+    }
+}
+
+Expression Parser::ParseTableAccess(const Expression& tableExp, bool isSetter) {
+    int type = tableExp.type;
+    string tableCode = tableExp.code;
+    Expression indexExp(TYPE_VOID, "");
+    while (stream.Peek().type == TOK_OPENBRACKET) {
+        stream.Skip(1); // [
+        const Token& expToken = stream.Peek();
+        indexExp = ParseExp();
+        if (indexExp.type != TYPE_INT && indexExp.type != TYPE_STRING) {
+            ErrorEx("Only int and string expressions can be used as table indices", expToken.file, expToken.line);
+        }
+        const Token& closeToken = stream.Next();
+        if (closeToken.type != TOK_CLOSEBRACKET) {
+            ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+        }
+        if (stream.Peek().type == TOK_OPENBRACKET) {
+            tableCode = generator.GenTableGetter(type, tableCode, indexExp);
+        }
+    }
+    if (isSetter) {
+        stream.Skip(1); // =
+        const Expression exp = ParseExp();
+        return Expression(exp.type, generator.GenTableSetter(tableCode, indexExp, exp));
+    } else {
+        const Token& typeToken = stream.Next();
+        if (!IsType(typeToken.type)) {
+            ErrorEx("Expected type suffix at end of table indexing", typeToken.file, typeToken.line);
+        }
+        type = GetType(typeToken.type);
+        return Expression(type, generator.GenTableGetter(type, tableCode, indexExp));
     }
 }
 

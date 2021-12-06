@@ -20,6 +20,8 @@ public:
     std::string GenVarDef(const Var& var, int expType, const std::string& exp, bool isGlobal) const;
     std::string GenAssignment(const Var& var, int expType, const std::string& exp) const;
     std::string GenBinaryExp(int expType, const Token& token, const std::string& left, const std::string& right) const;
+    std::string GenList(const std::vector<Expression>& values) const;
+    std::string GenDict(const std::vector<Expression>& keys, const std::vector<Expression>& values) const;
     std::string GenCastExp(int castType, int expType, const std::string& exp) const;
     std::string GenUnaryExp(const Token& token, const std::string& exp) const;
     std::string GenGroupExp(const std::string& exp) const;
@@ -27,6 +29,8 @@ public:
     std::string GenArgs(const Function& func, const std::vector<Expression>& args) const;
     std::string GenVar(const Var& var) const;
     std::string GenLiteral(const Token& token) const;
+    std::string GenTableGetter(int type, const std::string& tableCode, const Expression& indexExp) const;
+    std::string GenTableSetter(const std::string& tableCode, const Expression& indexExp, const Expression& valueExp) const;
     std::string GenIndent(int level) const;
 private:
     static std::string GenFunctionHeader(const Function& func);

@@ -124,6 +124,64 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (left + op + right);
 }
 
+string Generator::GenList(const vector<Expression>& values) const {
+    string str = "pico._CreateTable()";
+    for (size_t i = 0; i < values.size(); ++i) {
+        string funcName = "";
+        switch (values[i].type) {
+        case TYPE_INT:
+            funcName = "_SetTableInt";
+            break;
+        case TYPE_REAL:
+            funcName = "_SetTableReal";
+            break;
+        case TYPE_STRING:
+            funcName = "_SetTableString";
+            break;
+        case TYPE_TABLE:
+            funcName = "_SetTableTable";
+            break;
+        case TYPE_REF:
+            funcName = "_SetTableRef";
+            break;
+        }
+        str = "pico." + funcName + "("
+            + str
+            + ", _int2string(" + strmanip::fromint(i)
+            + "), " + values[i].code + ")";
+    }
+    return str;
+}
+
+string Generator::GenDict(const vector<Expression>& keys, const vector<Expression>& values) const {
+    string str = "pico._CreateTable()";
+    for (size_t i = 0; i < values.size(); ++i) {
+        string funcName = "";
+        switch (values[i].type) {
+        case TYPE_INT:
+            funcName = "_SetTableInt";
+            break;
+        case TYPE_REAL:
+            funcName = "_SetTableReal";
+            break;
+        case TYPE_STRING:
+            funcName = "_SetTableString";
+            break;
+        case TYPE_TABLE:
+            funcName = "_SetTableTable";
+            break;
+        case TYPE_REF:
+            funcName = "_SetTableRef";
+            break;
+        }
+        str = "pico." + funcName + "("
+            + str
+            + ", " + keys[i].code
+            + ", " + values[i].code + ")";
+    }
+    return str;
+}
+
 string Generator::GenCastExp(int castType, int expType, const std::string& exp) const {
     const string expTypeName = GenType(expType);
     const string castTypeName = GenType(castType);
@@ -172,6 +230,55 @@ string Generator::GenLiteral(const Token& token) const {
     default:
         return "<unknown>";
     }
+}
+
+string Generator::GenTableGetter(int type, const string& tableCode, const Expression& indexExp) const {
+    string funcName = "";
+    switch (type) {
+    case TYPE_INT:
+        funcName = "_TableInt";
+        break;
+    case TYPE_REAL:
+        funcName = "_TableReal";
+        break;
+    case TYPE_STRING:
+        funcName = "_TableString";
+        break;
+    case TYPE_TABLE:
+        funcName = "_TableTable";
+        break;
+    case TYPE_REF:
+        funcName = "_TableRef";
+        break;
+    }
+    return "pico." + funcName + "("
+        + tableCode
+        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
+}
+
+string Generator::GenTableSetter(const string& tableCode, const Expression& indexExp, const Expression& valueExp) const {
+    string funcName = "";
+    switch (valueExp.type) {
+    case TYPE_INT:
+        funcName = "_SetTableInt";
+        break;
+    case TYPE_REAL:
+        funcName = "_SetTableReal";
+        break;
+    case TYPE_STRING:
+        funcName = "_SetTableString";
+        break;
+    case TYPE_TABLE:
+        funcName = "_SetTableTable";
+        break;
+    case TYPE_REF:
+        funcName = "_SetTableRef";
+        break;
+    }
+    return "pico." + funcName + "("
+        + tableCode
+        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")"))
+        + ", " + valueExp.code + ")";
 }
 
 string Generator::GenIndent(int level) const {

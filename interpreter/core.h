@@ -135,27 +135,17 @@ void SaveString(const char* filename, const char* str, int append);
 // Table
 // ------------------------------------
 
-Table* DimTable();
-void SetTableInt(Table* table, const char* key, int value);
-void SetTableReal(Table* table, const char* key, float value);
-void SetTableString(Table* table, const char* key, const char* value);
-void SetTableTable(Table* table, const char* key, Table* value);
-void SetTableRef(Table* table, const char* key, void* value);
-int TableInt(const Table* table, const char* key);
-float TableReal(const Table* table, const char* key);
-const char* TableString(const Table* table, const char* key);
-Table* TableTable(const Table* table, const char* key);
-void* TableRef(const Table* table, const char* key);
-void SetIndexInt(Table* table, size_t index, int value);
-void SetIndexReal(Table* table, size_t index, float value);
-void SetIndexString(Table* table, size_t index, const char* value);
-void SetIndexTable(Table* table, size_t index, Table* value);
-void SetIndexRef(Table* table, size_t index, void* value);
-int IndexInt(const Table* table, size_t index);
-float IndexReal(const Table* table, size_t index);
-const char* IndexString(const Table* table, size_t index);
-Table* IndexTable(const Table* table, size_t index);
-void* IndexRef(const Table* table, size_t index);
+Table* _CreateTable();
+Table* _SetTableInt(Table* table, const char* key, int value);
+Table* _SetTableReal(Table* table, const char* key, float value);
+Table* _SetTableString(Table* table, const char* key, const char* value);
+Table* _SetTableTable(Table* table, const char* key, Table* value);
+Table* _SetTableRef(Table* table, const char* key, void* value);
+int _TableInt(const Table* table, const char* key);
+float _TableReal(const Table* table, const char* key);
+const char* _TableString(const Table* table, const char* key);
+Table* _TableTable(const Table* table, const char* key);
+void* _TableRef(const Table* table, const char* key);
 int Contains(const Table* table, const char* key);
 void Remove(Table* table, const char* key);
 int Size(const Table* table);
