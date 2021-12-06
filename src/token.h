@@ -32,10 +32,15 @@
 
 // Separators
 #define TOK_COMMA 30
-#define TOK_SEMICOLON 31
-#define TOK_OPENPAREN 32
-#define TOK_CLOSEPAREN 33
-#define TOK_EOL 34
+#define TOK_COLON 31
+#define TOK_SEMICOLON 32
+#define TOK_OPENPAREN 33
+#define TOK_CLOSEPAREN 34
+#define TOK_OPENBRACKET 35
+#define TOK_CLOSEBRACKET 36
+#define TOK_OPENBRACE 37
+#define TOK_CLOSEBRACE 38
+#define TOK_EOL 39
 
 // Control statements
 #define TOK_IF 40

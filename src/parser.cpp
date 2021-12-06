@@ -126,7 +126,7 @@ vector<Var> Parser::ParseParams() {
     vector<Var> params;
     ParseOpenParen();
     while (stream.Peek().type == TOK_ID) {
-        const string name = ParseVar();
+        const string name = ParseVarName();
         const int type = ParseParamType();
         Var param(name, type);
         definitions.AddLocal(param);
@@ -137,7 +137,7 @@ vector<Var> Parser::ParseParams() {
     return params;
 }
 
-const string& Parser::ParseVar() {
+const string& Parser::ParseVarName() {
     const Token& nameToken = stream.Next();
     if (nameToken.type != TOK_ID) {
         ErrorEx("Expected identifier, got '" + nameToken.data + "'", nameToken.file, nameToken.line);
@@ -388,7 +388,7 @@ string Parser::ParseReturn(int indent) {
 }
 
 string Parser::ParseVarDef() {
-    const string name = ParseVar();
+    const string name = ParseVarName();
     const Token& assignToken = stream.Next();
     if (assignToken.type != TOK_ASSIGN) {
         ErrorEx("Variables must be initialized", assignToken.file, assignToken.line);
@@ -482,7 +482,7 @@ Expression Parser::ParseAddExp() {
 }
 
 Expression Parser::ParseMulExp() {
-    Expression exp = ParseCastExp();
+    Expression exp = ParseTableExp();
     while (stream.Peek().type == TOK_MUL || stream.Peek().type == TOK_DIV
             || stream.Peek().type == TOK_MOD) {
         const Token& token = stream.Next();
@@ -490,12 +490,72 @@ Expression Parser::ParseMulExp() {
             ErrorEx("Multiplication and division can only be applied to numeric types",
                 token.file, token.line);
         }
-        const Expression exp2 = ParseCastExp();
+        const Expression exp2 = ParseTableExp();
         CheckTypes(exp.type, exp2.type, token);
         const int expType = BalanceTypes(exp.type, exp2.type);
         exp = Expression(expType, generator.GenBinaryExp(expType, token, exp.code, exp2.code));
     }
     return exp;
+}
+
+Expression Parser::ParseTableExp() {
+    if (stream.Peek().type == TOK_OPENBRACKET) {
+        return ParseListExp();
+    } else if (stream.Peek().type == TOK_OPENBRACE) {
+        return ParseDictExp();
+    } else {
+        return ParseCastExp();
+    }
+}
+
+Expression Parser::ParseListExp() {
+    vector<Expression> values;
+    stream.Skip(1); // [
+    if (stream.Peek().type != TOK_CLOSEBRACKET) {
+        values.push_back(ParseExp());
+        while (stream.Peek().type == TOK_COMMA) {
+            stream.Skip(1); // ,
+            values.push_back(ParseExp());
+        }
+    }
+    const Token& closeToken = stream.Next();
+    if (closeToken.type != TOK_CLOSEBRACKET) {
+        ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+    }
+    return Expression(TYPE_TABLE, generator.GenList(values));
+}
+
+Expression Parser::ParseDictExp() {
+    vector<Expression> keys;
+    vector<Expression> values;
+    stream.Skip(1); // {
+    if (stream.Peek().type != TOK_CLOSEBRACE) {
+        ParseDictEntry(keys, values);
+        while (stream.Peek().type == TOK_COMMA) {
+            stream.Skip(1); // ,
+            ParseDictEntry(keys, values);
+        }
+    }
+    const Token& closeToken = stream.Next();
+    if (closeToken.type != TOK_CLOSEBRACE) {
+        ErrorEx("Expected '}', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+    }
+    return Expression(TYPE_TABLE, generator.GenDict(keys, values));
+}
+
+void Parser::ParseDictEntry(vector<Expression>& keys, vector<Expression>& values) {
+    const Token& keyToken = stream.Peek();
+    const Expression keyExp = ParseExp();
+    if (keyExp.type != TYPE_STRING) {
+        ErrorEx("Expected string expression as key.", keyToken.file, keyToken.line);
+    }
+    const Token& colonToken = stream.Next();
+    if (colonToken.type != TOK_COLON) {
+        ErrorEx("Expected ':', got '" + colonToken.data + "'", colonToken.file, colonToken.line);
+    }
+    const Expression valueExp = ParseExp();
+    keys.push_back(keyExp);
+    values.push_back(valueExp);
 }
 
 Expression Parser::ParseCastExp() {

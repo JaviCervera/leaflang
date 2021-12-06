@@ -156,12 +156,12 @@ extern "C" {
 // ------------------------------------
 
 static string pico_appName;
-static Table* pico_appArgs = (Table*)_IncRef(DimTable());
+static Table* pico_appArgs = (Table*)_IncRef(_CreateTable());
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = argv[0];
     for (int i = 1; i < argc; ++i) {
-        SetIndexString(pico_appArgs, i - 1, argv[i]);
+        _SetTableString(pico_appArgs, Str(i - 1), argv[i]);
     }
 }
 
@@ -217,10 +217,10 @@ void Print(const char* msg) {
 
 Table* DirContents(const char* path) {
     const vector<string> contents = dir::contents(path);
-    Table* table = DimTable();
+    Table* table = _CreateTable();
     int i = 0;
     for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        SetIndexString(table, i++, (*it).c_str());
+        _SetTableString(table, Str(i++), (*it).c_str());
     }
     return table;
 }
@@ -503,7 +503,7 @@ const char* Join(Table* table, const char* separator) {
     const int size = Size(table);
     for (int i = 0; i < size; ++i) {
         if (i > 0) result += separator;
-        result += IndexString(table, i);
+        result += _TableString(table, Str(i));
     }
     return result.c_str();
 }
@@ -511,10 +511,10 @@ const char* Join(Table* table, const char* separator) {
 Table* Split(const char* str, const char* separator) {
     const char delim = (Len(separator) > 0) ? separator[0] : ' ';
     const vector<string> split = strmanip::split(str, delim);
-    Table* table = DimTable();
+    Table* table = _CreateTable();
     int i = 0;
     for (vector<string>::const_iterator it = split.begin(); it != split.end(); ++it) {
-        SetIndexString(table, i++, (*it).c_str());
+        _SetTableString(table, Str(i++), (*it).c_str());
     }
     return table;
 }
@@ -592,7 +592,7 @@ void _DestroyTable(Table* table) {
     free(RefCounter::FromPtr(table));
 }
 
-Table* DimTable() {
+Table* _CreateTable() {
     RefCounter* rc = (RefCounter*)malloc(sizeof(RefCounter) + sizeof(Table));
     new (rc) RefCounter((RefCounterDeleter)_DestroyTable);
     new (rc->GetPtr()) Table();
@@ -605,100 +605,65 @@ void _ClearTableKey(Table* table, const char* key) {
     }
 }
 
-void SetTableInt(Table* table, const char* key, int value) {
+Table* _SetTableInt(Table* table, const char* key, int value) {
     _ClearTableKey(table, key);
     (*table)[key] = value;
+    return table;
 }
 
-void SetTableReal(Table* table, const char* key, float value) {
+Table* _SetTableReal(Table* table, const char* key, float value) {
     _ClearTableKey(table, key);
     (*table)[key] = value;
+    return table;
 }
 
-void SetTableString(Table* table, const char* key, const char* value) {
+Table* _SetTableString(Table* table, const char* key, const char* value) {
     _ClearTableKey(table, key);
     (*table)[key] = value;
+    return table;
 }
 
-void SetTableTable(Table* table, const char* key, Table* value) {
+Table* _SetTableTable(Table* table, const char* key, Table* value) {
     _IncRef(value);
     _ClearTableKey(table, key);
     (*table)[key] = value;
+    return table;
 }
 
-void SetTableRef(Table* table, const char* key, void* value) {
+Table* _SetTableRef(Table* table, const char* key, void* value) {
     _ClearTableKey(table, key);
     (*table)[key] = value;
+    return table;
 }
 
-int TableInt(const Table* table, const char* key) {
+int _TableInt(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].i
         : 0;
 }
 
-float TableReal(const Table* table, const char* key) {
+float _TableReal(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].f
         : 0.0f;
 }
 
-const char* TableString(const Table* table, const char* key) {
+const char* _TableString(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].s.c_str()
         : "";
 }
 
-Table* TableTable(const Table* table, const char* key) {
+Table* _TableTable(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].t
         : NULL;
 }
 
-void* TableRef(const Table* table, const char* key) {
+void* _TableRef(const Table* table, const char* key) {
     return (Contains(table, key))
         ? (*(Table*)table)[key].r
         : NULL;
-}
-
-void SetIndexInt(Table* table, size_t index, int value) {
-    SetTableInt(table, Str(index), value);
-}
-
-void SetIndexReal(Table* table, size_t index, float value) {
-    SetTableReal(table, Str(index), value);
-}
-
-void SetIndexString(Table* table, size_t index, const char* value) {
-    SetTableString(table, Str(index), value);
-}
-
-void SetIndexTable(Table* table, size_t index, Table* value) {
-    SetTableTable(table, Str(index), value);
-}
-
-void SetIndexRef(Table* table, size_t index, void* value) {
-    SetTableRef(table, Str(index), value);
-}
-
-int IndexInt(const Table* table, size_t index) {
-    return TableInt(table, Str(index));
-}
-
-float IndexReal(const Table* table, size_t index) {
-    return TableReal(table, Str(index));
-}
-
-const char* IndexString(const Table* table, size_t index) {
-    return TableString(table, Str(index));
-}
-
-Table* IndexTable(const Table* table, size_t index) {
-    return TableTable(table, Str(index));
-}
-
-void* IndexRef(const Table* table, size_t index) {
-    return TableRef(table, Str(index));
 }
 
 int Contains(const Table* table, const char* key) {

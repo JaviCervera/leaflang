@@ -31,7 +31,7 @@ private:
     Function ParseFunctionHeader();
     const std::string& ParseFunctionName();
     std::vector<Var> ParseParams();
-    const std::string& ParseVar();
+    const std::string& ParseVarName();
     void ParseOpenParen();
     int ParseParamType();
     void ParseCloseParen();
@@ -63,6 +63,10 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
+    Expression ParseTableExp();
+    Expression ParseListExp();
+    Expression ParseDictExp();
+    void ParseDictEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
     Expression ParseCastExp();
     Expression ParseUnaryExp();
     Expression ParseGroupExp();

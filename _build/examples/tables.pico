@@ -1,3 +1,8 @@
-table = DimTable()
-SetTableString(table, "msg", "Hello")
-Print(TableString(table, "msg"))
+table = {"msg": "Hello"}
+//Print(table["msg"]$)
+
+list = ["One", "Two", "Three"]
+Print(Size(list)$)
+for i = 0 to Size(list) - 1 do
+    //Print(list[i]$)
+end
