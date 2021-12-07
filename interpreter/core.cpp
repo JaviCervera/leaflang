@@ -1,7 +1,6 @@
 #include <cmath>
 #define CORE_IMPL
 #include "core.h"
-#include "../src/swan/console.hh"
 #include "../src/swan/dir.hh"
 #include "../src/swan/file.hh"
 #include "../src/swan/platform.hh"
@@ -66,13 +65,15 @@ void _DoAutoDec() {
 // ------------------------------------
 
 const char* Input(const char* prompt) {
-    static string result;
-    result = Replace(console::input(prompt).c_str(), "\n", "");
-    return result.c_str();
+    char buffer[1024];
+    printf("%s", prompt);
+    fgets(buffer, 1024, stdin);
+    return lstr_get(buffer);
 }
 
 void Print(const char* msg) {
-    console::println(msg);
+    printf("%s\n", msg);
+    fflush(stdout);
 }
 
 // ------------------------------------
