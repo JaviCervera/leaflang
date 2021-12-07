@@ -1,9 +1,18 @@
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
+#ifndef _MSC_VER
+#include <dirent.h>
+#include <unistd.h>
+#define _getcwd getcwd
+#define _chdir chdir
+#else
+#include <direct.h>
+#include "dirent.h"
+#endif
 #define CORE_IMPL
 #include "core.h"
-#include "../src/swan/dir.hh"
 #include "../src/swan/strmanip.hh"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
@@ -96,29 +105,32 @@ void Print(const char* msg) {
 // ------------------------------------
 
 Hash* DirContents(const char* path) {
-    const vector<string> contents = dir::contents(path);
     Hash* hash = _CreateHash();
+    DIR* d = (DIR*)opendir(path);
+    if (d == NULL) return hash;
+    struct dirent* entry;
     int i = 0;
-    for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        _SetHashString(hash, Str(i++), (*it).c_str());
+    while ((entry = (struct dirent*)readdir(d))) {
+        _SetHashString(hash, Str(i++), entry->d_name);
     }
+    closedir(d);
     return hash;
 }
 
 const char* CurrentDir() {
-    static string result;
-    result = dir::current();
-    return result.c_str();
+    char buf[FILENAME_MAX];
+    _getcwd(buf, FILENAME_MAX);
+    return lstr_get(buf);
 }
 
 void ChangeDir(const char* dir) {
-    dir::change(dir);
+    _chdir(dir);
 }
 
 const char* FullPath(const char* filename) {
-    static string result;
-    result = dir::real_path(filename);
-    return result.c_str();
+    char out_path[FILENAME_MAX];
+    realpath(filename, out_path);
+    return lstr_get(out_path);
 }
 
 // ------------------------------------
