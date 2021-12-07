@@ -1,14 +1,19 @@
-#include <cmath>
+#include <math.h>
+#include <stdio.h>
 #define CORE_IMPL
 #include "core.h"
 #include "../src/swan/dir.hh"
 #include "../src/swan/file.hh"
-#include "../src/swan/platform.hh"
 #include "../src/swan/strmanip.hh"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
 #define STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
+
+#ifdef _WIN32
+#define popen _popen
+#define pclose _pclose
+#endif
 
 using namespace std;
 using namespace swan;
@@ -38,9 +43,15 @@ Hash* AppArgs() {
 }
 
 const char* Run(const char* command) {
-    static string result;
-    result = platform::run(command);
-    return result.c_str();
+    char tmp[65536];
+    FILE* pipe = popen(command, "rt");
+    if (!pipe) return lstr_get("");
+    while (!feof(pipe)) {
+        char tmp2[128];
+        if (fgets(tmp2, 128, pipe) != 0) strcat(tmp, tmp2);
+    }
+    pclose(pipe);
+    return lstr_get(tmp);
 }
 
 void* _IncRef(void* ptr) {
