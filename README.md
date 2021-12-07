@@ -4,7 +4,7 @@ A super simple interpreted language inspired by Lua and BASIC. It transpiles to 
 custom interpreter that, in the future, will be able to load modules from dynamic libraries.
 
 The language is imperative and supports classic procedural programming. It has no structs, but
-tables can be used to group data instead.
+hashes can be used to group data instead.
 
 ## Language syntax
 
@@ -33,15 +33,15 @@ it is on a different line.
 
 ### Data types
 
-Pico can represent four types of data:
+Pico can represent these types of data:
 
 * Integer numbers.
 * Real numbers.
 * Strings.
+* Hashes.
 * References.
 
-A reference points to data that is defined by an external library, or to compund data
-(for example, a table).
+Hashes are associative collections of string keys and values of any type. References point to data that is defined by an external library.
 
 ### Variables
 
@@ -59,18 +59,18 @@ text = "Hello"
 When assigning a value to a variable, the type of the value must be compatible with the type of the
 variable (for example, a string value cannot be assigned to an integer variable). To assign an
 incompatible type, expression must be cast. A cast is performed by adding a suffix to the end of an
-expression, an approach taken from BASIC. The suffixes are:
+expression. The valid suffixes are:
 
-* `%`: Integer.
-* `#`: Real.
-* `$`: String.
+* `|i`: Integer.
+* `|r`: Real.
+* `|s`: String.
 
 For example:
 
 ```
-integer = "128"%
-real = "36.12"#
-string = 5$
+integer = "128"|i
+real = "36.12"|r
+string = 5|s
 ```
 
 Variables initialized within functions will be local the function (so two variables with the same

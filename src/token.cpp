@@ -95,8 +95,8 @@ int GetType(int type) {
         return TYPE_REAL;
     case TOK_STRING:
         return TYPE_STRING;
-    case TOK_TABLE:
-        return TYPE_TABLE;
+    case TOK_HASH:
+        return TYPE_HASH;
     case TOK_REF:
         return TYPE_REF;
     default:
@@ -267,11 +267,11 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("]");
         symbols.push_back("{");
         symbols.push_back("}");
-        symbols.push_back("%");
-        symbols.push_back("#");
-        symbols.push_back("$");
-        symbols.push_back("!");
-        symbols.push_back("@");
+        symbols.push_back("|i");
+        symbols.push_back("|f");
+        symbols.push_back("|s");
+        symbols.push_back("|h");
+        symbols.push_back("|w");
     }
     for (size_t i = 0; i < symbols.size(); ++i) {
         string str = "";
@@ -322,11 +322,11 @@ int TokenType(const string& str) {
         types["while"] = TOK_WHILE;
         types["return"] = TOK_RETURN;
         types["function"] = TOK_FUNCTION;
-        types["%"] = TOK_INT;
-        types["#"] = TOK_REAL;
-        types["$"] = TOK_STRING;
-        types["!"] = TOK_TABLE;
-        types["@"] = TOK_REF;
+        types["|i"] = TOK_INT;
+        types["|f"] = TOK_REAL;
+        types["|s"] = TOK_STRING;
+        types["|h"] = TOK_HASH;
+        types["|w"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;
         types["true"] = TOK_TRUELITERAL;
         types["false"] = TOK_FALSELITERAL;

@@ -73,8 +73,8 @@ string GenTypeName(int type) {
         return "float ";
     case TYPE_STRING:
         return "const char* ";
-    case TYPE_TABLE:
-        return "Table* ";
+    case TYPE_HASH:
+        return "Hash* ";
     case TYPE_REF:
         return "void* ";
     default:
@@ -90,8 +90,8 @@ string GenLuaArg(const Var& param) {
         return "lua_tonumber";
     case TYPE_STRING:
         return "lua_tostring";
-    case TYPE_TABLE:
-        return "(Table*)lua_topointer";
+    case TYPE_HASH:
+        return "(Hash*)lua_topointer";
     case TYPE_REF:
         return "(void*)lua_topointer";
     default:
@@ -121,7 +121,7 @@ string GenLuaReturn(int type) {
         return "    lua_pushnumber(L, result);\n";
     case TYPE_STRING:
         return "    lua_pushstring(L, result);\n";
-    case TYPE_TABLE:
+    case TYPE_HASH:
         return "    lua_pushlightuserdata(L, result);\n";
     case TYPE_REF:
         return "    lua_pushlightuserdata(L, result);\n";
@@ -184,15 +184,15 @@ string GenFunction(const Function* func) {
 string GenTypeSuffix(int type) {
     switch (type) {
     case TYPE_INT:
-        return "%";
+        return "|i";
     case TYPE_REAL:
-        return "#";
+        return "|f";
     case TYPE_STRING:
-        return "$";
-    case TYPE_TABLE:
-        return "!";
+        return "|s";
+    case TYPE_HASH:
+        return "|h";
     case TYPE_REF:
-        return "@";
+        return "|w";
     default:
         return "";
     }

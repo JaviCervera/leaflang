@@ -85,7 +85,7 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
     return GenFunctionCleanup(func, definitions.GetLocals(), exp)
         + "do return "
-        + ((func->type == TYPE_TABLE) ? ("pico._AutoDec(" + exp + ")") : exp)
+        + ((func->type == TYPE_HASH) ? ("pico._AutoDec(" + exp + ")") : exp)
         + " end\n";
 }
 
@@ -95,7 +95,7 @@ string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool
 
 string Generator::GenAssignment(const Var& var, int expType, const string& exp) const {
     const string varId = GenVarId(var.name);
-    if (expType == TYPE_TABLE) {
+    if (expType == TYPE_HASH) {
         return varId + " = _onassign(" + varId + ", " + exp + ")";
     } else {
         return varId + " = " + exp;
@@ -125,24 +125,24 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
 }
 
 string Generator::GenList(const vector<Expression>& values) const {
-    string str = "pico._CreateTable()";
+    string str = "pico._CreateHash()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
         switch (values[i].type) {
         case TYPE_INT:
-            funcName = "_SetTableInt";
+            funcName = "_SetHashInt";
             break;
         case TYPE_REAL:
-            funcName = "_SetTableReal";
+            funcName = "_SetHashReal";
             break;
         case TYPE_STRING:
-            funcName = "_SetTableString";
+            funcName = "_SetHashString";
             break;
-        case TYPE_TABLE:
-            funcName = "_SetTableTable";
+        case TYPE_HASH:
+            funcName = "_SetHashHash";
             break;
         case TYPE_REF:
-            funcName = "_SetTableRef";
+            funcName = "_SetHashRef";
             break;
         }
         str = "pico." + funcName + "("
@@ -154,24 +154,24 @@ string Generator::GenList(const vector<Expression>& values) const {
 }
 
 string Generator::GenDict(const vector<Expression>& keys, const vector<Expression>& values) const {
-    string str = "pico._CreateTable()";
+    string str = "pico._CreateHash()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
         switch (values[i].type) {
         case TYPE_INT:
-            funcName = "_SetTableInt";
+            funcName = "_SetHashInt";
             break;
         case TYPE_REAL:
-            funcName = "_SetTableReal";
+            funcName = "_SetHashReal";
             break;
         case TYPE_STRING:
-            funcName = "_SetTableString";
+            funcName = "_SetHashString";
             break;
-        case TYPE_TABLE:
-            funcName = "_SetTableTable";
+        case TYPE_HASH:
+            funcName = "_SetHashHash";
             break;
         case TYPE_REF:
-            funcName = "_SetTableRef";
+            funcName = "_SetHashRef";
             break;
         }
         str = "pico." + funcName + "("
@@ -232,51 +232,51 @@ string Generator::GenLiteral(const Token& token) const {
     }
 }
 
-string Generator::GenTableGetter(int type, const string& tableCode, const Expression& indexExp) const {
+string Generator::GenHashGetter(int type, const string& hashCode, const Expression& indexExp) const {
     string funcName = "";
     switch (type) {
     case TYPE_INT:
-        funcName = "_TableInt";
+        funcName = "_HashInt";
         break;
     case TYPE_REAL:
-        funcName = "_TableReal";
+        funcName = "_HashReal";
         break;
     case TYPE_STRING:
-        funcName = "_TableString";
+        funcName = "_HashString";
         break;
-    case TYPE_TABLE:
-        funcName = "_TableTable";
+    case TYPE_HASH:
+        funcName = "_HashHash";
         break;
     case TYPE_REF:
-        funcName = "_TableRef";
+        funcName = "_HashRef";
         break;
     }
     return "pico." + funcName + "("
-        + tableCode
+        + hashCode
         + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
 }
 
-string Generator::GenTableSetter(const string& tableCode, const Expression& indexExp, const Expression& valueExp) const {
+string Generator::GenHashSetter(const string& hashCode, const Expression& indexExp, const Expression& valueExp) const {
     string funcName = "";
     switch (valueExp.type) {
     case TYPE_INT:
-        funcName = "_SetTableInt";
+        funcName = "_SetHashInt";
         break;
     case TYPE_REAL:
-        funcName = "_SetTableReal";
+        funcName = "_SetHashReal";
         break;
     case TYPE_STRING:
-        funcName = "_SetTableString";
+        funcName = "_SetHashString";
         break;
-    case TYPE_TABLE:
-        funcName = "_SetTableTable";
+    case TYPE_HASH:
+        funcName = "_SetHashHash";
         break;
     case TYPE_REF:
-        funcName = "_SetTableRef";
+        funcName = "_SetHashRef";
         break;
     }
     return "pico." + funcName + "("
-        + tableCode
+        + hashCode
         + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")"))
         + ", " + valueExp.code + ")";
 }
@@ -325,9 +325,9 @@ string Generator::GenVarId(const string& id) {
 }
 
 string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& varsInScope, string exclude) {
-    vector<Var> vars = GetTableVars(varsInScope);
+    vector<Var> vars = GetHashVars(varsInScope);
     if (func) {
-        const vector<Var> params = GetTableVars(func->params);
+        const vector<Var> params = GetHashVars(func->params);
         for (size_t i = 0; i < params.size(); ++i) {
             if (GenVarId(params[i].name) != exclude) {
                 vars.push_back(params[i]);
@@ -344,11 +344,11 @@ string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& va
     return str;
 }
 
-std::vector<Var> Generator::GetTableVars(const std::vector<Var>& vars) {
+std::vector<Var> Generator::GetHashVars(const std::vector<Var>& vars) {
     std::vector<Var> result;
     for (size_t i = 0; i < vars.size(); ++i) {
         const Var& var = vars[i];
-        if (var.type == TYPE_TABLE) {
+        if (var.type == TYPE_HASH) {
             result.push_back(var);
         }
     }
