@@ -4,7 +4,7 @@ A super simple interpreted language inspired by Lua and BASIC. It transpiles to 
 custom interpreter that, in the future, will be able to load modules from dynamic libraries.
 
 The language is imperative and supports classic procedural programming. It has no structs, but
-tables can be used to group data instead.
+hashes can be used to group data instead.
 
 ## Language syntax
 
@@ -33,15 +33,15 @@ it is on a different line.
 
 ### Data types
 
-Pico can represent four types of data:
+Pico can represent these types of data:
 
 * Integer numbers.
 * Real numbers.
 * Strings.
+* Hashes.
 * References.
 
-A reference points to data that is defined by an external library, or to compund data
-(for example, a table).
+Hashes are associative collections of string keys and values of any type. References point to data that is defined by an external library.
 
 ### Variables
 

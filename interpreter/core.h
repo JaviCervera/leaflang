@@ -16,7 +16,7 @@ typedef void Memory;
 #else
 struct Memory;
 #endif
-struct Table;
+struct Hash;
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +27,7 @@ extern "C" {
 // ------------------------------------
 
 const char* AppName();
-Table* AppArgs();
+Hash* AppArgs();
 const char* Run(const char* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
@@ -45,7 +45,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-Table* DirContents(const char* path);
+Hash* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);
@@ -116,8 +116,8 @@ const char* Upper(const char* str);
 int Find(const char* str, const char* find, int offset);
 const char* Replace(const char* str, const char* find, const char* replace);
 const char* Trim(const char* str);
-const char* Join(Table* table, const char* separator);
-Table* Split(const char* str, const char* separator);
+const char* Join(Hash* hash, const char* separator);
+Hash* Split(const char* str, const char* separator);
 const char* StripExt(const char* filename);
 const char* StripDir(const char* filename);
 const char* ExtractExt(const char* filename);
@@ -132,24 +132,24 @@ const char* LoadString(const char* filename);
 void SaveString(const char* filename, const char* str, int append);
 
 // ------------------------------------
-// Table
+// Hash
 // ------------------------------------
 
-Table* _CreateTable();
-Table* _SetTableInt(Table* table, const char* key, int value);
-Table* _SetTableReal(Table* table, const char* key, float value);
-Table* _SetTableString(Table* table, const char* key, const char* value);
-Table* _SetTableTable(Table* table, const char* key, Table* value);
-Table* _SetTableRef(Table* table, const char* key, void* value);
-int _TableInt(const Table* table, const char* key);
-float _TableReal(const Table* table, const char* key);
-const char* _TableString(const Table* table, const char* key);
-Table* _TableTable(const Table* table, const char* key);
-void* _TableRef(const Table* table, const char* key);
-int Contains(const Table* table, const char* key);
-void Remove(Table* table, const char* key);
-int Size(const Table* table);
-void Clear(Table* table);
+Hash* _CreateHash();
+Hash* _SetHashInt(Hash* hash, const char* key, int value);
+Hash* _SetHashReal(Hash* hash, const char* key, float value);
+Hash* _SetHashString(Hash* hash, const char* key, const char* value);
+Hash* _SetHashHash(Hash* hash, const char* key, Hash* value);
+Hash* _SetHashRef(Hash* hash, const char* key, void* value);
+int _HashInt(const Hash* hash, const char* key);
+float _HashReal(const Hash* hash, const char* key);
+const char* _HashString(const Hash* hash, const char* key);
+Hash* _HashHash(const Hash* hash, const char* key);
+void* _HashRef(const Hash* hash, const char* key);
+int Contains(const Hash* hash, const char* key);
+void Remove(Hash* hash, const char* key);
+int Size(const Hash* hash);
+void Clear(Hash* hash);
 
 // ------------------------------------
 // Callable
