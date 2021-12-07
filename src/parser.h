@@ -64,7 +64,7 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
-    Expression ParseTableExp();
+    Expression ParseHashExp();
     Expression ParseListExp();
     Expression ParseDictExp();
     void ParseDictEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
@@ -77,5 +77,5 @@ private:
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);
     Expression ParseVarAccess(const Token& nameToken);
-    Expression ParseTableAccess(const Expression& tableExp, bool isSetter);
+    Expression ParseHashAccess(const Expression& hashExp, bool isSetter);
 };

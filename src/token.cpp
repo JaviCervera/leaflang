@@ -94,8 +94,8 @@ int GetType(int type) {
         return TYPE_REAL;
     case TOK_STRING:
         return TYPE_STRING;
-    case TOK_TABLE:
-        return TYPE_TABLE;
+    case TOK_HASH:
+        return TYPE_HASH;
     case TOK_REF:
         return TYPE_REF;
     default:
@@ -324,7 +324,7 @@ int TokenType(const string& str) {
         types["%"] = TOK_INT;
         types["#"] = TOK_REAL;
         types["$"] = TOK_STRING;
-        types["!"] = TOK_TABLE;
+        types["!"] = TOK_HASH;
         types["@"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;
         types["true"] = TOK_TRUELITERAL;

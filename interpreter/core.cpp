@@ -14,7 +14,7 @@ struct Any {
     int i;
     float f;
     std::string s;
-    Table* t;
+    Hash* t;
     void* r;
     int type;
 
@@ -22,14 +22,14 @@ struct Any {
     Any(float number) : f(number), type(TYPE_REAL) { }
     Any(const char* str) : s(str), type(TYPE_STRING) {}
     Any(const std::string& str) : s(str), type(TYPE_STRING) {}
-    Any(Table* table) : t(table), type(TYPE_TABLE) {}
+    Any(Hash* hash) : t(hash), type(TYPE_HASH) {}
     Any(void* ref) : r(ref), type(TYPE_REF) {}
     Any(const Any& other) { *this = other; }
     
     int ToInt() const;
     float ToReal() const;
     std::string ToString() const;
-    Table* ToTable() const;
+    Hash* ToHash() const;
     void* ToRef() const;
 };
 
@@ -76,8 +76,8 @@ private:
 
 vector<RefCounter*> RefCounter::autoDecs;
 
-struct Table : public map<string, Any> {
-    ~Table();
+struct Hash : public map<string, Any> {
+    ~Hash();
     string ToString();
 };
 
@@ -104,17 +104,17 @@ string Any::ToString() const {
     case TYPE_INT: return strmanip::fromint(i);
     case TYPE_REAL: return strmanip::fromdouble(f);
     case TYPE_STRING: return s;
-    case TYPE_TABLE: return t->ToString();
+    case TYPE_HASH: return t->ToString();
     default: return "";
     }
 }
 
-Table* Any::ToTable() const {
+Hash* Any::ToHash() const {
     switch (type) {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
     case TYPE_STRING: return NULL;
-    case TYPE_REF: return (Table*)r;
+    case TYPE_REF: return (Hash*)r;
     default: return t;
     }
 }
@@ -124,22 +124,22 @@ void* Any::ToRef() const {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
     case TYPE_STRING: return (void*)s.c_str();
-    case TYPE_TABLE: return t;
+    case TYPE_HASH: return t;
     default: return r;
     }
 }
 
-Table::~Table() {
-    for (Table::iterator it = begin(); it != end(); ++it) {
-        if (it->second.type == TYPE_TABLE) {
+Hash::~Hash() {
+    for (Hash::iterator it = begin(); it != end(); ++it) {
+        if (it->second.type == TYPE_HASH) {
             _DecRef(it->second.t);
         }
     }
 }
 
-string Table::ToString() {
+string Hash::ToString() {
     string content;
-    for (Table::iterator it = begin(); it != end(); ++it) {
+    for (Hash::iterator it = begin(); it != end(); ++it) {
         const string prefix = (it->second.type == TYPE_STRING)
             ? "\""
             : "";
@@ -156,12 +156,12 @@ extern "C" {
 // ------------------------------------
 
 static string pico_appName;
-static Table* pico_appArgs = (Table*)_IncRef(_CreateTable());
+static Hash* pico_appArgs = (Hash*)_IncRef(_CreateHash());
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = argv[0];
     for (int i = 1; i < argc; ++i) {
-        _SetTableString(pico_appArgs, Str(i - 1), argv[i]);
+        _SetHashString(pico_appArgs, Str(i - 1), argv[i]);
     }
 }
 
@@ -169,7 +169,7 @@ const char* AppName() {
     return pico_appName.c_str();
 }
 
-Table* AppArgs() {
+Hash* AppArgs() {
     return pico_appArgs;
 }
 
@@ -215,14 +215,14 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-Table* DirContents(const char* path) {
+Hash* DirContents(const char* path) {
     const vector<string> contents = dir::contents(path);
-    Table* table = _CreateTable();
+    Hash* hash = _CreateHash();
     int i = 0;
     for (vector<string>::const_iterator it = contents.begin(); it != contents.end(); ++it) {
-        _SetTableString(table, Str(i++), (*it).c_str());
+        _SetHashString(hash, Str(i++), (*it).c_str());
     }
-    return table;
+    return hash;
 }
 
 const char* CurrentDir() {
@@ -497,26 +497,26 @@ const char* Trim(const char* str) {
     return result.c_str();
 }
 
-const char* Join(Table* table, const char* separator) {
+const char* Join(Hash* hash, const char* separator) {
     static string result;
     result = "";
-    const int size = Size(table);
+    const int size = Size(hash);
     for (int i = 0; i < size; ++i) {
         if (i > 0) result += separator;
-        result += _TableString(table, Str(i));
+        result += _HashString(hash, Str(i));
     }
     return result.c_str();
 }
 
-Table* Split(const char* str, const char* separator) {
+Hash* Split(const char* str, const char* separator) {
     const char delim = (Len(separator) > 0) ? separator[0] : ' ';
     const vector<string> split = strmanip::split(str, delim);
-    Table* table = _CreateTable();
+    Hash* hash = _CreateHash();
     int i = 0;
     for (vector<string>::const_iterator it = split.begin(); it != split.end(); ++it) {
-        _SetTableString(table, Str(i++), (*it).c_str());
+        _SetHashString(hash, Str(i++), (*it).c_str());
     }
-    return table;
+    return hash;
 }
 
 const char* StripExt(const char* filename) {
@@ -584,104 +584,104 @@ void SaveString(const char* filename, const char* str, int append) {
 }
 
 // ------------------------------------
-// Table
+// Hash
 // ------------------------------------
 
-void _DestroyTable(Table* table) {
-    table->~Table();
-    free(RefCounter::FromPtr(table));
+void _DestroyHash(Hash* hash) {
+    hash->~Hash();
+    free(RefCounter::FromPtr(hash));
 }
 
-Table* _CreateTable() {
-    RefCounter* rc = (RefCounter*)malloc(sizeof(RefCounter) + sizeof(Table));
-    new (rc) RefCounter((RefCounterDeleter)_DestroyTable);
-    new (rc->GetPtr()) Table();
-    return (Table*)rc->GetPtr();
+Hash* _CreateHash() {
+    RefCounter* rc = (RefCounter*)malloc(sizeof(RefCounter) + sizeof(Hash));
+    new (rc) RefCounter((RefCounterDeleter)_DestroyHash);
+    new (rc->GetPtr()) Hash();
+    return (Hash*)rc->GetPtr();
 }
 
-void _ClearTableKey(Table* table, const char* key) {
-    if (Contains(table, key) && (*(Table*)table)[key].type == TYPE_TABLE) {
-        _DecRef((*(Table*)table)[key].t);
+void _ClearHashKey(Hash* hash, const char* key) {
+    if (Contains(hash, key) && (*(Hash*)hash)[key].type == TYPE_HASH) {
+        _DecRef((*(Hash*)hash)[key].t);
     }
 }
 
-Table* _SetTableInt(Table* table, const char* key, int value) {
-    _ClearTableKey(table, key);
-    (*table)[key] = value;
-    return table;
+Hash* _SetHashInt(Hash* hash, const char* key, int value) {
+    _ClearHashKey(hash, key);
+    (*hash)[key] = value;
+    return hash;
 }
 
-Table* _SetTableReal(Table* table, const char* key, float value) {
-    _ClearTableKey(table, key);
-    (*table)[key] = value;
-    return table;
+Hash* _SetHashReal(Hash* hash, const char* key, float value) {
+    _ClearHashKey(hash, key);
+    (*hash)[key] = value;
+    return hash;
 }
 
-Table* _SetTableString(Table* table, const char* key, const char* value) {
-    _ClearTableKey(table, key);
-    (*table)[key] = value;
-    return table;
+Hash* _SetHashString(Hash* hash, const char* key, const char* value) {
+    _ClearHashKey(hash, key);
+    (*hash)[key] = value;
+    return hash;
 }
 
-Table* _SetTableTable(Table* table, const char* key, Table* value) {
+Hash* _SetHashHash(Hash* hash, const char* key, Hash* value) {
     _IncRef(value);
-    _ClearTableKey(table, key);
-    (*table)[key] = value;
-    return table;
+    _ClearHashKey(hash, key);
+    (*hash)[key] = value;
+    return hash;
 }
 
-Table* _SetTableRef(Table* table, const char* key, void* value) {
-    _ClearTableKey(table, key);
-    (*table)[key] = value;
-    return table;
+Hash* _SetHashRef(Hash* hash, const char* key, void* value) {
+    _ClearHashKey(hash, key);
+    (*hash)[key] = value;
+    return hash;
 }
 
-int _TableInt(const Table* table, const char* key) {
-    return (Contains(table, key))
-        ? (*(Table*)table)[key].i
+int _HashInt(const Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? (*(Hash*)hash)[key].i
         : 0;
 }
 
-float _TableReal(const Table* table, const char* key) {
-    return (Contains(table, key))
-        ? (*(Table*)table)[key].f
+float _HashReal(const Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? (*(Hash*)hash)[key].f
         : 0.0f;
 }
 
-const char* _TableString(const Table* table, const char* key) {
-    return (Contains(table, key))
-        ? (*(Table*)table)[key].s.c_str()
+const char* _HashString(const Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? (*(Hash*)hash)[key].s.c_str()
         : "";
 }
 
-Table* _TableTable(const Table* table, const char* key) {
-    return (Contains(table, key))
-        ? (*(Table*)table)[key].t
+Hash* _HashHash(const Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? (*(Hash*)hash)[key].t
         : NULL;
 }
 
-void* _TableRef(const Table* table, const char* key) {
-    return (Contains(table, key))
-        ? (*(Table*)table)[key].r
+void* _HashRef(const Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? (*(Hash*)hash)[key].r
         : NULL;
 }
 
-int Contains(const Table* table, const char* key) {
-    return table->count(key) > 0;
+int Contains(const Hash* hash, const char* key) {
+    return hash->count(key) > 0;
 }
 
-void Remove(Table* table, const char* key) {
-    if (Contains(table, key)) {
-        table->erase(key);
+void Remove(Hash* hash, const char* key) {
+    if (Contains(hash, key)) {
+        hash->erase(key);
     }
 }
 
-int Size(const Table* table) {
-    return table->size();
+int Size(const Hash* hash) {
+    return hash->size();
 }
 
-void Clear(Table* table) {
-    return table->clear();
+void Clear(Hash* hash) {
+    return hash->clear();
 }
 
 // ------------------------------------

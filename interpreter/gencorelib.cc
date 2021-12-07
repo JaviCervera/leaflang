@@ -3,15 +3,15 @@
 
 using namespace std;
 
-string GenFuncWrappers(const Parser& parser, const string& tableName, const string& funcName);
+string GenFuncWrappers(const Parser& parser, const string& hashName, const string& funcName);
 string GenFuncWrapper(const Function* func);
 string GenFuncArgs(const Function* func);
 string GenTypeName(int type);
 string GenLuaArg(const Var& param);
 string GenFuncCall(const Function* func);
 string GenLuaReturn(int type);
-string GenLuaTable(const Parser& parser, const string& tableName);
-string GenLuaRegister(const Parser& parser, const string& tableName, const string& funcName);
+string GenLuaHash(const Parser& parser, const string& hashName);
+string GenLuaRegister(const Parser& parser, const string& hashName, const string& funcName);
 string GenLibrary(const Parser& parser, const string& funcName);
 string StartLibrary(const string& funcName);
 string GenFunction(const Function* func);
@@ -30,14 +30,14 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-string GenFuncWrappers(const Parser& parser, const string& tableName, const string& funcName) {
+string GenFuncWrappers(const Parser& parser, const string& hashName, const string& funcName) {
     string output = "";
     const Lib& lib = parser.GetLib();
     for (size_t i = 0; i < lib.size(); ++i) {
         output += GenFuncWrapper(&lib[i]) + "\n";
     }
-    output += GenLuaTable(parser, tableName) + "\n";
-    output += GenLuaRegister(parser, tableName, funcName) + "\n";
+    output += GenLuaHash(parser, hashName) + "\n";
+    output += GenLuaRegister(parser, hashName, funcName) + "\n";
     return output;
 }
 
@@ -73,8 +73,8 @@ string GenTypeName(int type) {
         return "float ";
     case TYPE_STRING:
         return "const char* ";
-    case TYPE_TABLE:
-        return "Table* ";
+    case TYPE_HASH:
+        return "Hash* ";
     case TYPE_REF:
         return "void* ";
     default:
@@ -90,8 +90,8 @@ string GenLuaArg(const Var& param) {
         return "lua_tonumber";
     case TYPE_STRING:
         return "lua_tostring";
-    case TYPE_TABLE:
-        return "(Table*)lua_topointer";
+    case TYPE_HASH:
+        return "(Hash*)lua_topointer";
     case TYPE_REF:
         return "(void*)lua_topointer";
     default:
@@ -121,7 +121,7 @@ string GenLuaReturn(int type) {
         return "    lua_pushnumber(L, result);\n";
     case TYPE_STRING:
         return "    lua_pushstring(L, result);\n";
-    case TYPE_TABLE:
+    case TYPE_HASH:
         return "    lua_pushlightuserdata(L, result);\n";
     case TYPE_REF:
         return "    lua_pushlightuserdata(L, result);\n";
@@ -130,8 +130,8 @@ string GenLuaReturn(int type) {
     }
 }
 
-string GenLuaTable(const Parser& parser, const string& tableName) {
-    string result = "static const luaL_Reg " + tableName + "[] = {\n";
+string GenLuaHash(const Parser& parser, const string& hashName) {
+    string result = "static const luaL_Reg " + hashName + "[] = {\n";
     const Lib& lib = parser.GetLib();
     for (size_t i = 0; i < lib.size(); ++i) {
         const Function& func = lib[i];
@@ -142,9 +142,9 @@ string GenLuaTable(const Parser& parser, const string& tableName) {
     return result;
 }
 
-string GenLuaRegister(const Parser& parser, const string& tableName, const string& funcName) {
+string GenLuaRegister(const Parser& parser, const string& hashName, const string& funcName) {
     string result = "inline int " + funcName + "(lua_State* L) {\n";
-    result += "    luaL_newlib(L, " + tableName + ");\n";
+    result += "    luaL_newlib(L, " + hashName + ");\n";
     result += "    lua_setglobal(L, \"pico\");\n";
     result += "    return 1;\n";
     result += "}\n";
@@ -189,7 +189,7 @@ string GenTypeSuffix(int type) {
         return "#";
     case TYPE_STRING:
         return "$";
-    case TYPE_TABLE:
+    case TYPE_HASH:
         return "!";
     case TYPE_REF:
         return "@";
