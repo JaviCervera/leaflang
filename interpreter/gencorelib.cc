@@ -3,15 +3,15 @@
 
 using namespace std;
 
-string GenFuncWrappers(const Parser& parser, const string& hashName, const string& funcName);
+string GenFuncWrappers(const Parser& parser, const string& tableName, const string& funcName);
 string GenFuncWrapper(const Function* func);
 string GenFuncArgs(const Function* func);
 string GenTypeName(int type);
 string GenLuaArg(const Var& param);
 string GenFuncCall(const Function* func);
 string GenLuaReturn(int type);
-string GenLuaHash(const Parser& parser, const string& hashName);
-string GenLuaRegister(const Parser& parser, const string& hashName, const string& funcName);
+string GenLuaTable(const Parser& parser, const string& tableName);
+string GenLuaRegister(const Parser& parser, const string& tableName, const string& funcName);
 string GenLibrary(const Parser& parser, const string& funcName);
 string StartLibrary(const string& funcName);
 string GenFunction(const Function* func);
@@ -30,14 +30,14 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-string GenFuncWrappers(const Parser& parser, const string& hashName, const string& funcName) {
+string GenFuncWrappers(const Parser& parser, const string& tableName, const string& funcName) {
     string output = "";
     const Lib& lib = parser.GetLib();
     for (size_t i = 0; i < lib.size(); ++i) {
         output += GenFuncWrapper(&lib[i]) + "\n";
     }
-    output += GenLuaHash(parser, hashName) + "\n";
-    output += GenLuaRegister(parser, hashName, funcName) + "\n";
+    output += GenLuaTable(parser, tableName) + "\n";
+    output += GenLuaRegister(parser, tableName, funcName) + "\n";
     return output;
 }
 
@@ -130,8 +130,8 @@ string GenLuaReturn(int type) {
     }
 }
 
-string GenLuaHash(const Parser& parser, const string& hashName) {
-    string result = "static const luaL_Reg " + hashName + "[] = {\n";
+string GenLuaTable(const Parser& parser, const string& tableName) {
+    string result = "static const luaL_Reg " + tableName + "[] = {\n";
     const Lib& lib = parser.GetLib();
     for (size_t i = 0; i < lib.size(); ++i) {
         const Function& func = lib[i];
@@ -142,9 +142,9 @@ string GenLuaHash(const Parser& parser, const string& hashName) {
     return result;
 }
 
-string GenLuaRegister(const Parser& parser, const string& hashName, const string& funcName) {
+string GenLuaRegister(const Parser& parser, const string& tableName, const string& funcName) {
     string result = "inline int " + funcName + "(lua_State* L) {\n";
-    result += "    luaL_newlib(L, " + hashName + ");\n";
+    result += "    luaL_newlib(L, " + tableName + ");\n";
     result += "    lua_setglobal(L, \"pico\");\n";
     result += "    return 1;\n";
     result += "}\n";
