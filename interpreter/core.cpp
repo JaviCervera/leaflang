@@ -6,6 +6,8 @@
 #include "../src/swan/file.hh"
 #include "../src/swan/platform.hh"
 #include "../src/swan/strmanip.hh"
+#define LITE_MEM_IMPLEMENTATION
+#include "litemem.h"
 
 using namespace std;
 using namespace swan;
@@ -32,49 +34,6 @@ struct Any {
     Table* ToTable() const;
     void* ToRef() const;
 };
-
-typedef void(* RefCounterDeleter)(void*);
-
-struct RefCounter {
-    RefCounter(RefCounterDeleter deleter) : counter(1), deleter(deleter) {
-        AutoDec();
-    }
-
-    size_t Inc() {
-        return ++counter;
-    }
-
-    size_t Dec() {
-        const size_t count = --counter;
-        if (count <= 0 && deleter) deleter(GetPtr());
-        return count;
-    }
-
-    void AutoDec() {
-        autoDecs.push_back(this);
-    }
-
-    void* GetPtr() {
-        return this + 1;
-    }
-
-    static RefCounter* FromPtr(void* ptr) {
-        return (RefCounter*)ptr - 1;
-    }
-
-    static void DoAutoDec() {
-        for (size_t i = 0; i < autoDecs.size(); ++i) {
-            autoDecs[i]->Dec();
-        }
-        autoDecs.clear();
-    }
-private:
-    static vector<RefCounter*> autoDecs;
-    size_t counter;
-    RefCounterDeleter deleter;
-};
-
-vector<RefCounter*> RefCounter::autoDecs;
 
 struct Table : public map<string, Any> {
     ~Table();
@@ -180,21 +139,20 @@ const char* Run(const char* command) {
 }
 
 void* _IncRef(void* ptr) {
-    if (ptr) RefCounter::FromPtr(ptr)->Inc();
+    lmem_retain(ptr);
     return ptr;
 }
 
 void _DecRef(void* ptr) {
-    if (ptr) RefCounter::FromPtr(ptr)->Dec();
+    lmem_release(ptr);
 }
 
 void* _AutoDec(void* ptr) {
-    if (ptr) RefCounter::FromPtr(ptr)->AutoDec();
-    return ptr;
+    return lmem_autorelease(ptr);
 }
 
 void _DoAutoDec() {
-    RefCounter::DoAutoDec();
+    lmem_doautorelease();
 }
 
 // ------------------------------------
@@ -589,14 +547,12 @@ void SaveString(const char* filename, const char* str, int append) {
 
 void _DestroyTable(Table* table) {
     table->~Table();
-    free(RefCounter::FromPtr(table));
 }
 
 Table* _CreateTable() {
-    RefCounter* rc = (RefCounter*)malloc(sizeof(RefCounter) + sizeof(Table));
-    new (rc) RefCounter((RefCounterDeleter)_DestroyTable);
-    new (rc->GetPtr()) Table();
-    return (Table*)rc->GetPtr();
+    Table* table = lmem_allocauto(Table, (void*)_DestroyTable);
+    new (table) Table();
+    return table;
 }
 
 void _ClearTableKey(Table* table, const char* key) {
