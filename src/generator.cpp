@@ -27,7 +27,7 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function pico.CallInt(f) return Int(pico.CallFloat(f)) end\n"
         "function pico.CallReal(f) return tonumber(pico.Call(f)) end\n"
         "function pico.CallString(f) return tostring(pico.Call(f)) end\n"
-        "function pico.Callable(f) return type(pico[f]) == \"function\" end\n";
+        "function pico.Callable(f) return type(pico[f]) == \"function\" end\n\n";
     string functionsStr;
     for (size_t i = 0; i < functions.size(); ++i) {
         functionsStr += functions[i] + "\n";

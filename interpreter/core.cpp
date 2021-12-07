@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 #define CORE_IMPL
 #include "core.h"
 #include "../src/swan/console.hh"
@@ -12,86 +13,109 @@
 using namespace std;
 using namespace swan;
 
-struct Any {
-    int i;
-    float f;
-    std::string s;
-    Table* t;
-    void* r;
+typedef struct {
     int type;
+    union {
+        int i;
+        float f;
+        char* s;
+        struct Table* t;
+        void* r;
+    } value;
+} Value;
 
-    Any(int number = 0) : i(number), type(TYPE_INT) {}
-    Any(float number) : f(number), type(TYPE_REAL) { }
-    Any(const char* str) : s(str), type(TYPE_STRING) {}
-    Any(const std::string& str) : s(str), type(TYPE_STRING) {}
-    Any(Table* table) : t(table), type(TYPE_TABLE) {}
-    Any(void* ref) : r(ref), type(TYPE_REF) {}
-    Any(const Any& other) { *this = other; }
-    
-    int ToInt() const;
-    float ToReal() const;
-    std::string ToString() const;
-    Table* ToTable() const;
-    void* ToRef() const;
-};
-
-struct Table : public map<string, Any> {
+struct Table : public map<string, Value> {
     ~Table();
     string ToString();
 };
 
-int Any::ToInt() const {
-    switch (type) {
-    case TYPE_INT: return i;
-    case TYPE_REAL: return (int)f;
-    case TYPE_STRING: return strmanip::toint(s);
+Value ValueFromInt(int i) {
+    Value v = {0};
+    v.type = TYPE_INT;
+    v.value.i = i;
+    return v;
+}
+
+Value ValueFromReal(float f) {
+    Value v = {0};
+    v.type = TYPE_REAL;
+    v.value.f = f;
+    return v;
+}
+
+Value ValueFromString(const char* s) {
+    Value v = {0};
+    v.type = TYPE_STRING;
+    lmem_assign(v.value.s, (char*)lstr_get(s));
+    return v;
+}
+
+Value ValueFromTable(struct Table* t) {
+    Value v = {0};
+    v.type = TYPE_TABLE;
+    lmem_assign(v.value.t, t);
+    return v;
+}
+
+Value ValueFromRef(void* r) {
+    Value v = {0};
+    v.type = TYPE_REF;
+    v.value.r = r;
+    return v;
+}
+
+int ValueToInt(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return v.value.i;
+    case TYPE_REAL: return (int)v.value.f;
+    case TYPE_STRING: return Val(v.value.s);
     default: return 0;
     }
 }
 
-float Any::ToReal() const {
-    switch (type) {
-    case TYPE_INT: return i;
-    case TYPE_REAL: return f;
-    case TYPE_STRING: return strmanip::tofloat(s);
+float ValueToReal(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return v.value.i;
+    case TYPE_REAL: return v.value.f;
+    case TYPE_STRING: return ValF(v.value.s);
     default: return 0.0f;
     }
 }
 
-string Any::ToString() const {
-    switch (type) {
-    case TYPE_INT: return strmanip::fromint(i);
-    case TYPE_REAL: return strmanip::fromdouble(f);
-    case TYPE_STRING: return s;
-    case TYPE_TABLE: return t->ToString();
-    default: return "";
+const char* ValueToString(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return Str(v.value.i);
+    case TYPE_REAL: return StrF(v.value.f);
+    case TYPE_STRING: return v.value.s;
+    case TYPE_TABLE: return lstr_get(v.value.t->ToString().c_str());
+    default: return lstr_get("");
     }
 }
 
-Table* Any::ToTable() const {
-    switch (type) {
+Table* ValueToTable(const Value v) {
+    switch (v.type) {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
     case TYPE_STRING: return NULL;
-    case TYPE_REF: return (Table*)r;
-    default: return t;
+    case TYPE_REF: return (Table*)v.value.r;
+    default: return v.value.t;
     }
 }
 
-void* Any::ToRef() const {
-    switch (type) {
+void* ValueToRef(const Value v) {
+    switch (v.type) {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
-    case TYPE_STRING: return (void*)s.c_str();
-    case TYPE_TABLE: return t;
-    default: return r;
+    case TYPE_STRING: return v.value.s;
+    case TYPE_TABLE: return v.value.t;
+    default: return v.value.r;
     }
 }
 
 Table::~Table() {
     for (Table::iterator it = begin(); it != end(); ++it) {
         if (it->second.type == TYPE_TABLE) {
-            _DecRef(it->second.t);
+            _DecRef(it->second.value.t);
         }
     }
 }
@@ -103,7 +127,7 @@ string Table::ToString() {
             ? "\""
             : "";
         if (it != begin()) content += ", ";
-        content += "\"" + it->first + "\": " + prefix + it->second.ToString() + prefix;
+        content += "\"" + it->first + "\": " + prefix + ValueToString(it->second) + prefix;
     }
     return "{" + content + "}";
 }
@@ -556,69 +580,69 @@ Table* _CreateTable() {
 }
 
 void _ClearTableKey(Table* table, const char* key) {
-    if (Contains(table, key) && (*(Table*)table)[key].type == TYPE_TABLE) {
-        _DecRef((*(Table*)table)[key].t);
+    if (Contains(table, key) && (*table)[key].type == TYPE_TABLE) {
+        _DecRef((*table)[key].value.t);
     }
 }
 
 Table* _SetTableInt(Table* table, const char* key, int value) {
     _ClearTableKey(table, key);
-    (*table)[key] = value;
     return table;
 }
 
 Table* _SetTableReal(Table* table, const char* key, float value) {
     _ClearTableKey(table, key);
-    (*table)[key] = value;
+    (*table)[key] = ValueFromReal(value);
     return table;
 }
 
 Table* _SetTableString(Table* table, const char* key, const char* value) {
     _ClearTableKey(table, key);
-    (*table)[key] = value;
+    (*table)[key] = ValueFromString(value);
     return table;
 }
 
 Table* _SetTableTable(Table* table, const char* key, Table* value) {
     _IncRef(value);
     _ClearTableKey(table, key);
-    (*table)[key] = value;
+    (*table)[key] = ValueFromTable(value);
+    _DecRef(value);
     return table;
 }
 
 Table* _SetTableRef(Table* table, const char* key, void* value) {
     _ClearTableKey(table, key);
-    (*table)[key] = value;
+    (*table)[key] = ValueFromRef(value);
     return table;
 }
 
 int _TableInt(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*(Table*)table)[key].i
+        ? ValueToInt((*(Table*)table)[key])
         : 0;
 }
 
 float _TableReal(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*(Table*)table)[key].f
+        ? ValueToReal((*(Table*)table)[key])
         : 0.0f;
 }
 
 const char* _TableString(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*(Table*)table)[key].s.c_str()
+        ? ValueToString((*(Table*)table)[key])
         : "";
 }
 
 Table* _TableTable(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*(Table*)table)[key].t
+        ? ValueToTable((*(Table*)table)[key])
         : NULL;
 }
 
 void* _TableRef(const Table* table, const char* key) {
     return (Contains(table, key))
-        ? (*(Table*)table)[key].r
+        ? ValueToRef((*(Table*)table)[key])
         : NULL;
 }
 

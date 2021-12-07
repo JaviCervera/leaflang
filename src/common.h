@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include "swan/string.hh"
 #include "swan/strmanip.hh"
 #include "swan/vector.hh"
