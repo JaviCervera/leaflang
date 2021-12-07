@@ -58,6 +58,26 @@ int FileType(const char* filename);
 void DeleteFile(const char* filename);
 
 // ------------------------------------
+// Hash
+// ------------------------------------
+
+Hash* _CreateHash();
+Hash* _SetHashInt(Hash* hash, const char* key, int value);
+Hash* _SetHashReal(Hash* hash, const char* key, float value);
+Hash* _SetHashString(Hash* hash, const char* key, const char* value);
+Hash* _SetHashHash(Hash* hash, const char* key, Hash* value);
+Hash* _SetHashRef(Hash* hash, const char* key, void* value);
+int _HashInt(Hash* hash, const char* key);
+float _HashReal(Hash* hash, const char* key);
+const char* _HashString(Hash* hash, const char* key);
+Hash* _HashHash(Hash* hash, const char* key);
+void* _HashRef(Hash* hash, const char* key);
+int Contains(Hash* hash, const char* key);
+void Remove(Hash* hash, const char* key);
+int Size(Hash* hash);
+void Clear(Hash* hash);
+
+// ------------------------------------
 // Math
 // ------------------------------------
 
@@ -130,26 +150,6 @@ int Val(const char* str);
 float ValF(const char* str);
 const char* LoadString(const char* filename);
 void SaveString(const char* filename, const char* str, int append);
-
-// ------------------------------------
-// Hash
-// ------------------------------------
-
-Hash* _CreateHash();
-Hash* _SetHashInt(Hash* hash, const char* key, int value);
-Hash* _SetHashReal(Hash* hash, const char* key, float value);
-Hash* _SetHashString(Hash* hash, const char* key, const char* value);
-Hash* _SetHashHash(Hash* hash, const char* key, Hash* value);
-Hash* _SetHashRef(Hash* hash, const char* key, void* value);
-int _HashInt(const Hash* hash, const char* key);
-float _HashReal(const Hash* hash, const char* key);
-const char* _HashString(const Hash* hash, const char* key);
-Hash* _HashHash(const Hash* hash, const char* key);
-void* _HashRef(const Hash* hash, const char* key);
-int Contains(const Hash* hash, const char* key);
-void Remove(Hash* hash, const char* key);
-int Size(const Hash* hash);
-void Clear(Hash* hash);
 
 // ------------------------------------
 // Callable

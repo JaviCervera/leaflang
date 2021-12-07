@@ -1,5 +1,4 @@
 #include <cmath>
-#include <map>
 #define CORE_IMPL
 #include "core.h"
 #include "../src/swan/console.hh"
@@ -9,128 +8,11 @@
 #include "../src/swan/strmanip.hh"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
+#define STB_DS_IMPLEMENTATION
+#include "stb_ds.h"
 
 using namespace std;
 using namespace swan;
-
-typedef struct {
-    int type;
-    union {
-        int i;
-        float f;
-        char* s;
-        struct Hash* t;
-        void* r;
-    } value;
-} Value;
-
-struct Hash : public map<string, Value> {
-    ~Hash();
-    string ToString();
-};
-
-Value ValueFromInt(int i) {
-    Value v = {0};
-    v.type = TYPE_INT;
-    v.value.i = i;
-    return v;
-}
-
-Value ValueFromReal(float f) {
-    Value v = {0};
-    v.type = TYPE_REAL;
-    v.value.f = f;
-    return v;
-}
-
-Value ValueFromString(const char* s) {
-    Value v = {0};
-    v.type = TYPE_STRING;
-    lmem_assign(v.value.s, (char*)lstr_get(s));
-    return v;
-}
-
-Value ValueFromHash(struct Hash* t) {
-    Value v = {0};
-    v.type = TYPE_HASH;
-    lmem_assign(v.value.t, t);
-    return v;
-}
-
-Value ValueFromRef(void* r) {
-    Value v = {0};
-    v.type = TYPE_REF;
-    v.value.r = r;
-    return v;
-}
-
-int ValueToInt(const Value v) {
-    switch (v.type) {
-    case TYPE_INT: return v.value.i;
-    case TYPE_REAL: return (int)v.value.f;
-    case TYPE_STRING: return Val(v.value.s);
-    default: return 0;
-    }
-}
-
-float ValueToReal(const Value v) {
-    switch (v.type) {
-    case TYPE_INT: return v.value.i;
-    case TYPE_REAL: return v.value.f;
-    case TYPE_STRING: return ValF(v.value.s);
-    default: return 0.0f;
-    }
-}
-
-const char* ValueToString(const Value v) {
-    switch (v.type) {
-    case TYPE_INT: return Str(v.value.i);
-    case TYPE_REAL: return StrF(v.value.f);
-    case TYPE_STRING: return v.value.s;
-    case TYPE_HASH: return lstr_get(v.value.t->ToString().c_str());
-    default: return lstr_get("");
-    }
-}
-
-Hash* ValueToHash(const Value v) {
-    switch (v.type) {
-    case TYPE_INT: return NULL;
-    case TYPE_REAL: return NULL;
-    case TYPE_STRING: return NULL;
-    case TYPE_REF: return (Hash*)v.value.r;
-    default: return v.value.t;
-    }
-}
-
-void* ValueToRef(const Value v) {
-    switch (v.type) {
-    case TYPE_INT: return NULL;
-    case TYPE_REAL: return NULL;
-    case TYPE_STRING: return v.value.s;
-    case TYPE_HASH: return v.value.t;
-    default: return v.value.r;
-    }
-}
-
-Hash::~Hash() {
-    for (Hash::iterator it = begin(); it != end(); ++it) {
-        if (it->second.type == TYPE_HASH) {
-            _DecRef(it->second.value.t);
-        }
-    }
-}
-
-string Hash::ToString() {
-    string content;
-    for (Hash::iterator it = begin(); it != end(); ++it) {
-        const string prefix = (it->second.type == TYPE_STRING)
-            ? "\""
-            : "";
-        if (it != begin()) content += ", ";
-        content += "\"" + it->first + "\": " + prefix + ValueToString(it->second) + prefix;
-    }
-    return "{" + content + "}";
-}
 
 extern "C" {
 
@@ -233,6 +115,236 @@ int FileType(const char* filename) {
 
 void DeleteFile(const char* filename) {
     return fileremove(filename);
+}
+
+// ------------------------------------
+// Hash
+// ------------------------------------
+
+typedef struct {
+    int type;
+    union {
+        int i;
+        float f;
+        char* s;
+        struct Hash* h;
+        void* r;
+    } value;
+} Value;
+
+Value ValueFromInt(int i) {
+    Value v = {0};
+    v.type = TYPE_INT;
+    v.value.i = i;
+    return v;
+}
+
+Value ValueFromReal(float f) {
+    Value v = {0};
+    v.type = TYPE_REAL;
+    v.value.f = f;
+    return v;
+}
+
+Value ValueFromString(const char* s) {
+    Value v = {0};
+    v.type = TYPE_STRING;
+    lmem_assign(v.value.s, lstr_get(s));
+    return v;
+}
+
+Value ValueFromHash(struct Hash* h) {
+    Value v = {0};
+    v.type = TYPE_HASH;
+    lmem_assign(v.value.h, h);
+    return v;
+}
+
+Value ValueFromRef(void* r) {
+    Value v = {0};
+    v.type = TYPE_REF;
+    v.value.r = r;
+    return v;
+}
+
+int ValueToInt(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return v.value.i;
+    case TYPE_REAL: return (int)v.value.f;
+    case TYPE_STRING: return Val(v.value.s);
+    default: return 0;
+    }
+}
+
+float ValueToReal(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return v.value.i;
+    case TYPE_REAL: return v.value.f;
+    case TYPE_STRING: return ValF(v.value.s);
+    default: return 0.0f;
+    }
+}
+
+const char* HashToString(Hash* hash);
+
+const char* ValueToString(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return Str(v.value.i);
+    case TYPE_REAL: return StrF(v.value.f);
+    case TYPE_STRING: return v.value.s;
+    case TYPE_HASH: return HashToString(v.value.h);
+    default: return lstr_get("");
+    }
+}
+
+Hash* ValueToHash(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return NULL;
+    case TYPE_REAL: return NULL;
+    case TYPE_STRING: return NULL;
+    case TYPE_REF: return (Hash*)v.value.r;
+    default: return v.value.h;
+    }
+}
+
+void* ValueToRef(const Value v) {
+    switch (v.type) {
+    case TYPE_INT: return NULL;
+    case TYPE_REAL: return NULL;
+    case TYPE_STRING: return v.value.s;
+    case TYPE_HASH: return v.value.h;
+    default: return v.value.r;
+    }
+}
+
+int ValueIsManaged(const Value v) {
+    return v.type == TYPE_STRING || v.type == TYPE_HASH;
+}
+
+typedef struct {
+    const char* key;
+    Value value;
+} HashEntry;
+
+typedef struct Hash {
+    HashEntry* entries;
+} Hash;
+
+const char* HashToString(Hash* hash) {
+    string content;
+    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
+        const HashEntry* entry = &hash->entries[i];
+        const string prefix = (entry->value.type == TYPE_STRING)
+            ? "\""
+            : "";
+        if (i > 0) content += ", ";
+        content += "\"" + string(entry->key) + "\": " + prefix + ValueToString(entry->value) + prefix;
+    }
+    return lstr_get(("{" + content + "}").c_str());
+}
+
+void _ClearHashValue(Hash* hash, const char* key) {
+    const Value value = shget(hash->entries, key);
+    if (Contains(hash, key) && ValueIsManaged(value)) {
+        _DecRef(value.value.r);
+    }
+}
+
+void _DestroyHash(Hash* hash) {
+    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
+        if (ValueIsManaged(hash->entries[i].value)) {
+            _DecRef(hash->entries[i].value.value.r);
+        }
+    }
+    shfree(hash->entries);
+}
+
+Hash* _CreateHash() {
+    Hash* hash = lmem_allocauto(Hash, (void*)_DestroyHash);
+    hash->entries = NULL;
+    return hash;
+}
+
+Hash* _SetHashInt(Hash* hash, const char* key, int value) {
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromInt(value));
+    return hash;
+}
+
+Hash* _SetHashReal(Hash* hash, const char* key, float value) {
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromReal(value));
+    return hash;
+}
+
+Hash* _SetHashString(Hash* hash, const char* key, const char* value) {
+    _IncRef((char*)value);
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromString(value));
+    _DecRef((char*)value);
+    return hash;
+}
+
+Hash* _SetHashHash(Hash* hash, const char* key, Hash* value) {
+    _IncRef(value);
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromHash(value));
+    _DecRef(value);
+    return hash;
+}
+
+Hash* _SetHashRef(Hash* hash, const char* key, void* value) {
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromRef(value));
+    return hash;
+}
+
+int _HashInt(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToInt(shget(hash->entries, key))
+        : 0;
+}
+
+float _HashReal(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToReal(shget(hash->entries, key))
+        : 0.0f;
+}
+
+const char* _HashString(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToString(shget(hash->entries, key))
+        : "";
+}
+
+Hash* _HashHash(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToHash(shget(hash->entries, key))
+        : NULL;
+}
+
+void* _HashRef(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToRef(shget(hash->entries, key))
+        : NULL;
+}
+
+int Contains(Hash* hash, const char* key) {
+    return shlenu(hash->entries) > 0;
+}
+
+void Remove(Hash* hash, const char* key) {
+    if (Contains(hash, key)) {
+        shdel(hash->entries, key);
+    }
+}
+
+int Size(Hash* hash) {
+    return shlenu(hash->entries);
+}
+
+void Clear(Hash* hash) {
+    shfree(hash->entries);
 }
 
 // ------------------------------------
@@ -563,105 +675,6 @@ const char* LoadString(const char* filename) {
 
 void SaveString(const char* filename, const char* str, int append) {
     strmanip::write(str, filename, append);
-}
-
-// ------------------------------------
-// Hash
-// ------------------------------------
-
-void _DestroyHash(Hash* hash) {
-    hash->~Hash();
-}
-
-Hash* _CreateHash() {
-    Hash* hash = lmem_allocauto(Hash, (void*)_DestroyHash);
-    new (hash) Hash();
-    return hash;
-}
-
-void _ClearHashKey(Hash* hash, const char* key) {
-    if (Contains(hash, key) && (*hash)[key].type == TYPE_HASH) {
-        _DecRef((*hash)[key].value.t);
-    }
-}
-
-Hash* _SetHashInt(Hash* hash, const char* key, int value) {
-    _ClearHashKey(hash, key);
-    return hash;
-}
-
-Hash* _SetHashReal(Hash* hash, const char* key, float value) {
-    _ClearHashKey(hash, key);
-    (*hash)[key] = ValueFromReal(value);
-    return hash;
-}
-
-Hash* _SetHashString(Hash* hash, const char* key, const char* value) {
-    _ClearHashKey(hash, key);
-    (*hash)[key] = ValueFromString(value);
-    return hash;
-}
-
-Hash* _SetHashHash(Hash* hash, const char* key, Hash* value) {
-    _IncRef(value);
-    _ClearHashKey(hash, key);
-    (*hash)[key] = ValueFromHash(value);
-    _DecRef(value);
-    return hash;
-}
-
-Hash* _SetHashRef(Hash* hash, const char* key, void* value) {
-    _ClearHashKey(hash, key);
-    (*hash)[key] = ValueFromRef(value);
-    return hash;
-}
-
-int _HashInt(const Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToInt((*(Hash*)hash)[key])
-        : 0;
-}
-
-float _HashReal(const Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToReal((*(Hash*)hash)[key])
-        : 0.0f;
-}
-
-const char* _HashString(const Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToString((*(Hash*)hash)[key])
-        : "";
-}
-
-Hash* _HashHash(const Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToHash((*(Hash*)hash)[key])
-        : NULL;
-}
-
-void* _HashRef(const Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToRef((*(Hash*)hash)[key])
-        : NULL;
-}
-
-int Contains(const Hash* hash, const char* key) {
-    return hash->count(key) > 0;
-}
-
-void Remove(Hash* hash, const char* key) {
-    if (Contains(hash, key)) {
-        hash->erase(key);
-    }
-}
-
-int Size(const Hash* hash) {
-    return hash->size();
-}
-
-void Clear(Hash* hash) {
-    return hash->clear();
 }
 
 // ------------------------------------
