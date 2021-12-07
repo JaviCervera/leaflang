@@ -1,9 +1,9 @@
 #include <math.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #define CORE_IMPL
 #include "core.h"
 #include "../src/swan/dir.hh"
-#include "../src/swan/file.hh"
 #include "../src/swan/strmanip.hh"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
@@ -13,6 +13,10 @@
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
+#endif
+
+#if defined _WIN32 && !defined S_ISDIR
+#define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
 #endif
 
 using namespace std;
@@ -122,11 +126,14 @@ const char* FullPath(const char* filename) {
 // ------------------------------------
 
 int FileType(const char* filename) {
-    return filetype(filename);
+    struct stat statbuf;
+    if (stat(filename, &statbuf) == -1) return 0;
+    else if (S_ISDIR(statbuf.st_mode)) return 2;
+    else return 1;
 }
 
 void DeleteFile(const char* filename) {
-    return fileremove(filename);
+    remove(filename);
 }
 
 // ------------------------------------
