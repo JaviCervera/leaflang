@@ -184,15 +184,15 @@ string GenFunction(const Function* func) {
 string GenTypeSuffix(int type) {
     switch (type) {
     case TYPE_INT:
-        return "%";
+        return "|i";
     case TYPE_REAL:
-        return "#";
+        return "|f";
     case TYPE_STRING:
-        return "$";
+        return "|s";
     case TYPE_HASH:
-        return "!";
+        return "|h";
     case TYPE_REF:
-        return "@";
+        return "|w";
     default:
         return "";
     }

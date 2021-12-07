@@ -59,18 +59,18 @@ text = "Hello"
 When assigning a value to a variable, the type of the value must be compatible with the type of the
 variable (for example, a string value cannot be assigned to an integer variable). To assign an
 incompatible type, expression must be cast. A cast is performed by adding a suffix to the end of an
-expression, an approach taken from BASIC. The suffixes are:
+expression. The valid suffixes are:
 
-* `%`: Integer.
-* `#`: Real.
-* `$`: String.
+* `|i`: Integer.
+* `|r`: Real.
+* `|s`: String.
 
 For example:
 
 ```
-integer = "128"%
-real = "36.12"#
-string = 5$
+integer = "128"|i
+real = "36.12"|r
+string = 5|s
 ```
 
 Variables initialized within functions will be local the function (so two variables with the same

@@ -2,14 +2,14 @@ int = 100
 real = 365.25
 string = "Hello"
 
-Print("Int to int: " + (int%)$)
-Print("Int to real: " + (int#)$)
-Print("Int to string: " + int$)
+Print("Int to int: " + (int|i)|s)
+Print("Int to real: " + (int|f)|s)
+Print("Int to string: " + int|s)
 
-Print("Real to int: " + (real%)$)
-Print("Real to real: " + (real#)$)
-Print("Real to string: " + real$)
+Print("Real to int: " + (real|i)|s)
+Print("Real to real: " + (real|f)|s)
+Print("Real to string: " + real|s)
 
-Print("String to int: " + (string%)$)
-Print("String to real: " + (string#)$)
-Print("String to string: " + string$)
+Print("String to int: " + (string|i)|s)
+Print("String to real: " + (string|f)|s)
+Print("String to string: " + string|s)

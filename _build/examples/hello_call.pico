@@ -1,4 +1,4 @@
-function Printer(msg$)
+function Printer(msg|s)
     Print(msg)
 end
 

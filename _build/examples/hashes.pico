@@ -1,13 +1,13 @@
 hash = {"msg": "Hello"}
-Print(hash["msg"]$)
+Print(hash["msg"]|s)
 hash["otherMsg"] = "Bye"
-Print(hash["otherMsg"]$)
+Print(hash["otherMsg"]|s)
 
 list = ["One", "Two", "Three"]
 list[Size(list)] = "Last"
-Print(Size(list)$)
+Print(Size(list)|s)
 for i = 0 to Size(list) - 1 do
-    Print(list[i]$)
+    Print(list[i]|s)
 end
 
 hash = {
@@ -16,11 +16,11 @@ hash = {
     }
 }
 
-Print(hash["foo"]["bar"]$)
+Print(hash["foo"]["bar"]|s)
 
 hash = {}
 hash["foo"] = {
     "baz": "Another message"
 }
 
-Print(hash["foo"]["baz"]$)
+Print(hash["foo"]["baz"]|s)
