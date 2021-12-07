@@ -98,7 +98,7 @@ function Chr|s(code|i)
 function LoadString|s(filename|s)
 function SaveString(filename|s, str_|s, append|i)
 
-// Functions
+// Callable
 function AddIntArg(arg|i)
 function AddRealArg(arg|f)
 function AddStringArg(arg|s)
