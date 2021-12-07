@@ -1,26 +1,37 @@
-hash = {"msg": "Hello"}
-Print(hash["msg"]|s)
-hash["otherMsg"] = "Bye"
-Print(hash["otherMsg"]|s)
+CreateHashAndAddField()
+CreateListAndAddElement()
+CreateHashWithHash()
+CreateHashAndAddAnotherHash()
 
-list = ["One", "Two", "Three"]
-list[Size(list)] = "Last"
-Print(Size(list)|s)
-for i = 0 to Size(list) - 1 do
-    Print(list[i]|s)
+function CreateHashAndAddField()
+    hash = {"msg": "Hello"}
+    Print(hash["msg"]|s)
+    hash["otherMsg"] = "Bye"
+    Print(hash["otherMsg"]|s)
 end
 
-hash = {
-    "foo": {
-        "bar": "A message"
+function CreateListAndAddElement()
+    list = ["One", "Two", "Three"]
+    list[Size(list)] = "Last"
+    Print(Size(list)|s)
+    for i = 0 to Size(list) - 1 do
+        Print(list[i]|s)
+    end
+end
+
+function CreateHashWithHash()
+    hash = {
+        "foo": {
+            "bar": "A message"
+        }
     }
-}
+    Print(hash["foo"]["bar"]|s)
+end
 
-Print(hash["foo"]["bar"]|s)
-
-hash = {}
-hash["foo"] = {
-    "baz": "Another message"
-}
-
-Print(hash["foo"]["baz"]|s)
+function CreateHashAndAddAnotherHash()
+    hash = {}
+    hash["foo"] = {
+        "baz": "Another message"
+    }
+    Print(hash["foo"]["baz"]|s)
+end
