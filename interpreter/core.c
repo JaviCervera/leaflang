@@ -21,10 +21,10 @@
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
-#endif
-
-#if defined _WIN32 && !defined S_ISDIR
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#if !defined S_ISDIR
 #define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
+#endif
 #endif
 
 typedef struct Memory {
