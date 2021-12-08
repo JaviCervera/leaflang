@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +14,6 @@
 #endif
 #define CORE_IMPL
 #include "core.h"
-#include "../src/swan/strmanip.hh"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
 #define STB_DS_IMPLEMENTATION
@@ -28,27 +28,24 @@
 #define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
 #endif
 
-using namespace std;
-using namespace swan;
-
 extern "C" {
 
 // ------------------------------------
 // App
 // ------------------------------------
 
-static string pico_appName;
+static char* pico_appName = NULL;
 static Hash* pico_appArgs = (Hash*)_IncRef(_CreateHash());
 
 void _SetArgs(int argc, const char* argv[]) {
-    pico_appName = argv[0];
+    pico_appName = lstr_alloc(argv[0]);
     for (int i = 1; i < argc; ++i) {
         _SetHashString(pico_appArgs, Str(i - 1), argv[i]);
     }
 }
 
 const char* AppName() {
-    return pico_appName.c_str();
+    return pico_appName;
 }
 
 Hash* AppArgs() {
@@ -57,6 +54,7 @@ Hash* AppArgs() {
 
 const char* Run(const char* command) {
     char tmp[65536];
+    tmp[0] = '\0';
     FILE* pipe = popen(command, "rt");
     if (!pipe) return lstr_get("");
     while (!feof(pipe)) {
@@ -262,16 +260,24 @@ typedef struct Hash {
 } Hash;
 
 const char* HashToString(Hash* hash) {
-    string content;
+    char content[65536];
+    content[0] = '\0';
+    strcpy(content, "{");
     for (size_t i = 0; i < shlenu(hash->entries); ++i) {
         const HashEntry* entry = &hash->entries[i];
-        const string prefix = (entry->value.type == TYPE_STRING)
+        const char* prefix = (entry->value.type == TYPE_STRING)
             ? "\""
             : "";
-        if (i > 0) content += ", ";
-        content += "\"" + string(entry->key) + "\": " + prefix + ValueToString(entry->value) + prefix;
+        if (i > 0) strcat(content, ", ");
+        strcat(content, "\"");
+        strcat(content, entry->key);
+        strcat(content, "\": ");
+        strcat(content, prefix);
+        strcat(content, ValueToString(entry->value));
+        strcat(content, prefix);
     }
-    return lstr_get(("{" + content + "}").c_str());
+    strcat(content, "}");
+    return lstr_get(content);
 }
 
 void _ClearHashValue(Hash* hash, const char* key) {
@@ -423,11 +429,11 @@ float Log(float x) {
 }
 
 float Max(float x, float y) {
-    return max(x, y);
+    return (x >= y) ? x : y;
 }
 
 float Min(float x, float y) {
-    return min(x, y);
+    return (x <= y) ? x : y;
 }
 
 float Pow(float x, float y) {
@@ -527,13 +533,15 @@ float PeekReal(Memory* mem, int offset) {
 }
 
 const char* PeekString(Memory* mem, int offset) {
-    static string result;
+    char result[65536];
+    result[0] = '\0';
     int c;
     while (offset < DimSize(mem) && (c = PeekByte(mem, offset)) != 0) {
-        result += (char)c;
+        char s[] = {c, '\0'};
+        strcat(result, s);
         ++offset;
     }
-    return result.c_str();
+    return lstr_get(result);
 }
 
 void* PeekRef(Memory* mem, int offset) {
@@ -573,99 +581,164 @@ void PokeRef(Memory* mem, int offset, void* val) {
 // ------------------------------------
 
 int Len(const char* str) {
-    return string(str).length();
+    return strlen(str);
 }
 
 const char* Left(const char* str, int count) {
-    static string result;
-    result = string(str).substr(0, count);
-    return result.c_str();
+    char* result = lstr_allocempty(count);
+    strncpy(result, str, count);
+    return (const char*)lmem_autorelease(result);
 }
 
 const char* Right(const char* str, int count) {
-    static string result;
-    result = string(str).substr(Len(str) - count);
-    return result.c_str();
+    char* result = lstr_allocempty(count);
+    strncpy(result, str + strlen(str) - count, count);
+    return (const char*)lmem_autorelease(result);
 }
 
 const char* Mid(const char* str, int offset, int count) {
-    static string result;
-    result = string(str).substr(offset, count);
-    return result.c_str();
+    char* result = lstr_allocempty(count);
+    strncpy(result, str + offset, count);
+    return (const char*)lmem_autorelease(result);
 }
 
 const char* Lower(const char* str) {
-    static string result;
-    result = strmanip::lower(str);
-    return result.c_str();
+    const size_t len = strlen(str);
+    char* result = lstr_allocempty(len);
+    for (size_t i = 0; i < len; ++i) {
+        result[i] = (char)tolower(str[i]);
+    }
+    return (const char*)lmem_autorelease(result);
 }
 
 const char* Upper(const char* str) {
-    static string result;
-    result = strmanip::upper(str);
-    return result.c_str();
+    const size_t len = strlen(str);
+    char* result = lstr_allocempty(len);
+    for (size_t i = 0; i < len; ++i) {
+        result[i] = (char)toupper(str[i]);
+    }
+    return (const char*)lmem_autorelease(result);
 }
 
 int Find(const char* str, const char* find, int offset) {
-    return int(string(str).find(find, offset));
+    const char* p = strstr(&str[offset], find);
+    if (p == NULL)
+        return -1;
+    else
+        return (p - str);
+}
+
+char* _ReplaceOne(const char* str, size_t pos, size_t len, const char* rep, size_t rlen) {
+    char* result = lstr_allocempty(strlen(str) + rlen - len);
+    strncpy(result, str, pos);
+    strcat(result, rep);
+    strcat(result, &str[pos + len]);
+    return (char*)lmem_autorelease(result);
 }
 
 const char* Replace(const char* str, const char* find, const char* replace) {
-    static string result;
-    result = strmanip::replaceall(str, find, replace);
-    return result.c_str();
+    char* result = lstr_get(str);
+    const size_t rlen = strlen(replace);
+    const size_t find_len = strlen(find);
+    size_t find_pos = Find(result, find, 0);
+    while (find_pos != -1) {
+        result = _ReplaceOne(result, find_pos, find_len, replace, rlen);
+        find_pos = Find(result, find, find_pos + rlen);
+    }
+    return result;
 }
 
 const char* Trim(const char* str) {
-    static string result;
-    result = strmanip::trim(str);
-    return result.c_str();
+    const size_t len = strlen(str);
+    size_t offset = 0;
+    while (offset < len && isspace(str[offset])) ++offset;
+    size_t count = len - offset - 1;
+    while (count > 0 && isspace(str[offset + count])) --count;
+    return Mid(str, offset, count);
 }
 
 const char* Join(Hash* hash, const char* separator) {
-    static string result;
-    result = "";
+    size_t current_len = 0;
+    size_t current_max = 1000;
+    char* tmp = (char*)calloc(current_max, sizeof(char));
     const int size = Size(hash);
+    const size_t seplen = strlen(separator);
     for (int i = 0; i < size; ++i) {
-        if (i > 0) result += separator;
-        result += _HashString(hash, Str(i));
+        const char* str = (const char*)_IncRef((void*)_HashString(hash, Str(i)));
+        size_t len = strlen(str);
+        if (i > 0) len += seplen;
+        if (current_max < current_len + len + 1) {
+            current_max += (int)Max(1000, len + 1);
+            tmp = (char*)realloc(tmp, current_max * sizeof(char));
+        }
+        if (i > 0) strcat(tmp, separator);
+        strcat(tmp, str);
+        current_len += len;
+        _DecRef((void*)str);
     }
-    return result.c_str();
+    char* result = lstr_get(tmp);
+    free(tmp);
+    return result;
 }
 
-Hash* Split(const char* str, const char* separator) {
-    const char delim = (Len(separator) > 0) ? separator[0] : ' ';
-    const vector<string> split = strmanip::split(str, delim);
+Hash* _SplitChars(const char* str) {
+    const int len = Len(str);
     Hash* hash = _CreateHash();
-    int i = 0;
-    for (vector<string>::const_iterator it = split.begin(); it != split.end(); ++it) {
-        _SetHashString(hash, Str(i++), (*it).c_str());
+    for (int i = 0; i < len; ++i) {
+        _SetHashString(hash, Str(i), Chr(i));
     }
     return hash;
 }
 
+Hash* _SplitBySep(const char* str, const char* separator) {
+    const size_t seplen = strlen(separator);
+    Hash* hash = _CreateHash();
+    int prevoffset = 0;
+    int nextoffset = 0;
+    int i = 0;
+    while ((nextoffset = Find(str, separator, prevoffset)) != -1) {
+        _SetHashString(hash, Str(i++), Mid(str, prevoffset, nextoffset - prevoffset));
+        prevoffset += seplen;
+    }
+    return hash;
+}
+
+Hash* Split(const char* str, const char* separator) {
+    if (strcmp(separator, "") == 0) {
+        return _SplitChars(str);
+    } else {
+        return _SplitBySep(str, separator);
+    }
+}
+
 const char* StripExt(const char* filename) {
-    static string result;
-    result = strmanip::stripext(filename);
-    return result.c_str();
+    const char* endp = strrchr(filename, '.');
+    if (!endp) return lstr_get(filename);
+    return Mid(filename, 0, endp - filename);
 }
 
 const char* StripDir(const char* filename) {
-    static string result;
-    result = strmanip::stripdir(filename);
-    return result.c_str();
+    const char* fendp = strrchr(filename, '/');
+    const char* bendp = strrchr(filename, '\\');
+    const char* endp = (fendp >= bendp) ? fendp : bendp;
+    if (!endp) return lstr_get(filename);
+    return Mid(filename, 0, endp - filename);
 }
 
 const char* ExtractExt(const char* filename) {
-    static string result;
-    result = strmanip::extractext(filename);
-    return result.c_str();
+    const char* endp = strrchr(filename, '.');
+    if (!endp) return lstr_get("");
+    const size_t offset = endp - filename + 1;
+    return Mid(filename, offset, strlen(filename) - offset);
 }
 
 const char* ExtractDir(const char* filename) {
-    static string result;
-    result = strmanip::extractdir(filename);
-    return result.c_str();
+    const char* fendp = strrchr(filename, '/');
+    const char* bendp = strrchr(filename, '\\');
+    const char* endp = (fendp >= bendp) ? fendp : bendp;
+    if (!endp) return lstr_get("");
+    const size_t offset = endp - filename + 1;
+    return Mid(filename, offset, strlen(filename) - offset);
 }
 
 int Asc(const char* str, int index) {
@@ -673,39 +746,53 @@ int Asc(const char* str, int index) {
 }
 
 const char* Chr(int c) {
-    static string result;
-    result = string(1, char(c));
-    return result.c_str();
+    const char str[] = {c, '\0'};
+    return lstr_get(str);
 }
 
 const char* Str(int val) {
-    static string result;
-    result = strmanip::fromint(val);
-    return result.c_str();
+    char str[64];
+    sprintf(str, "%i", val);
+    return lstr_get(str);
 }
 
 const char* StrF(float val) {
-    static string result;
-    result = strmanip::fromdouble(val);
-    return result.c_str();
+    char str[64];
+    sprintf(str, "%f", val);
+    return lstr_get(str);
 }
 
 int Val(const char* str) {
-    return strmanip::toint(str);
+    int val = 0;
+    sscanf(str, "%i", &val);
+    return val;
 }
 
 float ValF(const char* str) {
-    return strmanip::tofloat(str);
+    float val = 0;
+    sscanf(str, "%f", &val);
+    return val;
 }
 
 const char* LoadString(const char* filename) {
-    static string result;
-    result = strmanip::read(filename);
-    return result.c_str();
+    FILE* f = fopen(filename, "rb");
+    if (!f) return lstr_get("");
+    fseek(f, 0, SEEK_END);
+    const long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* buf = (char*)malloc(size+1);
+    fread(buf, sizeof(char), size, f);
+    buf[size] = '\0';
+    const char* result = lstr_get(buf);
+    free(buf);
+    return result;
 }
 
 void SaveString(const char* filename, const char* str, int append) {
-    strmanip::write(str, filename, append);
+    FILE* f = fopen(filename, append ? "ab" : "wb");
+    if (!f) return;
+    fwrite(str, sizeof(char), strlen(str), f);
+    fclose(f);
 }
 
 // ------------------------------------
