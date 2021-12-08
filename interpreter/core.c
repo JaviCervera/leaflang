@@ -232,11 +232,9 @@ const char* ValueToString(const Value v) {
 
 struct Hash* ValueToHash(const Value v) {
     switch (v.type) {
-    case TYPE_INT: return NULL;
-    case TYPE_REAL: return NULL;
-    case TYPE_STRING: return NULL;
     case TYPE_REF: return (struct Hash*)v.value.r;
-    default: return v.value.h;
+    case TYPE_HASH: return v.value.h;
+    default: return _CreateHash();
     }
 }
 
