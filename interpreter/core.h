@@ -1,6 +1,5 @@
-#pragma once
-
-#include "../src/common.h"
+#ifndef CORE_H
+#define CORE_H
 
 #ifdef _WIN32
 #ifdef DeleteFile
@@ -11,6 +10,10 @@
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef CORE_IMPL
 typedef void Memory;
 #else
@@ -18,16 +21,12 @@ struct Memory;
 #endif
 struct Hash;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // ------------------------------------
 // App
 // ------------------------------------
 
 const char* AppName();
-Hash* AppArgs();
+struct Hash* AppArgs();
 const char* Run(const char* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
@@ -45,7 +44,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-Hash* DirContents(const char* path);
+struct Hash* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);
@@ -61,22 +60,22 @@ void DeleteFile(const char* filename);
 // Hash
 // ------------------------------------
 
-Hash* _CreateHash();
-Hash* _SetHashInt(Hash* hash, const char* key, int value);
-Hash* _SetHashReal(Hash* hash, const char* key, float value);
-Hash* _SetHashString(Hash* hash, const char* key, const char* value);
-Hash* _SetHashHash(Hash* hash, const char* key, Hash* value);
-Hash* _SetHashRef(Hash* hash, const char* key, void* value);
-int _HashInt(Hash* hash, const char* key);
-float _HashReal(Hash* hash, const char* key);
-const char* _HashString(Hash* hash, const char* key);
-Hash* _HashHash(Hash* hash, const char* key);
-void* _HashRef(Hash* hash, const char* key);
-const char* _HashToString(Hash* hash);
-int Contains(Hash* hash, const char* key);
-void Remove(Hash* hash, const char* key);
-int Size(Hash* hash);
-void Clear(Hash* hash);
+struct Hash* _CreateHash();
+struct Hash* _SetHashInt(struct Hash* hash, const char* key, int value);
+struct Hash* _SetHashReal(struct Hash* hash, const char* key, float value);
+struct Hash* _SetHashString(struct Hash* hash, const char* key, const char* value);
+struct Hash* _SetHashHash(struct Hash* hash, const char* key, struct Hash* value);
+struct Hash* _SetHashRef(struct Hash* hash, const char* key, void* value);
+int _HashInt(struct Hash* hash, const char* key);
+float _HashReal(struct Hash* hash, const char* key);
+const char* _HashString(struct Hash* hash, const char* key);
+struct Hash* _HashHash(struct Hash* hash, const char* key);
+void* _HashRef(struct Hash* hash, const char* key);
+const char* _HashToString(struct Hash* hash);
+int Contains(struct Hash* hash, const char* key);
+void Remove(struct Hash* hash, const char* key);
+int Size(struct Hash* hash);
+void Clear(struct Hash* hash);
 
 // ------------------------------------
 // Math
@@ -137,8 +136,8 @@ const char* Upper(const char* str);
 int Find(const char* str, const char* find, int offset);
 const char* Replace(const char* str, const char* find, const char* replace);
 const char* Trim(const char* str);
-const char* Join(Hash* hash, const char* separator);
-Hash* Split(const char* str, const char* separator);
+const char* Join(struct Hash* hash, const char* separator);
+struct Hash* Split(const char* str, const char* separator);
 const char* StripExt(const char* filename);
 const char* StripDir(const char* filename);
 const char* ExtractExt(const char* filename);
@@ -168,3 +167,5 @@ int Callable(const char* name);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // CORE_H

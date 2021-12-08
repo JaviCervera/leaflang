@@ -12,8 +12,7 @@
 #include <direct.h>
 #include "dirent.h"
 #endif
-#define CORE_IMPL
-#include "core.h"
+#include "../src/types.h"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
 #define STB_DS_IMPLEMENTATION
@@ -28,17 +27,24 @@
 #define S_ISDIR(m) (((m) & _S_IFDIR) == _S_IFDIR)
 #endif
 
-extern "C" {
+typedef struct Memory {
+    char* ptr;
+    size_t size;
+} Memory;
+
+#define CORE_IMPL
+#include "core.h"
 
 // ------------------------------------
 // App
 // ------------------------------------
 
 static char* pico_appName = NULL;
-static Hash* pico_appArgs = (Hash*)_IncRef(_CreateHash());
+static struct Hash* pico_appArgs = NULL;
 
 void _SetArgs(int argc, const char* argv[]) {
     pico_appName = lstr_alloc(argv[0]);
+    pico_appArgs = (struct Hash*)_IncRef(_CreateHash());
     for (int i = 1; i < argc; ++i) {
         _SetHashString(pico_appArgs, Str(i - 1), argv[i]);
     }
@@ -48,7 +54,7 @@ const char* AppName() {
     return pico_appName;
 }
 
-Hash* AppArgs() {
+struct Hash* AppArgs() {
     return pico_appArgs;
 }
 
@@ -102,8 +108,8 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-Hash* DirContents(const char* path) {
-    Hash* hash = _CreateHash();
+struct Hash* DirContents(const char* path) {
+    struct Hash* hash = _CreateHash();
     DIR* d = (DIR*)opendir(path);
     if (d == NULL) return hash;
     struct dirent* entry;
@@ -224,12 +230,12 @@ const char* ValueToString(const Value v) {
     }
 }
 
-Hash* ValueToHash(const Value v) {
+struct Hash* ValueToHash(const Value v) {
     switch (v.type) {
     case TYPE_INT: return NULL;
     case TYPE_REAL: return NULL;
     case TYPE_STRING: return NULL;
-    case TYPE_REF: return (Hash*)v.value.r;
+    case TYPE_REF: return (struct Hash*)v.value.r;
     default: return v.value.h;
     }
 }
@@ -399,7 +405,7 @@ float ATan2(float x, float y) {
 }
 
 float Abs(float x) {
-    return abs(x);
+    return fabsf(x);
 }
 
 float Ceil(float x) {
@@ -455,32 +461,28 @@ float Tan(float x) {
 }
 
 int Int(float num) {
-    return int(num);
+    return (int)num;
 }
 
 // ------------------------------------
 // Memory
 // ------------------------------------
 
-struct Memory {
-    char* ptr;
-    size_t size;
-
-    Memory(size_t size) : size(size) { ptr = (char*)calloc(1, size); }
-    ~Memory() { free(this->ptr); }
-    void Resize(size_t size) { ptr = (char*)realloc(ptr, size); this->size = size; }
-};
-
 Memory* Dim(int size) {
-    return new Memory(size);
+    Memory* mem = (Memory*)malloc(sizeof(Memory));
+    mem->ptr = (char*)calloc(1, size);
+    mem->size = size;
+    return mem;
 }
 
 void Undim(Memory* mem) {
-    delete mem;
+    free(mem->ptr);
+    free(mem);
 }
 
 void Redim(Memory* mem, int size) {
-    mem->Resize(size);
+    mem->ptr = (char*)realloc(mem->ptr, size);
+    mem->size = size;
 }
 
 Memory* LoadDim(const char* filename) {
@@ -741,7 +743,7 @@ const char* ExtractDir(const char* filename) {
 }
 
 int Asc(const char* str, int index) {
-    return int(str[index]);
+    return (int)str[index];
 }
 
 const char* Chr(int c) {
@@ -819,12 +821,9 @@ float CallReal(const char* name) {
 }
 
 const char* CallString(const char* name) {
-    static const char* str = "";
-    return str;
+    return lstr_get("");
 }
 
 int Callable(const char* name) {
     return 0;
-}
-
 }
