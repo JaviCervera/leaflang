@@ -19,6 +19,7 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _string2int(v) return _or(tonumber(v), 0) end\n"
         "function _string2real(v) return _or(tonumber(v), 0) + 0.0 end\n"
         "function _string2string(v) return v end\n"
+        "function _hash2string(v) return pico._HashToString(v) end\n"
         "_args = {}\n"
         "function pico.AddIntArg(v) _args[#_args+1] = v end\n"
         "function pico.AddRealArg(v) _args[#_args+1] = v end\n"
@@ -27,7 +28,7 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function pico.CallInt(f) return Int(pico.CallFloat(f)) end\n"
         "function pico.CallReal(f) return tonumber(pico.Call(f)) end\n"
         "function pico.CallString(f) return tostring(pico.Call(f)) end\n"
-        "function pico.Callable(f) return type(pico[f]) == \"function\" end\n";
+        "function pico.Callable(f) return type(pico[f]) == \"function\" end\n\n";
     string functionsStr;
     for (size_t i = 0; i < functions.size(); ++i) {
         functionsStr += functions[i] + "\n";
@@ -311,6 +312,8 @@ string Generator::GenType(int type) {
             return "real";
         case TYPE_STRING:
             return "string";
+        case TYPE_HASH:
+            return "hash";
         default:
             return ""; // Should not get here
     }

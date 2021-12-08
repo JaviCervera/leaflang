@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.6)
 project(pico)
 
 #Define file groups
-file(GLOB PICO_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/lua/*.c")
+file(GLOB PICO_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/core.c" "interpreter/lua/*.c")
 
 #Add header and lib directories
 include_directories(${INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/lua)
