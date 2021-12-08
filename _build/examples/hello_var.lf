@@ -1,2 +1,2 @@
-name = "Pico"
+name = "Leaf"
 Print("Hello, " + name + "!")

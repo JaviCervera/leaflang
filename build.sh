@@ -19,4 +19,4 @@ cd ..
 
 echo "Moving to _build/bin dir..."
 mkdir -p _build/bin
-mv _CMAKE/pico _build/bin/pico
+mv _CMAKE/leaf _build/bin/leaf

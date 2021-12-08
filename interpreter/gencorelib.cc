@@ -1,4 +1,4 @@
-#include "../src/pico.h"
+#include "../src/leaf.h"
 #include "core.h"
 
 using namespace std;
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     Parser parser(tokens);
     parser.ParseLibrary(tokens);
     string output = "#pragma once\n\n";
-    output += GenFuncWrappers(parser, "picoFuncs", "LoadLuaFunctions");
+    output += GenFuncWrappers(parser, "leafFuncs", "LoadLuaFunctions");
     output += GenLibrary(parser, "AddFunctions");
     SaveString("corelib.h", output.c_str(), false);
     return 0;
@@ -145,7 +145,7 @@ string GenLuaTable(const Parser& parser, const string& tableName) {
 string GenLuaRegister(const Parser& parser, const string& tableName, const string& funcName) {
     string result = "inline int " + funcName + "(lua_State* L) {\n";
     result += "    luaL_newlib(L, " + tableName + ");\n";
-    result += "    lua_setglobal(L, \"pico\");\n";
+    result += "    lua_setglobal(L, \"leaf\");\n";
     result += "    return 1;\n";
     result += "}\n";
     return result;

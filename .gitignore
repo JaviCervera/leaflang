@@ -2,6 +2,6 @@
 .vscode
 _build/bin
 _build/examples/*
-!_build/examples/*.pico
+!_build/examples/*.lf
 _CMAKE
 interpreter/corelib.h

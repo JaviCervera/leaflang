@@ -18,6 +18,6 @@ cd ..
 
 echo Moving to _build/bin dir...
 mkdir _build\bin
-move "_CMAKE\pico.exe" "_build/bin/pico.exe"
+move "_CMAKE\leaf.exe" "_build/bin/leaf.exe"
 
 pause

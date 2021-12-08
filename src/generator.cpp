@@ -5,7 +5,7 @@ using namespace swan;
 
 string Generator::GenProgram(const vector<string>& functions, const vector<string>& program, const Definitions& definitions) const {
     const string headerStr =
-        "function _onassign(old,new) pico._IncRef(new); pico._DecRef(old); return new end\n"
+        "function _onassign(old,new) leaf._IncRef(new); leaf._DecRef(old); return new end\n"
         "function _bool(a) if a ~= false and a ~= nil and a ~= 0 and a ~= \"\" then return true else return false end end\n"
         "function _and(a, b) if _bool(a) then return b else return a end end\n"
         "function _or(a, b) if _bool(a) then return a else return b end end\n"
@@ -19,16 +19,16 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _string2int(v) return _or(tonumber(v), 0) end\n"
         "function _string2real(v) return _or(tonumber(v), 0) + 0.0 end\n"
         "function _string2string(v) return v end\n"
-        "function _hash2string(v) return pico._HashToString(v) end\n"
+        "function _hash2string(v) return leaf._HashToString(v) end\n"
         "_args = {}\n"
-        "function pico.AddIntArg(v) _args[#_args+1] = v end\n"
-        "function pico.AddRealArg(v) _args[#_args+1] = v end\n"
-        "function pico.AddStringArg(v) _args[#_args+1] = v end\n"
-        "function pico.Call(f) local ret = pico[f](table.unpack(_args)) _args = {} return ret end\n"
-        "function pico.CallInt(f) return Int(pico.CallFloat(f)) end\n"
-        "function pico.CallReal(f) return tonumber(pico.Call(f)) end\n"
-        "function pico.CallString(f) return tostring(pico.Call(f)) end\n"
-        "function pico.Callable(f) return type(pico[f]) == \"function\" end\n\n";
+        "function leaf.AddIntArg(v) _args[#_args+1] = v end\n"
+        "function leaf.AddRealArg(v) _args[#_args+1] = v end\n"
+        "function leaf.AddStringArg(v) _args[#_args+1] = v end\n"
+        "function leaf.Call(f) local ret = leaf[f](table.unpack(_args)) _args = {} return ret end\n"
+        "function leaf.CallInt(f) return Int(leaf.CallFloat(f)) end\n"
+        "function leaf.CallReal(f) return tonumber(leaf.Call(f)) end\n"
+        "function leaf.CallString(f) return tostring(leaf.Call(f)) end\n"
+        "function leaf.Callable(f) return type(leaf[f]) == \"function\" end\n\n";
     string functionsStr;
     for (size_t i = 0; i < functions.size(); ++i) {
         functionsStr += functions[i] + "\n";
@@ -86,7 +86,7 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
     return GenFunctionCleanup(func, definitions.GetLocals(), exp)
         + "do return "
-        + ((func->type == TYPE_HASH) ? ("pico._AutoDec(" + exp + ")") : exp)
+        + ((func->type == TYPE_HASH) ? ("leaf._AutoDec(" + exp + ")") : exp)
         + " end\n";
 }
 
@@ -126,7 +126,7 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
 }
 
 string Generator::GenList(const vector<Expression>& values) const {
-    string str = "pico._CreateHash()";
+    string str = "leaf._CreateHash()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
         switch (values[i].type) {
@@ -146,7 +146,7 @@ string Generator::GenList(const vector<Expression>& values) const {
             funcName = "_SetHashRef";
             break;
         }
-        str = "pico." + funcName + "("
+        str = "leaf." + funcName + "("
             + str
             + ", _int2string(" + strmanip::fromint(i)
             + "), " + values[i].code + ")";
@@ -155,7 +155,7 @@ string Generator::GenList(const vector<Expression>& values) const {
 }
 
 string Generator::GenDict(const vector<Expression>& keys, const vector<Expression>& values) const {
-    string str = "pico._CreateHash()";
+    string str = "leaf._CreateHash()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
         switch (values[i].type) {
@@ -175,7 +175,7 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
             funcName = "_SetHashRef";
             break;
         }
-        str = "pico." + funcName + "("
+        str = "leaf." + funcName + "("
             + str
             + ", " + keys[i].code
             + ", " + values[i].code + ")";
@@ -252,7 +252,7 @@ string Generator::GenHashGetter(int type, const string& hashCode, const Expressi
         funcName = "_HashRef";
         break;
     }
-    return "pico." + funcName + "("
+    return "leaf." + funcName + "("
         + hashCode
         + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
 }
@@ -276,7 +276,7 @@ string Generator::GenHashSetter(const string& hashCode, const Expression& indexE
         funcName = "_SetHashRef";
         break;
     }
-    return "pico." + funcName + "("
+    return "leaf." + funcName + "("
         + hashCode
         + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")"))
         + ", " + valueExp.code + ")";
@@ -320,11 +320,11 @@ string Generator::GenType(int type) {
 }
 
 string Generator::GenFuncId(const string& id) {
-    return "pico." + id;
+    return "leaf." + id;
 }
 
 string Generator::GenVarId(const string& id) {
-    return "__pico__" + id;
+    return "lf_" + id;
 }
 
 string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& varsInScope, string exclude) {
@@ -337,11 +337,11 @@ string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& va
             }
         }
     }
-    string str = "pico._DoAutoDec() ";
+    string str = "leaf._DoAutoDec() ";
     for (size_t i = 0; i < vars.size(); ++i) {
         const Var& var = vars[i];
         if (GenVarId(var.name) != exclude) {
-            str += "pico._DecRef(" + GenVarId(var.name) + ") ";
+            str += "leaf._DecRef(" + GenVarId(var.name) + ") ";
         }
     }
     return str;

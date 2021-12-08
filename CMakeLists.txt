@@ -2,16 +2,16 @@
 cmake_minimum_required(VERSION 2.6)
 
 #Define project
-project(pico)
+project(leaf)
 
 #Define file groups
-file(GLOB PICO_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/core.c" "interpreter/lua/*.c")
+file(GLOB LEAF_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/core.c" "interpreter/lua/*.c")
 
 #Add header and lib directories
 include_directories(${INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/lua)
 
 #Add executable targets
-add_executable(pico ${PICO_FILES})
+add_executable(leaf ${LEAF_FILES})
 
 #Add platform specific options
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

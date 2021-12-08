@@ -39,23 +39,23 @@ typedef struct Memory {
 // App
 // ------------------------------------
 
-static char* pico_appName = NULL;
-static struct Hash* pico_appArgs = NULL;
+static char* leaf_appName = NULL;
+static struct Hash* leaf_appArgs = NULL;
 
 void _SetArgs(int argc, const char* argv[]) {
-    pico_appName = lstr_alloc(argv[0]);
-    pico_appArgs = (struct Hash*)_IncRef(_CreateHash());
+    leaf_appName = lstr_alloc(argv[0]);
+    leaf_appArgs = (struct Hash*)_IncRef(_CreateHash());
     for (int i = 1; i < argc; ++i) {
-        _SetHashString(pico_appArgs, Str(i - 1), argv[i]);
+        _SetHashString(leaf_appArgs, Str(i - 1), argv[i]);
     }
 }
 
 const char* AppName() {
-    return pico_appName;
+    return leaf_appName;
 }
 
 struct Hash* AppArgs() {
-    return pico_appArgs;
+    return leaf_appArgs;
 }
 
 const char* Run(const char* command) {
