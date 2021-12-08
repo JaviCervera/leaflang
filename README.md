@@ -121,6 +121,7 @@ There is no specific boolean type, all types can be evaluated as booleans instea
 * Integers: `0` is false, all others true.
 * Real numbers: `0.0` is false, all others true.
 * Strings: `""` (empty string) is false, all others true.
+* Hashes: Always true.
 * References: `null` is false, all others true.
 
 There are two literals, `true` and `false`, with the values `1` and `0` respectively.
