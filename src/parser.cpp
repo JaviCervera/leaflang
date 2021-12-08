@@ -577,8 +577,8 @@ Expression Parser::ParseCastExp() {
     if (IsType(stream.Peek().type)) {
         const Token& typeToken = stream.Next();
         const int tokenType = GetType(typeToken.type);
-        if (exp.type < TYPE_STRING || exp.type > 0) {
-            ErrorEx("Can only cast numeric and string types", typeToken.file, typeToken.line);
+        if (exp.type < TYPE_HASH || exp.type > 0) {
+            ErrorEx("Can only cast numeric, string and hash types", typeToken.file, typeToken.line);
         }
         if (tokenType < TYPE_STRING || tokenType > 0) {
             ErrorEx("Can only cast to numeric and string types", typeToken.file, typeToken.line);

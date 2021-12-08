@@ -214,14 +214,12 @@ float ValueToReal(const Value v) {
     }
 }
 
-const char* HashToString(Hash* hash);
-
 const char* ValueToString(const Value v) {
     switch (v.type) {
     case TYPE_INT: return Str(v.value.i);
     case TYPE_REAL: return StrF(v.value.f);
     case TYPE_STRING: return v.value.s;
-    case TYPE_HASH: return HashToString(v.value.h);
+    case TYPE_HASH: return _HashToString(v.value.h);
     default: return lstr_get("");
     }
 }
@@ -258,27 +256,6 @@ typedef struct {
 typedef struct Hash {
     HashEntry* entries;
 } Hash;
-
-const char* HashToString(Hash* hash) {
-    char content[65536];
-    content[0] = '\0';
-    strcpy(content, "{");
-    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
-        const HashEntry* entry = &hash->entries[i];
-        const char* prefix = (entry->value.type == TYPE_STRING)
-            ? "\""
-            : "";
-        if (i > 0) strcat(content, ", ");
-        strcat(content, "\"");
-        strcat(content, entry->key);
-        strcat(content, "\": ");
-        strcat(content, prefix);
-        strcat(content, ValueToString(entry->value));
-        strcat(content, prefix);
-    }
-    strcat(content, "}");
-    return lstr_get(content);
-}
 
 void _ClearHashValue(Hash* hash, const char* key) {
     const Value value = shget(hash->entries, key);
@@ -364,6 +341,27 @@ void* _HashRef(Hash* hash, const char* key) {
     return (Contains(hash, key))
         ? ValueToRef(shget(hash->entries, key))
         : NULL;
+}
+
+const char* _HashToString(Hash* hash) {
+    char content[65536];
+    content[0] = '\0';
+    strcpy(content, "{");
+    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
+        const HashEntry* entry = &hash->entries[i];
+        const char* prefix = (entry->value.type == TYPE_STRING)
+            ? "\""
+            : "";
+        if (i > 0) strcat(content, ", ");
+        strcat(content, "\"");
+        strcat(content, entry->key);
+        strcat(content, "\": ");
+        strcat(content, prefix);
+        strcat(content, ValueToString(entry->value));
+        strcat(content, prefix);
+    }
+    strcat(content, "}");
+    return lstr_get(content);
 }
 
 int Contains(Hash* hash, const char* key) {
@@ -654,7 +652,7 @@ const char* Trim(const char* str) {
     while (offset < len && isspace(str[offset])) ++offset;
     size_t count = len - offset - 1;
     while (count > 0 && isspace(str[offset + count])) --count;
-    return Mid(str, offset, count);
+    return Mid(str, offset, count + 1);
 }
 
 const char* Join(Hash* hash, const char* separator) {
@@ -698,8 +696,9 @@ Hash* _SplitBySep(const char* str, const char* separator) {
     int i = 0;
     while ((nextoffset = Find(str, separator, prevoffset)) != -1) {
         _SetHashString(hash, Str(i++), Mid(str, prevoffset, nextoffset - prevoffset));
-        prevoffset += seplen;
+        prevoffset = nextoffset + seplen;
     }
+    _SetHashString(hash, Str(i++), str + prevoffset);
     return hash;
 }
 
@@ -737,8 +736,8 @@ const char* ExtractDir(const char* filename) {
     const char* bendp = strrchr(filename, '\\');
     const char* endp = (fendp >= bendp) ? fendp : bendp;
     if (!endp) return lstr_get("");
-    const size_t offset = endp - filename + 1;
-    return Mid(filename, offset, strlen(filename) - offset);
+    const size_t size = endp - filename;
+    return Mid(filename, 0, size);
 }
 
 int Asc(const char* str, int index) {

@@ -72,6 +72,7 @@ float _HashReal(Hash* hash, const char* key);
 const char* _HashString(Hash* hash, const char* key);
 Hash* _HashHash(Hash* hash, const char* key);
 void* _HashRef(Hash* hash, const char* key);
+const char* _HashToString(Hash* hash);
 int Contains(Hash* hash, const char* key);
 void Remove(Hash* hash, const char* key);
 int Size(Hash* hash);
