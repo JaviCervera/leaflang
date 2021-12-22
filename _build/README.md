@@ -1,4 +1,4 @@
-# ![leaf](logo.png) The Leaf programming language
+# The Leaf programming language
 
 A super simple interpreted language inspired by Lua and BASIC. It transpiles to Lua, and comes with a
 custom interpreter that, in the future, will be able to load modules from dynamic libraries.
