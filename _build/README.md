@@ -31,9 +31,6 @@ You must have the root folder in your PATH in order to run Leaf programs from Ge
 
 Copy the file *geany/filetypes.Leaf.conf* to *<User>\AppData\Roaming\geany\filedefs*.
 
-To run the program directly within Geany, select *Build / Run* from the menu, or use the F5 shortcut.
-You must have the root folder in your PATH in order to run Leaf programs from Geany.
-
 To allow Geany to autodetect .lf files, create a file *<User>\AppData\Roaming\geany\filetype_extensions.conf* with
 the following contents (or add the contents to the corresponding section of the file if it already exists,
 separating the element with a semicolon from other elements):
@@ -45,6 +42,9 @@ Leaf=*.lf;
 [Groups]
 Script=Leaf;
 ```
+
+To run the program directly within Geany, select *Build / Run* from the menu, or use the F5 shortcut.
+You must have the root folder in your PATH in order to run Leaf programs from Geany.
 
 ## Language syntax
 
