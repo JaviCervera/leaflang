@@ -62,12 +62,12 @@ void DeleteFile(const char* filename);
 
 struct Hash* _CreateHash();
 struct Hash* _SetHashInt(struct Hash* hash, const char* key, int value);
-struct Hash* _SetHashReal(struct Hash* hash, const char* key, float value);
+struct Hash* _SetHashFloat(struct Hash* hash, const char* key, float value);
 struct Hash* _SetHashString(struct Hash* hash, const char* key, const char* value);
 struct Hash* _SetHashHash(struct Hash* hash, const char* key, struct Hash* value);
 struct Hash* _SetHashRef(struct Hash* hash, const char* key, void* value);
 int _HashInt(struct Hash* hash, const char* key);
-float _HashReal(struct Hash* hash, const char* key);
+float _HashFloat(struct Hash* hash, const char* key);
 const char* _HashString(struct Hash* hash, const char* key);
 struct Hash* _HashHash(struct Hash* hash, const char* key);
 void* _HashRef(struct Hash* hash, const char* key);
@@ -113,13 +113,13 @@ int DimSize(Memory* mem);
 int PeekByte(Memory* mem, int offset);
 int PeekShort(Memory* mem, int offset);
 int PeekInt(Memory* mem, int offset);
-float PeekReal(Memory* mem, int offset);
+float PeekFloat(Memory* mem, int offset);
 const char* PeekString(Memory* mem, int offset);
 void* PeekRef(Memory* mem, int offset);
 void PokeByte(Memory* mem, int offset, int val);
 void PokeShort(Memory* mem, int offset, int val);
 void PokeInt(Memory* mem, int offset, int val);
-void PokeReal(Memory* mem, int offset, float val);
+void PokeFloat(Memory* mem, int offset, float val);
 void PokeString(Memory* mem, int offset, const char* val);
 void PokeRef(Memory* mem, int offset, void* val);
 
@@ -156,11 +156,11 @@ void SaveString(const char* filename, const char* str, int append);
 // ------------------------------------
 
 void AddIntArg(int arg);
-void AddRealArg(float arg);
+void AddFloatArg(float arg);
 void AddStringArg(const char* arg);
 void Call(const char* name);
 int CallInt(const char* name);
-float CallReal(const char* name);
+float CallFloat(const char* name);
 const char* CallString(const char* name);
 int Callable(const char* name);
 

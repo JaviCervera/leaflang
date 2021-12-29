@@ -69,7 +69,7 @@ string GenTypeName(int type) {
     switch (type) {
     case TYPE_INT:
         return "int ";
-    case TYPE_REAL:
+    case TYPE_FLOAT:
         return "float ";
     case TYPE_STRING:
         return "const char* ";
@@ -86,7 +86,7 @@ string GenLuaArg(const Var& param) {
     switch (param.type) {
     case TYPE_INT:
         return "lua_tointeger";
-    case TYPE_REAL:
+    case TYPE_FLOAT:
         return "lua_tonumber";
     case TYPE_STRING:
         return "lua_tostring";
@@ -117,7 +117,7 @@ string GenLuaReturn(int type) {
     switch (type) {
     case TYPE_INT:
         return "    lua_pushinteger(L, result);\n";
-    case TYPE_REAL:
+    case TYPE_FLOAT:
         return "    lua_pushnumber(L, result);\n";
     case TYPE_STRING:
         return "    lua_pushstring(L, result);\n";
@@ -185,7 +185,7 @@ string GenTypeSuffix(int type) {
     switch (type) {
     case TYPE_INT:
         return "|i";
-    case TYPE_REAL:
+    case TYPE_FLOAT:
         return "|f";
     case TYPE_STRING:
         return "|s";

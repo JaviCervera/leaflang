@@ -2,7 +2,7 @@
 #define TYPES_H
 
 #define TYPE_INT -1
-#define TYPE_REAL -2
+#define TYPE_FLOAT -2
 #define TYPE_STRING -3
 #define TYPE_HASH -4
 #define TYPE_REF -5

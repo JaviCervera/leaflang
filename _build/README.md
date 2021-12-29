@@ -76,7 +76,7 @@ it is on a different line.
 Leaf can represent these types of data:
 
 * Integer numbers.
-* Real numbers.
+* Float (decimal) numbers.
 * Strings.
 * Hashes.
 * References.
@@ -92,7 +92,7 @@ expression assigned to it. For example:
 
 ```
 integer = 50
-real = 21.4
+float = 21.4
 text = "Hello"
 ```
 
@@ -102,14 +102,14 @@ incompatible type, expression must be cast. A cast is performed by adding a suff
 expression. The valid suffixes are:
 
 * `|i`: Integer.
-* `|r`: Real.
+* `|f`: Float.
 * `|s`: String.
 
 For example:
 
 ```
 integer = "128"|i
-real = "36.12"|r
+float = "36.12"|f
 string = 5|s
 ```
 
@@ -159,7 +159,7 @@ To learn more about functions, read the corresponding section.
 There is no specific boolean type, all types can be evaluated as booleans instead:
 
 * Integers: `0` is false, all others true.
-* Real numbers: `0.0` is false, all others true.
+* Floats: `0.0` is false, all others true.
 * Strings: `""` (empty string) is false, all others true.
 * Hashes: Always true.
 * References: `null` is false, all others true.

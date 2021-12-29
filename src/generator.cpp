@@ -11,22 +11,22 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _or(a, b) if _bool(a) then return a else return b end end\n"
         "function _not(a) if _bool(a) then return 0 else return 1 end end\n"
         "function _int2int(v) return v end\n"
-        "function _int2real(v) return v + 0.0 end\n"
+        "function _int2float(v) return v + 0.0 end\n"
         "function _int2string(v) return tostring(v) end\n"
-        "function _real2int(v) return math.floor(v) end\n"
-        "function _real2real(v) return v end\n"
-        "function _real2string(v) return tostring(v) end\n"
+        "function _float2int(v) return math.floor(v) end\n"
+        "function _float2float(v) return v end\n"
+        "function _float2string(v) return tostring(v) end\n"
         "function _string2int(v) return _or(tonumber(v), 0) end\n"
-        "function _string2real(v) return _or(tonumber(v), 0) + 0.0 end\n"
+        "function _string2float(v) return _or(tonumber(v), 0) + 0.0 end\n"
         "function _string2string(v) return v end\n"
         "function _hash2string(v) return leaf._HashToString(v) end\n"
         "_args = {}\n"
         "function leaf.AddIntArg(v) _args[#_args+1] = v end\n"
-        "function leaf.AddRealArg(v) _args[#_args+1] = v end\n"
+        "function leaf.AddFloatArg(v) _args[#_args+1] = v end\n"
         "function leaf.AddStringArg(v) _args[#_args+1] = v end\n"
         "function leaf.Call(f) local ret = leaf[f](table.unpack(_args)) _args = {} return ret end\n"
         "function leaf.CallInt(f) return Int(leaf.CallFloat(f)) end\n"
-        "function leaf.CallReal(f) return tonumber(leaf.Call(f)) end\n"
+        "function leaf.CallFloat(f) return tonumber(leaf.Call(f)) end\n"
         "function leaf.CallString(f) return tostring(leaf.Call(f)) end\n"
         "function leaf.Callable(f) return type(leaf[f]) == \"function\" end\n\n";
     string functionsStr;
@@ -133,8 +133,8 @@ string Generator::GenList(const vector<Expression>& values) const {
         case TYPE_INT:
             funcName = "_SetHashInt";
             break;
-        case TYPE_REAL:
-            funcName = "_SetHashReal";
+        case TYPE_FLOAT:
+            funcName = "_SetHashFloat";
             break;
         case TYPE_STRING:
             funcName = "_SetHashString";
@@ -162,8 +162,8 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
         case TYPE_INT:
             funcName = "_SetHashInt";
             break;
-        case TYPE_REAL:
-            funcName = "_SetHashReal";
+        case TYPE_FLOAT:
+            funcName = "_SetHashFloat";
             break;
         case TYPE_STRING:
             funcName = "_SetHashString";
@@ -218,7 +218,7 @@ string Generator::GenVar(const Var& var) const {
 string Generator::GenLiteral(const Token& token) const {
     switch (token.type) {
     case TOK_INTLITERAL:
-    case TOK_REALLITERAL:
+    case TOK_FLOATLITERAL:
         return token.data;
     case TOK_STRINGLITERAL:
         return "\"" + token.data + "\"";
@@ -239,8 +239,8 @@ string Generator::GenHashGetter(int type, const string& hashCode, const Expressi
     case TYPE_INT:
         funcName = "_HashInt";
         break;
-    case TYPE_REAL:
-        funcName = "_HashReal";
+    case TYPE_FLOAT:
+        funcName = "_HashFloat";
         break;
     case TYPE_STRING:
         funcName = "_HashString";
@@ -263,8 +263,8 @@ string Generator::GenHashSetter(const string& hashCode, const Expression& indexE
     case TYPE_INT:
         funcName = "_SetHashInt";
         break;
-    case TYPE_REAL:
-        funcName = "_SetHashReal";
+    case TYPE_FLOAT:
+        funcName = "_SetHashFloat";
         break;
     case TYPE_STRING:
         funcName = "_SetHashString";
@@ -308,8 +308,8 @@ string Generator::GenType(int type) {
     switch (type) {
         case TYPE_INT:
             return "int";
-        case TYPE_REAL:
-            return "real";
+        case TYPE_FLOAT:
+            return "float";
         case TYPE_STRING:
             return "string";
         case TYPE_HASH:

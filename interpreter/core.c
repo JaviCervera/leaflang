@@ -174,9 +174,9 @@ Value ValueFromInt(int i) {
     return v;
 }
 
-Value ValueFromReal(float f) {
+Value ValueFromFloat(float f) {
     Value v = {0};
-    v.type = TYPE_REAL;
+    v.type = TYPE_FLOAT;
     v.value.f = f;
     return v;
 }
@@ -205,16 +205,16 @@ Value ValueFromRef(void* r) {
 int ValueToInt(const Value v) {
     switch (v.type) {
     case TYPE_INT: return v.value.i;
-    case TYPE_REAL: return (int)v.value.f;
+    case TYPE_FLOAT: return (int)v.value.f;
     case TYPE_STRING: return Val(v.value.s);
     default: return 0;
     }
 }
 
-float ValueToReal(const Value v) {
+float ValueToFloat(const Value v) {
     switch (v.type) {
     case TYPE_INT: return v.value.i;
-    case TYPE_REAL: return v.value.f;
+    case TYPE_FLOAT: return v.value.f;
     case TYPE_STRING: return ValF(v.value.s);
     default: return 0.0f;
     }
@@ -223,7 +223,7 @@ float ValueToReal(const Value v) {
 const char* ValueToString(const Value v) {
     switch (v.type) {
     case TYPE_INT: return Str(v.value.i);
-    case TYPE_REAL: return StrF(v.value.f);
+    case TYPE_FLOAT: return StrF(v.value.f);
     case TYPE_STRING: return v.value.s;
     case TYPE_HASH: return _HashToString(v.value.h);
     default: return lstr_get("");
@@ -241,7 +241,7 @@ struct Hash* ValueToHash(const Value v) {
 void* ValueToRef(const Value v) {
     switch (v.type) {
     case TYPE_INT: return NULL;
-    case TYPE_REAL: return NULL;
+    case TYPE_FLOAT: return NULL;
     case TYPE_STRING: return v.value.s;
     case TYPE_HASH: return v.value.h;
     default: return v.value.r;
@@ -289,9 +289,9 @@ Hash* _SetHashInt(Hash* hash, const char* key, int value) {
     return hash;
 }
 
-Hash* _SetHashReal(Hash* hash, const char* key, float value) {
+Hash* _SetHashFloat(Hash* hash, const char* key, float value) {
     _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromReal(value));
+    shput(hash->entries, key, ValueFromFloat(value));
     return hash;
 }
 
@@ -323,9 +323,9 @@ int _HashInt(Hash* hash, const char* key) {
         : 0;
 }
 
-float _HashReal(Hash* hash, const char* key) {
+float _HashFloat(Hash* hash, const char* key) {
     return (Contains(hash, key))
-        ? ValueToReal(shget(hash->entries, key))
+        ? ValueToFloat(shget(hash->entries, key))
         : 0.0f;
 }
 
@@ -524,7 +524,7 @@ int PeekInt(Memory* mem, int offset) {
     return v;
 }
 
-float PeekReal(Memory* mem, int offset) {
+float PeekFloat(Memory* mem, int offset) {
     float v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
@@ -562,7 +562,7 @@ void PokeInt(Memory* mem, int offset, int val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeReal(Memory* mem, int offset, float val) {
+void PokeFloat(Memory* mem, int offset, float val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
@@ -801,7 +801,7 @@ void SaveString(const char* filename, const char* str, int append) {
 void AddIntArg(int arg) {
 }
 
-void AddRealArg(float arg) {
+void AddFloatArg(float arg) {
 }
 
 void AddStringArg(const char* arg) {
@@ -814,7 +814,7 @@ int CallInt(const char* name) {
     return 0;
 }
 
-float CallReal(const char* name) {
+float CallFloat(const char* name) {
     return 0.0f;
 }
 
