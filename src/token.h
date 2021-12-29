@@ -7,7 +7,7 @@
 
 // Literals
 #define TOK_INTLITERAL 1
-#define TOK_REALLITERAL 2
+#define TOK_FLOATLITERAL 2
 #define TOK_STRINGLITERAL 3
 #define TOK_NULLLITERAL 4
 #define TOK_TRUELITERAL 5
@@ -61,7 +61,7 @@
 
 // Type tags
 #define TOK_INT 60
-#define TOK_REAL 61
+#define TOK_FLOAT 61
 #define TOK_STRING 62
 #define TOK_HASH 63
 #define TOK_REF 64

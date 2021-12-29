@@ -91,8 +91,8 @@ int GetType(int type) {
     switch (type) {
     case TOK_INT:
         return TYPE_INT;
-    case TOK_REAL:
-        return TYPE_REAL;
+    case TOK_FLOAT:
+        return TYPE_FLOAT;
     case TOK_STRING:
         return TYPE_STRING;
     case TOK_HASH:
@@ -111,9 +111,9 @@ bool IsStatementEnd(int type) {
 bool AreCompatible(int type1, int type2) {
     if (type1 == type2 && type2 != TYPE_VOID) {
         return true;
-    } else if (type1 == TYPE_INT && type2 == TYPE_REAL) {
+    } else if (type1 == TYPE_INT && type2 == TYPE_FLOAT) {
         return true;
-    } else if (type1 == TYPE_REAL && type2 == TYPE_INT) {
+    } else if (type1 == TYPE_FLOAT && type2 == TYPE_INT) {
         return true;
     } else {
         return false;
@@ -123,10 +123,10 @@ bool AreCompatible(int type1, int type2) {
 int BalanceTypes(int type1, int type2) {
     if (type1 == type2) {
         return type1;
-    } else if (type1 == TYPE_INT && type2 == TYPE_REAL) {
-        return TYPE_REAL;
-    } else if (type1 == TYPE_REAL && type2 == TYPE_INT) {
-        return TYPE_REAL;
+    } else if (type1 == TYPE_INT && type2 == TYPE_FLOAT) {
+        return TYPE_FLOAT;
+    } else if (type1 == TYPE_FLOAT && type2 == TYPE_INT) {
+        return TYPE_FLOAT;
     } else {
         return TYPE_VOID;
     }
@@ -157,12 +157,12 @@ Token NextToken(Lexer& lexer) {
         if (lexer.Char() == '.') {
             str += '.';
             lexer.offset++;
-            if (!IsNumber(lexer.Char())) ErrorEx("Invalid real number", lexer.file, lexer.line);
+            if (!IsNumber(lexer.Char())) ErrorEx("Invalid float number", lexer.file, lexer.line);
             while (IsNumber(lexer.Char())) {
                 str += lexer.Char();
                 lexer.offset++;
             }
-            return Token(TOK_REALLITERAL, str, lexer.file, lexer.line);
+            return Token(TOK_FLOATLITERAL, str, lexer.file, lexer.line);
         } else {
             return Token(TOK_INTLITERAL, str, lexer.file, lexer.line);
         }
@@ -323,7 +323,7 @@ int TokenType(const string& str) {
         types["return"] = TOK_RETURN;
         types["function"] = TOK_FUNCTION;
         types["|i"] = TOK_INT;
-        types["|f"] = TOK_REAL;
+        types["|f"] = TOK_FLOAT;
         types["|s"] = TOK_STRING;
         types["|h"] = TOK_HASH;
         types["|w"] = TOK_REF;

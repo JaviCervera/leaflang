@@ -466,7 +466,7 @@ Expression Parser::ParseRelExp() {
     while (stream.Peek().type == TOK_LESSER || stream.Peek().type == TOK_LEQUAL
             || stream.Peek().type == TOK_GREATER || stream.Peek().type == TOK_GEQUAL) {
         const Token& token = stream.Next();
-        if (exp.type != TYPE_INT && exp.type != TYPE_REAL && exp.type != TYPE_STRING) {
+        if (exp.type != TYPE_INT && exp.type != TYPE_FLOAT && exp.type != TYPE_STRING) {
             ErrorEx("Relational operators can only be applied to numeric and string types",
                 token.file, token.line);
         }
@@ -482,9 +482,9 @@ Expression Parser::ParseAddExp() {
     Expression exp = ParseMulExp();
     while (stream.Peek().type == TOK_PLUS || stream.Peek().type == TOK_MINUS) {
         const Token& token = stream.Next();
-        if (token.type == TOK_PLUS && exp.type != TYPE_INT && exp.type != TYPE_REAL && exp.type != TYPE_STRING) {
+        if (token.type == TOK_PLUS && exp.type != TYPE_INT && exp.type != TYPE_FLOAT && exp.type != TYPE_STRING) {
             ErrorEx("Addition can only be applied to numeric and string types", token.file, token.line);
-        } else if (token.type == TOK_MINUS && exp.type != TYPE_INT && exp.type != TYPE_REAL) {
+        } else if (token.type == TOK_MINUS && exp.type != TYPE_INT && exp.type != TYPE_FLOAT) {
             ErrorEx("Subtraction can only be applied to numeric types", token.file, token.line);
         }
         const Expression exp2 = ParseMulExp();
@@ -500,7 +500,7 @@ Expression Parser::ParseMulExp() {
     while (stream.Peek().type == TOK_MUL || stream.Peek().type == TOK_DIV
             || stream.Peek().type == TOK_MOD) {
         const Token& token = stream.Next();
-        if (exp.type != TYPE_INT && exp.type != TYPE_REAL) {
+        if (exp.type != TYPE_INT && exp.type != TYPE_FLOAT) {
             ErrorEx("Multiplication and division can only be applied to numeric types",
                 token.file, token.line);
         }
@@ -594,7 +594,7 @@ Expression Parser::ParseUnaryExp() {
         ? &stream.Next()
         : NULL;
     const Expression exp = ParseGroupExp();
-    if (token != NULL && token->type == TOK_MINUS && exp.type != TYPE_INT && exp.type != TYPE_REAL) {
+    if (token != NULL && token->type == TOK_MINUS && exp.type != TYPE_INT && exp.type != TYPE_FLOAT) {
         ErrorEx("Unary '-' operator must be applied to numeric types", token->file, token->line);
     }
     return
@@ -619,8 +619,8 @@ Expression Parser::ParseAtomicExp() {
     switch (token.type) {
     case TOK_INTLITERAL:
         return Expression(TYPE_INT, generator.GenLiteral(token));
-    case TOK_REALLITERAL:
-        return Expression(TYPE_REAL, generator.GenLiteral(token));
+    case TOK_FLOATLITERAL:
+        return Expression(TYPE_FLOAT, generator.GenLiteral(token));
     case TOK_STRINGLITERAL:
         return Expression(TYPE_STRING, generator.GenLiteral(token));
     case TOK_NULLLITERAL:
