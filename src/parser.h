@@ -68,11 +68,11 @@ private:
     Expression ParseListExp();
     Expression ParseDictExp();
     void ParseDictEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
+    Expression ParseNotExp();
     Expression ParseCastExp();
-    Expression ParseUnaryExp();
+    Expression ParseNegExp();
     Expression ParseGroupExp();
     Expression ParseAtomicExp();
-    Expression ParseCast(const Token& typeToken);
     Expression ParseFunctionCall(const Token& nameToken);
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);

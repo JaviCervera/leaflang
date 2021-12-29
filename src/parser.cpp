@@ -518,7 +518,7 @@ Expression Parser::ParseHashExp() {
     } else if (stream.Peek().type == TOK_OPENBRACE) {
         return ParseDictExp();
     } else {
-        return ParseCastExp();
+        return ParseNotExp();
     }
 }
 
@@ -572,8 +572,15 @@ void Parser::ParseDictEntry(vector<Expression>& keys, vector<Expression>& values
     values.push_back(valueExp);
 }
 
+Expression Parser::ParseNotExp() {
+    const bool isNot = stream.Peek().type == TOK_NOT;
+    if (isNot) stream.Skip(1);
+    const Expression exp = ParseCastExp();
+    return isNot ? Expression(TYPE_INT, generator.GenNotExp(exp.code)) : exp;
+}
+
 Expression Parser::ParseCastExp() {
-    const Expression exp = ParseUnaryExp();
+    const Expression exp = ParseNegExp();
     if (IsType(stream.Peek().type)) {
         const Token& typeToken = stream.Next();
         const int tokenType = GetType(typeToken.type);
@@ -589,18 +596,15 @@ Expression Parser::ParseCastExp() {
     }
 }
 
-Expression Parser::ParseUnaryExp() {
+Expression Parser::ParseNegExp() {
     const Token* token = (stream.Peek().type == TOK_NOT || stream.Peek().type == TOK_MINUS)
         ? &stream.Next()
         : NULL;
     const Expression exp = ParseGroupExp();
-    if (token != NULL && token->type == TOK_MINUS && exp.type != TYPE_INT && exp.type != TYPE_FLOAT) {
+    if (token != NULL && exp.type != TYPE_INT && exp.type != TYPE_FLOAT) {
         ErrorEx("Unary '-' operator must be applied to numeric types", token->file, token->line);
     }
-    return
-        (token != NULL && token->type == TOK_NOT) ? Expression(TYPE_INT, generator.GenUnaryExp(*token, exp.code)) :
-        (token != NULL) ? Expression(exp.type, generator.GenUnaryExp(*token, exp.code)) :
-        exp;
+    return (token != NULL) ? Expression(exp.type, generator.GenNegExp(exp.code)) : exp;
 }
 
 Expression Parser::ParseGroupExp() {

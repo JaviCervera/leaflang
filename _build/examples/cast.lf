@@ -13,3 +13,6 @@ Print("Float to string: " + float|s)
 Print("String to int: " + (string|i)|s)
 Print("String to float: " + (string|f)|s)
 Print("String to string: " + string|s)
+
+Print("Cast with minus: " + -5|s)
+Print("Cast with not: " + (not 5)|s)
