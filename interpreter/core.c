@@ -535,7 +535,7 @@ const char* PeekString(Memory* mem, int offset) {
     result[0] = '\0';
     int c;
     while (offset < DimSize(mem) && (c = PeekByte(mem, offset)) != 0) {
-        char s[] = {c, '\0'};
+        char s[] = {(char)c, '\0'};
         strcat(result, s);
         ++offset;
     }
@@ -683,7 +683,7 @@ Hash* _SplitChars(const char* str) {
     const int len = Len(str);
     Hash* hash = _CreateHash();
     for (int i = 0; i < len; ++i) {
-        _SetHashString(hash, Str(i), Chr(i));
+        _SetHashString(hash, Str(i), Chr(str[i]));
     }
     return hash;
 }
@@ -698,7 +698,7 @@ Hash* _SplitBySep(const char* str, const char* separator) {
         _SetHashString(hash, Str(i++), Mid(str, prevoffset, nextoffset - prevoffset));
         prevoffset = nextoffset + seplen;
     }
-    _SetHashString(hash, Str(i++), str + prevoffset);
+    _SetHashString(hash, Str(i++), lstr_get(str + prevoffset));
     return hash;
 }
 
@@ -745,7 +745,7 @@ int Asc(const char* str, int index) {
 }
 
 const char* Chr(int c) {
-    const char str[] = {c, '\0'};
+    const char str[] = {(char)c, '\0'};
     return lstr_get(str);
 }
 
