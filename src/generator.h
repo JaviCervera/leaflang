@@ -22,8 +22,9 @@ public:
     std::string GenBinaryExp(int expType, const Token& token, const std::string& left, const std::string& right) const;
     std::string GenList(const std::vector<Expression>& values) const;
     std::string GenDict(const std::vector<Expression>& keys, const std::vector<Expression>& values) const;
+    std::string GenNotExp(const std::string& exp) const;
     std::string GenCastExp(int castType, int expType, const std::string& exp) const;
-    std::string GenUnaryExp(const Token& token, const std::string& exp) const;
+    std::string GenNegExp(const std::string& exp) const;
     std::string GenGroupExp(const std::string& exp) const;
     std::string GenFunctionCall(const Function& func, const std::string& args) const;
     std::string GenArgs(const Function& func, const std::vector<Expression>& args) const;

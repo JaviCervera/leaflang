@@ -183,15 +183,18 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
     return str;
 }
 
+string Generator::GenNotExp(const string& exp) const {
+    return "_not(" + exp + ")";
+}
+
 string Generator::GenCastExp(int castType, int expType, const std::string& exp) const {
     const string expTypeName = GenType(expType);
     const string castTypeName = GenType(castType);
     return "_" + expTypeName + "2" + castTypeName + "(" + exp + ")";
 }
 
-string Generator::GenUnaryExp(const Token& token, const string& exp) const {
-    if (token.type == TOK_NOT) return ("_not(" + exp + ")") ;
-    else return "-" + exp;
+string Generator::GenNegExp(const string& exp) const {
+    return "-" + exp;
 }
 
 string Generator::GenGroupExp(const string& exp) const {
