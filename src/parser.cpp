@@ -232,10 +232,13 @@ string Parser::ParseAssignment() {
     if (var == NULL) return ParseVarDef();
     stream.Skip(1); // name
     if (stream.Peek().type == TOK_OPENBRACKET) {
-        if (var->type != TYPE_HASH) {
-            ErrorEx("Only hashes can be indexed", nameToken.file, nameToken.line);
+        if (var->type == TYPE_LIST) {
+            return ParseListAccess(generator.GenVar(*var), true).code;
+        } else if (var->type == TYPE_HASH) {
+            return ParseHashAccess(generator.GenVar(*var), true).code;
+        } else {
+            ErrorEx("Only lists and hashes can be indexed", nameToken.file, nameToken.line);
         }
-        return ParseHashAccess(Expression(var->type, generator.GenVar(*var)), true).code;
     } else {
         stream.Skip(1); // =
         const Token token = stream.Peek();
@@ -496,7 +499,7 @@ Expression Parser::ParseAddExp() {
 }
 
 Expression Parser::ParseMulExp() {
-    Expression exp = ParseHashExp();
+    Expression exp = ParseListExp();
     while (stream.Peek().type == TOK_MUL || stream.Peek().type == TOK_DIV
             || stream.Peek().type == TOK_MOD) {
         const Token& token = stream.Next();
@@ -504,7 +507,7 @@ Expression Parser::ParseMulExp() {
             ErrorEx("Multiplication and division can only be applied to numeric types",
                 token.file, token.line);
         }
-        const Expression exp2 = ParseHashExp();
+        const Expression exp2 = ParseListExp();
         CheckTypes(exp.type, exp2.type, token);
         const int expType = BalanceTypes(exp.type, exp2.type);
         exp = Expression(expType, generator.GenBinaryExp(expType, token, exp.code, exp2.code));
@@ -512,52 +515,50 @@ Expression Parser::ParseMulExp() {
     return exp;
 }
 
-Expression Parser::ParseHashExp() {
+Expression Parser::ParseListExp() {
     if (stream.Peek().type == TOK_OPENBRACKET) {
-        return ParseListExp();
-    } else if (stream.Peek().type == TOK_OPENBRACE) {
-        return ParseDictExp();
+        vector<Expression> values;
+        stream.Skip(1); // [
+        if (stream.Peek().type != TOK_CLOSEBRACKET) {
+            values.push_back(ParseExp());
+            while (stream.Peek().type == TOK_COMMA) {
+                stream.Skip(1); // ,
+                values.push_back(ParseExp());
+            }
+        }
+        const Token& closeToken = stream.Next();
+        if (closeToken.type != TOK_CLOSEBRACKET) {
+            ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+        }
+        return Expression(TYPE_LIST, generator.GenList(values));
+    } else {
+        return ParseHashExp();
+    }
+}
+
+Expression Parser::ParseHashExp() {
+    if (stream.Peek().type == TOK_OPENBRACE) {
+        vector<Expression> keys;
+        vector<Expression> values;
+        stream.Skip(1); // {
+        if (stream.Peek().type != TOK_CLOSEBRACE) {
+            ParseHashEntry(keys, values);
+            while (stream.Peek().type == TOK_COMMA) {
+                stream.Skip(1); // ,
+                ParseHashEntry(keys, values);
+            }
+        }
+        const Token& closeToken = stream.Next();
+        if (closeToken.type != TOK_CLOSEBRACE) {
+            ErrorEx("Expected '}', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+        }
+        return Expression(TYPE_HASH, generator.GenHash(keys, values));
     } else {
         return ParseNotExp();
     }
 }
 
-Expression Parser::ParseListExp() {
-    vector<Expression> values;
-    stream.Skip(1); // [
-    if (stream.Peek().type != TOK_CLOSEBRACKET) {
-        values.push_back(ParseExp());
-        while (stream.Peek().type == TOK_COMMA) {
-            stream.Skip(1); // ,
-            values.push_back(ParseExp());
-        }
-    }
-    const Token& closeToken = stream.Next();
-    if (closeToken.type != TOK_CLOSEBRACKET) {
-        ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
-    }
-    return Expression(TYPE_HASH, generator.GenList(values));
-}
-
-Expression Parser::ParseDictExp() {
-    vector<Expression> keys;
-    vector<Expression> values;
-    stream.Skip(1); // {
-    if (stream.Peek().type != TOK_CLOSEBRACE) {
-        ParseDictEntry(keys, values);
-        while (stream.Peek().type == TOK_COMMA) {
-            stream.Skip(1); // ,
-            ParseDictEntry(keys, values);
-        }
-    }
-    const Token& closeToken = stream.Next();
-    if (closeToken.type != TOK_CLOSEBRACE) {
-        ErrorEx("Expected '}', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
-    }
-    return Expression(TYPE_HASH, generator.GenDict(keys, values));
-}
-
-void Parser::ParseDictEntry(vector<Expression>& keys, vector<Expression>& values) {
+void Parser::ParseHashEntry(vector<Expression>& keys, vector<Expression>& values) {
     const Token& keyToken = stream.Peek();
     const Expression keyExp = ParseExp();
     if (keyExp.type != TYPE_STRING) {
@@ -584,8 +585,8 @@ Expression Parser::ParseCastExp() {
     if (IsType(stream.Peek().type)) {
         const Token& typeToken = stream.Next();
         const int tokenType = GetType(typeToken.type);
-        if (exp.type < TYPE_HASH || exp.type > 0) {
-            ErrorEx("Can only cast numeric, string and hash types", typeToken.file, typeToken.line);
+        if (exp.type < TYPE_LIST || exp.type > 0) {
+            ErrorEx("Can only cast numeric, string, list and hash types", typeToken.file, typeToken.line);
         }
         if (tokenType < TYPE_STRING || tokenType > 0) {
             ErrorEx("Can only cast to numeric and string types", typeToken.file, typeToken.line);
@@ -687,10 +688,13 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
         const Expression& exp = Expression(var->type, generator.GenVar(*var));
         const Token& nextToken = stream.Peek();
         if (nextToken.type == TOK_OPENBRACKET) {
-            if (var->type != TYPE_HASH) {
-                ErrorEx("Only hashes can be indexed", nameToken.file, nameToken.line);
+            if (var->type == TYPE_LIST) {
+                return ParseListAccess(exp.code, false);
+            } else if (var->type == TYPE_HASH) {
+                return ParseHashAccess(exp.code, false);
+            } else {
+                ErrorEx("Only lists and hashes can be indexed", nameToken.file, nameToken.line);
             }
-            return ParseHashAccess(exp, false);
         } else {
             return exp;
         }
@@ -704,36 +708,65 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
     }
 }
 
-Expression Parser::ParseHashAccess(const Expression& hashExp, bool isSetter) {
-    int type = hashExp.type;
-    string hashCode = hashExp.code;
+Expression Parser::ParseListAccess(string hashCode, bool isSetter) {
     Expression indexExp(TYPE_VOID, "");
     while (stream.Peek().type == TOK_OPENBRACKET) {
         stream.Skip(1); // [
         const Token& expToken = stream.Peek();
         indexExp = ParseExp();
-        if (indexExp.type != TYPE_INT && indexExp.type != TYPE_STRING) {
-            ErrorEx("Only int and string expressions can be used as hash indices", expToken.file, expToken.line);
+        if (indexExp.type != TYPE_INT) {
+            ErrorEx("Only int expressions can be used as list indices", expToken.file, expToken.line);
         }
         const Token& closeToken = stream.Next();
         if (closeToken.type != TOK_CLOSEBRACKET) {
             ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
         }
         if (stream.Peek().type == TOK_OPENBRACKET) {
-            hashCode = generator.GenHashGetter(type, hashCode, indexExp);
+            hashCode = generator.GenListGetter(TYPE_LIST, hashCode, indexExp.code);
         }
     }
     if (isSetter) {
         stream.Skip(1); // =
         const Expression exp = ParseExp();
-        return Expression(exp.type, generator.GenHashSetter(hashCode, indexExp, exp));
+        return Expression(exp.type, generator.GenListSetter(hashCode, indexExp.code, exp));
     } else {
         const Token& typeToken = stream.Next();
         if (!IsType(typeToken.type)) {
             ErrorEx("Expected type suffix at end of hash indexing", typeToken.file, typeToken.line);
         }
-        type = GetType(typeToken.type);
-        return Expression(type, generator.GenHashGetter(type, hashCode, indexExp));
+        const int type = GetType(typeToken.type);
+        return Expression(type, generator.GenListGetter(type, hashCode, indexExp.code));
+    }
+}
+
+Expression Parser::ParseHashAccess(string hashCode, bool isSetter) {
+    Expression indexExp(TYPE_VOID, "");
+    while (stream.Peek().type == TOK_OPENBRACKET) {
+        stream.Skip(1); // [
+        const Token& expToken = stream.Peek();
+        indexExp = ParseExp();
+        if (indexExp.type != TYPE_STRING) {
+            ErrorEx("Only string expressions can be used as hash indices", expToken.file, expToken.line);
+        }
+        const Token& closeToken = stream.Next();
+        if (closeToken.type != TOK_CLOSEBRACKET) {
+            ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
+        }
+        if (stream.Peek().type == TOK_OPENBRACKET) {
+            hashCode = generator.GenHashGetter(TYPE_HASH, hashCode, indexExp.code);
+        }
+    }
+    if (isSetter) {
+        stream.Skip(1); // =
+        const Expression exp = ParseExp();
+        return Expression(exp.type, generator.GenHashSetter(hashCode, indexExp.code, exp));
+    } else {
+        const Token& typeToken = stream.Next();
+        if (!IsType(typeToken.type)) {
+            ErrorEx("Expected type suffix at end of hash indexing", typeToken.file, typeToken.line);
+        }
+        const int type = GetType(typeToken.type);
+        return Expression(type, generator.GenHashGetter(type, hashCode, indexExp.code));
     }
 }
 

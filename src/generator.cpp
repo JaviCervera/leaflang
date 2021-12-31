@@ -86,7 +86,7 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
     return GenFunctionCleanup(func, definitions.GetLocals(), exp)
         + "do return "
-        + ((func->type == TYPE_HASH) ? ("leaf._AutoDec(" + exp + ")") : exp)
+        + ((func->type == TYPE_LIST || func->type == TYPE_HASH) ? ("leaf._AutoDec(" + exp + ")") : exp)
         + " end\n";
 }
 
@@ -96,7 +96,7 @@ string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool
 
 string Generator::GenAssignment(const Var& var, int expType, const string& exp) const {
     const string varId = GenVarId(var.name);
-    if (expType == TYPE_HASH) {
+    if (expType == TYPE_LIST || expType == TYPE_HASH) {
         return varId + " = _onassign(" + varId + ", " + exp + ")";
     } else {
         return varId + " = " + exp;
@@ -126,35 +126,38 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
 }
 
 string Generator::GenList(const vector<Expression>& values) const {
-    string str = "leaf._CreateHash()";
+    string str = "leaf._CreateList()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
         switch (values[i].type) {
         case TYPE_INT:
-            funcName = "_SetHashInt";
+            funcName = "_SetListInt";
             break;
         case TYPE_FLOAT:
-            funcName = "_SetHashFloat";
+            funcName = "_SetListFloat";
             break;
         case TYPE_STRING:
-            funcName = "_SetHashString";
+            funcName = "_SetListString";
+            break;
+        case TYPE_LIST:
+            funcName = "_SetListList";
             break;
         case TYPE_HASH:
-            funcName = "_SetHashHash";
+            funcName = "_SetListHash";
             break;
         case TYPE_REF:
-            funcName = "_SetHashRef";
+            funcName = "_SetListRef";
             break;
         }
         str = "leaf." + funcName + "("
             + str
-            + ", _int2string(" + strmanip::fromint(i)
-            + "), " + values[i].code + ")";
+            + ", " + strmanip::fromint(i)
+            + ", " + values[i].code + ")";
     }
     return str;
 }
 
-string Generator::GenDict(const vector<Expression>& keys, const vector<Expression>& values) const {
+string Generator::GenHash(const vector<Expression>& keys, const vector<Expression>& values) const {
     string str = "leaf._CreateHash()";
     for (size_t i = 0; i < values.size(); ++i) {
         string funcName = "";
@@ -167,6 +170,9 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
             break;
         case TYPE_STRING:
             funcName = "_SetHashString";
+            break;
+        case TYPE_LIST:
+            funcName = "_SetHashList";
             break;
         case TYPE_HASH:
             funcName = "_SetHashHash";
@@ -236,7 +242,62 @@ string Generator::GenLiteral(const Token& token) const {
     }
 }
 
-string Generator::GenHashGetter(int type, const string& hashCode, const Expression& indexExp) const {
+string Generator::GenListGetter(int type, const string& listCode, const std::string& indexCode) const {
+    string funcName = "";
+    switch (type) {
+    case TYPE_INT:
+        funcName = "_ListInt";
+        break;
+    case TYPE_FLOAT:
+        funcName = "_ListFloat";
+        break;
+    case TYPE_STRING:
+        funcName = "_ListString";
+        break;
+    case TYPE_LIST:
+        funcName = "_ListList";
+        break;
+    case TYPE_HASH:
+        funcName = "_ListHash";
+        break;
+    case TYPE_REF:
+        funcName = "_ListRef";
+        break;
+    }
+    return "leaf." + funcName + "("
+        + listCode
+        + ", " + indexCode + ")";
+}
+
+string Generator::GenListSetter(const string& listCode, const std::string& indexCode, const Expression& valueExp) const {
+    string funcName = "";
+    switch (valueExp.type) {
+    case TYPE_INT:
+        funcName = "_SetListInt";
+        break;
+    case TYPE_FLOAT:
+        funcName = "_SetListFloat";
+        break;
+    case TYPE_STRING:
+        funcName = "_SetListString";
+        break;
+    case TYPE_LIST:
+        funcName = "_SetListList";
+        break;
+    case TYPE_HASH:
+        funcName = "_SetListHash";
+        break;
+    case TYPE_REF:
+        funcName = "_SetListRef";
+        break;
+    }
+    return "leaf." + funcName + "("
+        + listCode
+        + ", " + indexCode
+        + ", " + valueExp.code + ")";
+}
+
+string Generator::GenHashGetter(int type, const string& hashCode, const std::string& indexCode) const {
     string funcName = "";
     switch (type) {
     case TYPE_INT:
@@ -248,6 +309,9 @@ string Generator::GenHashGetter(int type, const string& hashCode, const Expressi
     case TYPE_STRING:
         funcName = "_HashString";
         break;
+    case TYPE_LIST:
+        funcName = "_HashList";
+        break;
     case TYPE_HASH:
         funcName = "_HashHash";
         break;
@@ -257,10 +321,10 @@ string Generator::GenHashGetter(int type, const string& hashCode, const Expressi
     }
     return "leaf." + funcName + "("
         + hashCode
-        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")")) + ")";
+        + ", " + indexCode + ")";
 }
 
-string Generator::GenHashSetter(const string& hashCode, const Expression& indexExp, const Expression& valueExp) const {
+string Generator::GenHashSetter(const string& hashCode, const std::string& indexCode, const Expression& valueExp) const {
     string funcName = "";
     switch (valueExp.type) {
     case TYPE_INT:
@@ -272,6 +336,9 @@ string Generator::GenHashSetter(const string& hashCode, const Expression& indexE
     case TYPE_STRING:
         funcName = "_SetHashString";
         break;
+    case TYPE_LIST:
+        funcName = "_SetHashList";
+        break;
     case TYPE_HASH:
         funcName = "_SetHashHash";
         break;
@@ -281,7 +348,7 @@ string Generator::GenHashSetter(const string& hashCode, const Expression& indexE
     }
     return "leaf." + funcName + "("
         + hashCode
-        + ", " + (indexExp.type == TYPE_STRING ? indexExp.code : ("_int2string(" + indexExp.code + ")"))
+        + ", " + indexCode
         + ", " + valueExp.code + ")";
 }
 
@@ -315,6 +382,8 @@ string Generator::GenType(int type) {
             return "float";
         case TYPE_STRING:
             return "string";
+        case TYPE_LIST:
+            return "list";
         case TYPE_HASH:
             return "hash";
         default:

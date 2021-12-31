@@ -12,9 +12,9 @@ end
 
 function CreateListAndAddElement()
     list = ["One", "Two", "Three"]
-    list[HashSize(list)] = "Last"
-    Print(HashSize(list)|s)
-    for i = 0 to HashSize(list) - 1 do
+    list[ListSize(list)] = "Last"
+    Print(ListSize(list)|s)
+    for i = 0 to ListSize(list) - 1 do
         Print(list[i]|s)
     end
 end
