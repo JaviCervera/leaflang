@@ -153,7 +153,7 @@ void DeleteFile(const char* filename) {
 }
 
 // ------------------------------------
-// Hash
+// List
 // ------------------------------------
 
 typedef struct {
@@ -162,6 +162,7 @@ typedef struct {
         int i;
         float f;
         char* s;
+        struct List* l;
         struct Hash* h;
         void* r;
     } value;
@@ -185,6 +186,13 @@ Value ValueFromString(const char* s) {
     Value v = {0};
     v.type = TYPE_STRING;
     lmem_assign(v.value.s, lstr_get(s));
+    return v;
+}
+
+Value ValueFromList(struct List* l) {
+    Value v = {0};
+    v.type = TYPE_LIST;
+    lmem_assign(v.value.l, l);
     return v;
 }
 
@@ -225,8 +233,17 @@ const char* ValueToString(const Value v) {
     case TYPE_INT: return Str(v.value.i);
     case TYPE_FLOAT: return StrF(v.value.f);
     case TYPE_STRING: return v.value.s;
+    case TYPE_LIST: return _ListToString(v.value.l);
     case TYPE_HASH: return _HashToString(v.value.h);
     default: return lstr_get("");
+    }
+}
+
+struct List* ValueToList(const Value v) {
+    switch (v.type) {
+    case TYPE_REF: return (struct List*)v.value.r;
+    case TYPE_LIST: return v.value.l;
+    default: return _CreateList();
     }
 }
 
@@ -243,14 +260,161 @@ void* ValueToRef(const Value v) {
     case TYPE_INT: return NULL;
     case TYPE_FLOAT: return NULL;
     case TYPE_STRING: return v.value.s;
+    case TYPE_LIST: return v.value.l;
     case TYPE_HASH: return v.value.h;
     default: return v.value.r;
     }
 }
 
 int ValueIsManaged(const Value v) {
-    return v.type == TYPE_STRING || v.type == TYPE_HASH;
+    return v.type == TYPE_STRING || v.type == TYPE_LIST || v.type == TYPE_HASH;
 }
+
+typedef struct List {
+    Value* elems;
+} List;
+
+void _ClearListValue(List* list, size_t index) {
+    const Value value = list->elems[index];
+    if (ValueIsManaged(value)) {
+        _DecRef(value.value.r);
+    }
+}
+
+void _DestroyList(List* list) {
+    for (size_t i = 0; i < arrlenu(list->elems); ++i) {
+        _ClearListValue(list, i);
+    }
+    arrfree(list->elems);
+    list->elems = NULL;
+}
+
+List* _CreateList() {
+    List* list = lmem_allocauto(List, (void*)_DestroyList);
+    list->elems = NULL;
+    return list;
+}
+
+List* _SetListInt(List* list, size_t index, int value) {
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromInt(value);
+    return list;
+}
+
+List* _SetListFloat(List* list, size_t index, float value) {
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromFloat(value);
+    return list;
+}
+
+List* _SetListString(List* list, size_t index, const char* value) {
+    _IncRef((char*)value);
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromString(value);
+    _DecRef((char*)value);
+    return list;
+}
+
+List* _SetListList(List* list, size_t index, List* value) {
+    _IncRef((char*)value);
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromList(value);
+    _DecRef((char*)value);
+    return list;
+}
+
+List* _SetListHash(List* list, size_t index, struct Hash* value) {
+    _IncRef((char*)value);
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromHash(value);
+    _DecRef((char*)value);
+    return list;
+}
+
+List* _SetListRef(List* list, size_t index, void* value) {
+    _ClearListValue(list, index);
+    if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
+    list->elems[index] = ValueFromRef(value);
+    return list;
+}
+
+int _ListInt(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToInt(list->elems[index])
+        : 0;
+}
+
+float _ListFloat(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToFloat(list->elems[index])
+        : 0.0f;
+}
+
+const char* _ListString(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToString(list->elems[index])
+        : lstr_get("");
+}
+
+List* _ListList(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToList(list->elems[index])
+        : _CreateList();
+}
+
+struct Hash* _ListHash(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToHash(list->elems[index])
+        : _CreateHash();
+}
+
+void* _ListRef(List* list, size_t index) {
+    return (index >= 0 && index < ListSize(list))
+        ? ValueToRef(list->elems[index])
+        : NULL;
+}
+
+const char* _ListToString(List* list) {
+    char content[65536];
+    content[0] = '\0';
+    strcpy(content, "[");
+    for (size_t i = 0; i < arrlenu(list->elems); ++i) {
+        const Value value = list->elems[i];
+        const char* prefix = (value.type == TYPE_STRING)
+            ? "\""
+            : "";
+        if (i > 0) strcat(content, ", ");
+        strcat(content, prefix);
+        strcat(content, ValueToString(value));
+        strcat(content, prefix);
+    }
+    strcat(content, "]");
+    return lstr_get(content);
+}
+
+void RemoveIndex(List* list, int index) {
+    if (index >= 0 && index < ListSize(list)) {
+        _ClearListValue(list, index);
+        arrdel(list->elems, index);
+    }
+}
+
+int ListSize(List* list) {
+    return arrlenu(list->elems);
+}
+
+void ClearList(List* list) {
+    _DestroyList(list);
+}
+
+// ------------------------------------
+// Hash
+// ------------------------------------
 
 typedef struct {
     const char* key;
@@ -275,6 +439,7 @@ void _DestroyHash(Hash* hash) {
         }
     }
     shfree(hash->entries);
+    hash->entries = NULL;
 }
 
 Hash* _CreateHash() {
@@ -300,6 +465,14 @@ Hash* _SetHashString(Hash* hash, const char* key, const char* value) {
     _ClearHashValue(hash, key);
     shput(hash->entries, key, ValueFromString(value));
     _DecRef((char*)value);
+    return hash;
+}
+
+Hash* _SetHashList(Hash* hash, const char* key, List* value) {
+    _IncRef(value);
+    _ClearHashValue(hash, key);
+    shput(hash->entries, key, ValueFromList(value));
+    _DecRef(value);
     return hash;
 }
 
@@ -332,13 +505,19 @@ float _HashFloat(Hash* hash, const char* key) {
 const char* _HashString(Hash* hash, const char* key) {
     return (Contains(hash, key))
         ? ValueToString(shget(hash->entries, key))
-        : "";
+        : lstr_get("");
+}
+
+List* _HashList(Hash* hash, const char* key) {
+    return (Contains(hash, key))
+        ? ValueToList(shget(hash->entries, key))
+        : _CreateList();
 }
 
 Hash* _HashHash(Hash* hash, const char* key) {
     return (Contains(hash, key))
         ? ValueToHash(shget(hash->entries, key))
-        : NULL;
+        : _CreateHash();
 }
 
 void* _HashRef(Hash* hash, const char* key) {
@@ -372,18 +551,19 @@ int Contains(Hash* hash, const char* key) {
     return shlenu(hash->entries) > 0;
 }
 
-void Remove(Hash* hash, const char* key) {
+void RemoveKey(Hash* hash, const char* key) {
     if (Contains(hash, key)) {
+        _ClearHashValue(hash, key);
         shdel(hash->entries, key);
     }
 }
 
-int Size(Hash* hash) {
+int HashSize(Hash* hash) {
     return shlenu(hash->entries);
 }
 
-void Clear(Hash* hash) {
-    shfree(hash->entries);
+void ClearHash(Hash* hash) {
+    _DestroyHash(hash);
 }
 
 // ------------------------------------
@@ -659,7 +839,7 @@ const char* Join(Hash* hash, const char* separator) {
     size_t current_len = 0;
     size_t current_max = 1000;
     char* tmp = (char*)calloc(current_max, sizeof(char));
-    const int size = Size(hash);
+    const int size = HashSize(hash);
     const size_t seplen = strlen(separator);
     for (int i = 0; i < size; ++i) {
         const char* str = (const char*)_IncRef((void*)_HashString(hash, Str(i)));
