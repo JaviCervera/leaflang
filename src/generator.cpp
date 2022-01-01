@@ -87,7 +87,7 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
     return GenFunctionCleanup(func, definitions.GetLocals(), exp)
         + "do return "
-        + ((func->type == TYPE_STRING || func->type == TYPE_LIST || func->type == TYPE_HASH)
+        + ((func->type == TYPE_LIST || func->type == TYPE_HASH)
             ? ("leaf._AutoDec(" + exp + ")")
             : exp)
         + " end\n";
@@ -99,7 +99,7 @@ string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool
 
 string Generator::GenAssignment(const Var& var, int expType, const string& exp) const {
     const string varId = GenVarId(var.name);
-    if (expType == TYPE_STRING || expType == TYPE_LIST || expType == TYPE_HASH) {
+    if (expType == TYPE_LIST || expType == TYPE_HASH) {
         return varId + " = _onassign(" + varId + ", " + exp + ")";
     } else {
         return varId + " = " + exp;
@@ -426,7 +426,7 @@ std::vector<Var> Generator::GetManagedVars(const std::vector<Var>& vars) {
     std::vector<Var> result;
     for (size_t i = 0; i < vars.size(); ++i) {
         const Var& var = vars[i];
-        if (var.type == TYPE_STRING || var.type == TYPE_LIST || var.type == TYPE_HASH) {
+        if (var.type == TYPE_LIST || var.type == TYPE_HASH) {
             result.push_back(var);
         }
     }
