@@ -19,6 +19,7 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "function _string2int(v) return _or(tonumber(v), 0) end\n"
         "function _string2float(v) return _or(tonumber(v), 0) + 0.0 end\n"
         "function _string2string(v) return v end\n"
+        "function _list2string(v) return leaf._ListToString(v) end\n"
         "function _hash2string(v) return leaf._HashToString(v) end\n"
         "_args = {}\n"
         "function leaf.AddIntArg(v) _args[#_args+1] = v end\n"

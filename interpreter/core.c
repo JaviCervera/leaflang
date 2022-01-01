@@ -275,9 +275,11 @@ typedef struct List {
 } List;
 
 void _ClearListValue(List* list, size_t index) {
-    const Value value = list->elems[index];
-    if (ValueIsManaged(value)) {
-        _DecRef(value.value.r);
+    if (index >= 0 && index < ListSize(list)) {
+        const Value value = list->elems[index];
+        if (ValueIsManaged(value)) {
+            _DecRef(value.value.r);
+        }
     }
 }
 

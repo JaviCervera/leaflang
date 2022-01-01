@@ -1,0 +1,4 @@
+list = ["hello"]
+list[] = "world"
+list[] = 50
+Print(list|s)

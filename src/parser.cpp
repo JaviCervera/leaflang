@@ -238,6 +238,7 @@ string Parser::ParseAssignment() {
             return ParseHashAccess(generator.GenVar(*var), true).code;
         } else {
             ErrorEx("Only lists and hashes can be indexed", nameToken.file, nameToken.line);
+            return "";
         }
     } else {
         stream.Skip(1); // =
@@ -694,6 +695,7 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
                 return ParseHashAccess(exp.code, false);
             } else {
                 ErrorEx("Only lists and hashes can be indexed", nameToken.file, nameToken.line);
+                return Expression(TYPE_VOID, "");
             }
         } else {
             return exp;
