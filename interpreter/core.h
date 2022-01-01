@@ -27,7 +27,7 @@ struct Hash;
 // ------------------------------------
 
 const char* AppName();
-struct Hash* AppArgs();
+struct List* AppArgs();
 const char* Run(const char* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
@@ -45,7 +45,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-struct Hash* DirContents(const char* path);
+struct List* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);
@@ -161,8 +161,8 @@ const char* Upper(const char* str);
 int Find(const char* str, const char* find, int offset);
 const char* Replace(const char* str, const char* find, const char* replace);
 const char* Trim(const char* str);
-const char* Join(struct Hash* hash, const char* separator);
-struct Hash* Split(const char* str, const char* separator);
+const char* Join(struct List* list, const char* separator);
+struct List* Split(const char* str, const char* separator);
 const char* StripExt(const char* filename);
 const char* StripDir(const char* filename);
 const char* ExtractExt(const char* filename);

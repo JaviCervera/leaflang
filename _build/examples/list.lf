@@ -2,3 +2,13 @@ list = ["hello"]
 list[] = "world"
 list[] = 50
 Print(list|s)
+CreateListAndAddElement()
+
+function CreateListAndAddElement()
+    list = ["One", "Two", "Three"]
+    list[ListSize(list)] = "Last"
+    Print(ListSize(list)|s)
+    for i = 0 to ListSize(list) - 1 do
+        Print(list[i]|s)
+    end
+end

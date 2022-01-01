@@ -40,13 +40,13 @@ typedef struct Memory {
 // ------------------------------------
 
 static char* leaf_appName = NULL;
-static struct Hash* leaf_appArgs = NULL;
+static struct List* leaf_appArgs = NULL;
 
 void _SetArgs(int argc, const char* argv[]) {
     leaf_appName = lstr_alloc(argv[0]);
-    leaf_appArgs = (struct Hash*)_IncRef(_CreateHash());
+    leaf_appArgs = (struct List*)_IncRef(_CreateList());
     for (int i = 1; i < argc; ++i) {
-        _SetHashString(leaf_appArgs, Str(i - 1), argv[i]);
+        _SetListString(leaf_appArgs, i - 1, argv[i]);
     }
 }
 
@@ -54,7 +54,7 @@ const char* AppName() {
     return leaf_appName;
 }
 
-struct Hash* AppArgs() {
+struct List* AppArgs() {
     return leaf_appArgs;
 }
 
@@ -108,17 +108,17 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-struct Hash* DirContents(const char* path) {
-    struct Hash* hash = _CreateHash();
+struct List* DirContents(const char* path) {
+    struct List* list = _CreateList();
     DIR* d = (DIR*)opendir(path);
-    if (d == NULL) return hash;
+    if (d == NULL) return list;
     struct dirent* entry;
     int i = 0;
     while ((entry = (struct dirent*)readdir(d))) {
-        _SetHashString(hash, Str(i++), entry->d_name);
+        _SetListString(list, i++, entry->d_name);
     }
     closedir(d);
-    return hash;
+    return list;
 }
 
 const char* CurrentDir() {
@@ -837,14 +837,14 @@ const char* Trim(const char* str) {
     return Mid(str, offset, count + 1);
 }
 
-const char* Join(Hash* hash, const char* separator) {
+const char* Join(List* list, const char* separator) {
     size_t current_len = 0;
     size_t current_max = 1000;
     char* tmp = (char*)calloc(current_max, sizeof(char));
-    const int size = HashSize(hash);
+    const int size = ListSize(list);
     const size_t seplen = strlen(separator);
     for (int i = 0; i < size; ++i) {
-        const char* str = (const char*)_IncRef((void*)_HashString(hash, Str(i)));
+        const char* str = (const char*)_IncRef((void*)_ListString(list, i));
         size_t len = strlen(str);
         if (i > 0) len += seplen;
         if (current_max < current_len + len + 1) {
@@ -861,30 +861,30 @@ const char* Join(Hash* hash, const char* separator) {
     return result;
 }
 
-Hash* _SplitChars(const char* str) {
+List* _SplitChars(const char* str) {
     const int len = Len(str);
-    Hash* hash = _CreateHash();
+    List* list = _CreateList();
     for (int i = 0; i < len; ++i) {
-        _SetHashString(hash, Str(i), Chr(str[i]));
+        _SetListString(list, i, Chr(str[i]));
     }
-    return hash;
+    return list;
 }
 
-Hash* _SplitBySep(const char* str, const char* separator) {
+List* _SplitBySep(const char* str, const char* separator) {
     const size_t seplen = strlen(separator);
-    Hash* hash = _CreateHash();
+    List* list = _CreateList();
     int prevoffset = 0;
     int nextoffset = 0;
     int i = 0;
     while ((nextoffset = Find(str, separator, prevoffset)) != -1) {
-        _SetHashString(hash, Str(i++), Mid(str, prevoffset, nextoffset - prevoffset));
+        _SetListString(list, i++, Mid(str, prevoffset, nextoffset - prevoffset));
         prevoffset = nextoffset + seplen;
     }
-    _SetHashString(hash, Str(i++), lstr_get(str + prevoffset));
-    return hash;
+    _SetListString(list, i++, lstr_get(str + prevoffset));
+    return list;
 }
 
-Hash* Split(const char* str, const char* separator) {
+List* Split(const char* str, const char* separator) {
     if (strcmp(separator, "") == 0) {
         return _SplitChars(str);
     } else {

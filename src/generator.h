@@ -42,5 +42,5 @@ private:
     static std::string GenFuncId(const std::string& id);
     static std::string GenVarId(const std::string& id);
     static std::string GenFunctionCleanup(const Function* func, const std::vector<Var>& varsInScope, const std::string exclude = "");
-    static std::vector<Var> GetHashVars(const std::vector<Var>& vars);
+    static std::vector<Var> GetManagedVars(const std::vector<Var>& vars);
 };

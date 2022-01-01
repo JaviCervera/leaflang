@@ -87,7 +87,9 @@ string Generator::GenWhile(const string& exp, const string& block, const string&
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
     return GenFunctionCleanup(func, definitions.GetLocals(), exp)
         + "do return "
-        + ((func->type == TYPE_LIST || func->type == TYPE_HASH) ? ("leaf._AutoDec(" + exp + ")") : exp)
+        + ((func->type == TYPE_STRING || func->type == TYPE_LIST || func->type == TYPE_HASH)
+            ? ("leaf._AutoDec(" + exp + ")")
+            : exp)
         + " end\n";
 }
 
@@ -97,7 +99,7 @@ string Generator::GenVarDef(const Var& var, int expType, const string& exp, bool
 
 string Generator::GenAssignment(const Var& var, int expType, const string& exp) const {
     const string varId = GenVarId(var.name);
-    if (expType == TYPE_LIST || expType == TYPE_HASH) {
+    if (expType == TYPE_STRING || expType == TYPE_LIST || expType == TYPE_HASH) {
         return varId + " = _onassign(" + varId + ", " + exp + ")";
     } else {
         return varId + " = " + exp;
@@ -401,9 +403,9 @@ string Generator::GenVarId(const string& id) {
 }
 
 string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& varsInScope, string exclude) {
-    vector<Var> vars = GetHashVars(varsInScope);
+    vector<Var> vars = GetManagedVars(varsInScope);
     if (func) {
-        const vector<Var> params = GetHashVars(func->params);
+        const vector<Var> params = GetManagedVars(func->params);
         for (size_t i = 0; i < params.size(); ++i) {
             if (GenVarId(params[i].name) != exclude) {
                 vars.push_back(params[i]);
@@ -420,11 +422,11 @@ string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& va
     return str;
 }
 
-std::vector<Var> Generator::GetHashVars(const std::vector<Var>& vars) {
+std::vector<Var> Generator::GetManagedVars(const std::vector<Var>& vars) {
     std::vector<Var> result;
     for (size_t i = 0; i < vars.size(); ++i) {
         const Var& var = vars[i];
-        if (var.type == TYPE_HASH) {
+        if (var.type == TYPE_STRING || var.type == TYPE_LIST || var.type == TYPE_HASH) {
             result.push_back(var);
         }
     }

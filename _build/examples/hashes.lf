@@ -1,5 +1,4 @@
 CreateHashAndAddField()
-CreateListAndAddElement()
 CreateHashWithHash()
 CreateHashAndAddAnotherHash()
 
@@ -8,15 +7,6 @@ function CreateHashAndAddField()
     Print(hash["msg"]|s)
     hash["otherMsg"] = "Bye"
     Print(hash["otherMsg"]|s)
-end
-
-function CreateListAndAddElement()
-    list = ["One", "Two", "Three"]
-    list[ListSize(list)] = "Last"
-    Print(ListSize(list)|s)
-    for i = 0 to ListSize(list) - 1 do
-        Print(list[i]|s)
-    end
 end
 
 function CreateHashWithHash()
