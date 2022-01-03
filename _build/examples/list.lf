@@ -1,7 +1,8 @@
-list = ["hello"]
-list[] = "world"
-list[] = 50
-Print(list|s)
+g_list = ["hello"]
+g_list[] = "world"
+g_list[] = 50
+Print(g_list|s)
+
 CreateListAndAddElement()
 
 function CreateListAndAddElement()
@@ -11,4 +12,11 @@ function CreateListAndAddElement()
     for i = 0 to ListSize(list) - 1 do
         Print(list[i]|s)
     end
+end
+
+function CreateCombinedListAndIndex()
+    list = [{
+        "names": ["John", "Laura"]
+    }]
+    Print(list[0]["names"][1]|s)
 end

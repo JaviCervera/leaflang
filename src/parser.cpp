@@ -710,7 +710,7 @@ Expression Parser::ParseVarAccess(const Token& nameToken) {
     }
 }
 
-Expression Parser::ParseListAccess(string hashCode, bool isSetter) {
+Expression Parser::ParseListAccess(string listCode, bool isSetter) {
     Expression indexExp(TYPE_VOID, "");
     while (stream.Peek().type == TOK_OPENBRACKET) {
         stream.Skip(1); // [
@@ -724,20 +724,20 @@ Expression Parser::ParseListAccess(string hashCode, bool isSetter) {
             ErrorEx("Expected ']', got '" + closeToken.data + "'", closeToken.file, closeToken.line);
         }
         if (stream.Peek().type == TOK_OPENBRACKET) {
-            hashCode = generator.GenListGetter(TYPE_LIST, hashCode, indexExp.code);
+            listCode = generator.GenListGetter(TYPE_LIST, listCode, indexExp.code);
         }
     }
     if (isSetter) {
         stream.Skip(1); // =
         const Expression exp = ParseExp();
-        return Expression(exp.type, generator.GenListSetter(hashCode, indexExp.code, exp));
+        return Expression(exp.type, generator.GenListSetter(listCode, indexExp.code, exp));
     } else {
         const Token& typeToken = stream.Next();
         if (!IsType(typeToken.type)) {
             ErrorEx("Expected type suffix at end of hash indexing", typeToken.file, typeToken.line);
         }
         const int type = GetType(typeToken.type);
-        return Expression(type, generator.GenListGetter(type, hashCode, indexExp.code));
+        return Expression(type, generator.GenListGetter(type, listCode, indexExp.code));
     }
 }
 
