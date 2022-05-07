@@ -1,9 +1,5 @@
-g_list = ["hello"]
-g_list[] = "world"
-g_list[] = 50
-Print(g_list|s)
-
 CreateListAndAddElement()
+CreateCombinedListAndHash()
 
 function CreateListAndAddElement()
     list = ["One", "Two", "Three"]
@@ -14,9 +10,11 @@ function CreateListAndAddElement()
     end
 end
 
-function CreateCombinedListAndIndex()
+function CreateCombinedListAndHash()
     list = [{
         "names": ["John", "Laura"]
     }]
-    Print(list[0]["names"][1]|s)
+    hash = list[0]|h
+    names = hash["names"]|l
+    Print(names[1]|s)
 end
