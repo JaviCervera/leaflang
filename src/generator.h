@@ -21,7 +21,7 @@ public:
     std::string GenAssignment(const Var& var, int expType, const std::string& exp) const;
     std::string GenBinaryExp(int expType, const Token& token, const std::string& left, const std::string& right) const;
     std::string GenList(const std::vector<Expression>& values) const;
-    std::string GenDict(const std::vector<Expression>& keys, const std::vector<Expression>& values) const;
+    std::string GenHash(const std::vector<Expression>& keys, const std::vector<Expression>& values) const;
     std::string GenNotExp(const std::string& exp) const;
     std::string GenCastExp(int castType, int expType, const std::string& exp) const;
     std::string GenNegExp(const std::string& exp) const;
@@ -30,8 +30,10 @@ public:
     std::string GenArgs(const Function& func, const std::vector<Expression>& args) const;
     std::string GenVar(const Var& var) const;
     std::string GenLiteral(const Token& token) const;
-    std::string GenHashGetter(int type, const std::string& hashCode, const Expression& indexExp) const;
-    std::string GenHashSetter(const std::string& hashCode, const Expression& indexExp, const Expression& valueExp) const;
+    std::string GenListGetter(int type, const std::string& listCode, const std::string& indexCode) const;
+    std::string GenListSetter(const std::string& listCode, const std::string& indexCode, const Expression& valueExp) const;
+    std::string GenHashGetter(int type, const std::string& hashCode, const std::string& indexCode) const;
+    std::string GenHashSetter(const std::string& hashCode, const std::string& indexCode, const Expression& valueExp) const;
     std::string GenIndent(int level) const;
 private:
     static std::string GenFunctionHeader(const Function& func);
@@ -40,5 +42,5 @@ private:
     static std::string GenFuncId(const std::string& id);
     static std::string GenVarId(const std::string& id);
     static std::string GenFunctionCleanup(const Function* func, const std::vector<Var>& varsInScope, const std::string exclude = "");
-    static std::vector<Var> GetHashVars(const std::vector<Var>& vars);
+    static std::vector<Var> GetManagedVars(const std::vector<Var>& vars);
 };

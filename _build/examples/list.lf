@@ -1,0 +1,20 @@
+CreateListAndAddElement()
+CreateCombinedListAndHash()
+
+function CreateListAndAddElement()
+    list = ["One", "Two", "Three"]
+    list[ListSize(list)] = "Last"
+    Print(ListSize(list)|s)
+    for i = 0 to ListSize(list) - 1 do
+        Print(list[i]|s)
+    end
+end
+
+function CreateCombinedListAndHash()
+    list = [{
+        "names": ["John", "Laura"]
+    }]
+    hash = list[0]|h
+    names = hash["names"]|l
+    Print(names[1]|s)
+end

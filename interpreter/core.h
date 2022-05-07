@@ -19,6 +19,7 @@ typedef void Memory;
 #else
 struct Memory;
 #endif
+struct List;
 struct Hash;
 
 // ------------------------------------
@@ -26,7 +27,7 @@ struct Hash;
 // ------------------------------------
 
 const char* AppName();
-struct Hash* AppArgs();
+struct List* AppArgs();
 const char* Run(const char* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
@@ -44,7 +45,7 @@ void Print(const char* msg);
 // Dir
 // ------------------------------------
 
-struct Hash* DirContents(const char* path);
+struct List* DirContents(const char* path);
 const char* CurrentDir();
 void ChangeDir(const char* dir);
 const char* FullPath(const char* filename);
@@ -57,6 +58,28 @@ int FileType(const char* filename);
 void DeleteFile(const char* filename);
 
 // ------------------------------------
+// List
+// ------------------------------------
+
+struct List* _CreateList();
+struct List* _SetListInt(struct List* list, size_t index, int value);
+struct List* _SetListFloat(struct List* list, size_t index, float value);
+struct List* _SetListString(struct List* list, size_t index, const char* value);
+struct List* _SetListList(struct List* list, size_t index, struct List* value);
+struct List* _SetListHash(struct List* list, size_t index, struct Hash* value);
+struct List* _SetListRef(struct List* list, size_t index, void* value);
+int _ListInt(struct List* list, size_t index);
+float _ListFloat(struct List* list, size_t index);
+const char* _ListString(struct List* list, size_t index);
+struct List* _ListList(struct List* list, size_t index);
+struct Hash* _ListHash(struct List* list, size_t index);
+void* _ListRef(struct List* list, size_t index);
+const char* _ListToString(struct List* list);
+void RemoveIndex(struct List* list, int index);
+int ListSize(struct List* list);
+void ClearList(struct List* list);
+
+// ------------------------------------
 // Hash
 // ------------------------------------
 
@@ -64,18 +87,20 @@ struct Hash* _CreateHash();
 struct Hash* _SetHashInt(struct Hash* hash, const char* key, int value);
 struct Hash* _SetHashFloat(struct Hash* hash, const char* key, float value);
 struct Hash* _SetHashString(struct Hash* hash, const char* key, const char* value);
+struct Hash* _SetHashList(struct Hash* hash, const char* key, struct List* value);
 struct Hash* _SetHashHash(struct Hash* hash, const char* key, struct Hash* value);
 struct Hash* _SetHashRef(struct Hash* hash, const char* key, void* value);
 int _HashInt(struct Hash* hash, const char* key);
 float _HashFloat(struct Hash* hash, const char* key);
 const char* _HashString(struct Hash* hash, const char* key);
+struct List* _HashList(struct Hash* hash, const char* key);
 struct Hash* _HashHash(struct Hash* hash, const char* key);
 void* _HashRef(struct Hash* hash, const char* key);
 const char* _HashToString(struct Hash* hash);
 int Contains(struct Hash* hash, const char* key);
-void Remove(struct Hash* hash, const char* key);
-int Size(struct Hash* hash);
-void Clear(struct Hash* hash);
+void RemoveKey(struct Hash* hash, const char* key);
+int HashSize(struct Hash* hash);
+void ClearHash(struct Hash* hash);
 
 // ------------------------------------
 // Math
@@ -136,8 +161,8 @@ const char* Upper(const char* str);
 int Find(const char* str, const char* find, int offset);
 const char* Replace(const char* str, const char* find, const char* replace);
 const char* Trim(const char* str);
-const char* Join(struct Hash* hash, const char* separator);
-struct Hash* Split(const char* str, const char* separator);
+const char* Join(struct List* list, const char* separator);
+struct List* Split(const char* str, const char* separator);
 const char* StripExt(const char* filename);
 const char* StripDir(const char* filename);
 const char* ExtractExt(const char* filename);

@@ -95,6 +95,8 @@ int GetType(int type) {
         return TYPE_FLOAT;
     case TOK_STRING:
         return TYPE_STRING;
+    case TOK_LIST:
+        return TYPE_LIST;
     case TOK_HASH:
         return TYPE_HASH;
     case TOK_REF:
@@ -270,6 +272,7 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("|i");
         symbols.push_back("|f");
         symbols.push_back("|s");
+        symbols.push_back("|l");
         symbols.push_back("|h");
         symbols.push_back("|w");
     }
@@ -325,6 +328,7 @@ int TokenType(const string& str) {
         types["|i"] = TOK_INT;
         types["|f"] = TOK_FLOAT;
         types["|s"] = TOK_STRING;
+        types["|l"] = TOK_LIST;
         types["|h"] = TOK_HASH;
         types["|w"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;

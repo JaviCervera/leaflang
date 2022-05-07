@@ -64,10 +64,9 @@ private:
     Expression ParseRelExp();
     Expression ParseAddExp();
     Expression ParseMulExp();
-    Expression ParseHashExp();
     Expression ParseListExp();
-    Expression ParseDictExp();
-    void ParseDictEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
+    Expression ParseHashExp();
+    void ParseHashEntry(std::vector<Expression>& keys, std::vector<Expression>& values);
     Expression ParseNotExp();
     Expression ParseCastExp();
     Expression ParseNegExp();
@@ -77,5 +76,6 @@ private:
     Expression ParseArgs(const Function* func);
     Expression ParseArg(int paramType, const Token& token);
     Expression ParseVarAccess(const Token& nameToken);
-    Expression ParseHashAccess(const Expression& hashExp, bool isSetter);
+    Expression ParseListAccess(std::string listCode, bool isSetter);
+    Expression ParseHashAccess(std::string hashCode, bool isSetter);
 };
