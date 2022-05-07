@@ -2,17 +2,17 @@ int = 100
 float = 365.25
 string = "Hello"
 
-Print("Int to int: " + (int|i)|s)
-Print("Int to float: " + (int|f)|s)
-Print("Int to string: " + int|s)
+Print("Int to int: " + (int:Int):String)
+Print("Int to float: " + (int:Float):String)
+Print("Int to string: " + int:String)
 
-Print("Float to int: " + (float|i)|s)
-Print("Float to float: " + (float|f)|s)
-Print("Float to string: " + float|s)
+Print("Float to int: " + (float:Int):String)
+Print("Float to float: " + (float:Float):String)
+Print("Float to string: " + float:String)
 
-Print("String to int: " + (string|i)|s)
-Print("String to float: " + (string|f)|s)
-Print("String to string: " + string|s)
+Print("String to int: " + (string:Int):String)
+Print("String to float: " + (string:Float):String)
+Print("String to string: " + string:String)
 
-Print("Cast with minus: " + -5|s)
-Print("Cast with not: " + (not 5)|s)
+Print("Cast with minus: " + -5:String)
+Print("Cast with not: " + (not 5):String)

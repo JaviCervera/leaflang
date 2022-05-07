@@ -64,8 +64,8 @@
 #define TOK_FLOAT 61
 #define TOK_STRING 62
 #define TOK_LIST 63
-#define TOK_HASH 64
-#define TOK_REF 65
+#define TOK_DICT 64
+#define TOK_RAW 65
 
 struct Token {
     const int type;

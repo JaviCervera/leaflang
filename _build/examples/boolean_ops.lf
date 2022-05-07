@@ -8,13 +8,13 @@ Print("- " + ("a" or ""))
 Print("- " + ("" or "b"))
 Print("- " + ("a" or "b"))
 
-Print("- (1 and 50) is " + (1 and 50)|s)
-Print("- (0 or 1) is " + (0 or 1)|s)
+Print("- (1 and 50) is " + (1 and 50):String)
+Print("- (0 or 1) is " + (0 or 1):String)
 
 Print(Replace("- Previous expressions should have been: '', '', '', 'b', '', 'a', 'b', 'a', 50, 1", "'", Chr(34)))
 
-Print("- Should print 1: " + true|s)
-Print("- Should print 0: " + false|s)
+Print("- Should print 1: " + true:String)
+Print("- Should print 0: " + false:String)
 
 if "A" then
     Print("Ok")
@@ -24,6 +24,6 @@ end
 
 counter = 3
 while counter do
-    Print(counter|s)
+    Print(counter:String)
     counter = counter - 1
 end

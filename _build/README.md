@@ -4,7 +4,7 @@ A super simple interpreted language inspired by Lua and BASIC. It transpiles to 
 custom interpreter that, in the future, will be able to load modules from dynamic libraries.
 
 The language is imperative and supports classic procedural programming. It has no structs, but
-hashes can be used to group data instead.
+dictionaries can be used to group data instead.
 
 ## Setting up Geany as IDE
 
@@ -78,10 +78,10 @@ Leaf can represent these types of data:
 * Integer numbers.
 * Float (decimal) numbers.
 * Strings.
-* Hashes.
+* Dictionaries.
 * References.
 
-Hashes are associative collections of string keys and values of any type. References point to data that is defined by an external library.
+Dictiolnaries are associative collections of string keys and values of any type. References point to data that is defined by an external library.
 
 ### Variables
 
@@ -161,7 +161,7 @@ There is no specific boolean type, all types can be evaluated as booleans instea
 * Integers: `0` is false, all others true.
 * Floats: `0.0` is false, all others true.
 * Strings: `""` (empty string) is false, all others true.
-* Hashes: Always true.
+* Dictionaries: Always true.
 * References: `null` is false, all others true.
 
 There are two literals, `true` and `false`, with the values `1` and `0` respectively.

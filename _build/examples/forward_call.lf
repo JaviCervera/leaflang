@@ -1,6 +1,6 @@
 Print(Foo())
 
-function Foo|s()
+function Foo:String()
   return "Foo"
 end
 
@@ -8,7 +8,7 @@ end
 // it should not compile:
 
 /*
-function Foo|s()
+function Foo:String()
   return "Bar"
 end
 

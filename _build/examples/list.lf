@@ -1,20 +1,20 @@
 CreateListAndAddElement()
-CreateCombinedListAndHash()
+CreateCombinedListAndDict()
 
 function CreateListAndAddElement()
     list = ["One", "Two", "Three"]
     list[ListSize(list)] = "Last"
-    Print(ListSize(list)|s)
+    Print(ListSize(list):String)
     for i = 0 to ListSize(list) - 1 do
-        Print(list[i]|s)
+        Print(list[i]:String)
     end
 end
 
-function CreateCombinedListAndHash()
+function CreateCombinedListAndDict()
     list = [{
         "names": ["John", "Laura"]
     }]
-    hash = list[0]|h
-    names = hash["names"]|l
-    Print(names[1]|s)
+    dict = list[0]:Dict
+    names = dict["names"]:List
+    Print(names[1]:String)
 end

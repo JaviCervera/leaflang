@@ -1,0 +1,27 @@
+CreateDictAndAddField()
+CreateDictWithDict()
+CreateDictAndAddAnotherDict()
+
+function CreateDictAndAddField()
+    dict = {"msg": "Hello"}
+    Print(dict["msg"]:String)
+    dict["otherMsg"] = "Bye"
+    Print(dict["otherMsg"]:String)
+end
+
+function CreateDictWithDict()
+    dict = {
+        "foo": {
+            "bar": "A message"
+        }
+    }
+    Print(dict["foo"]["bar"]:String)
+end
+
+function CreateDictAndAddAnotherDict()
+    dict = {}
+    dict["foo"] = {
+        "baz": "Another message"
+    }
+    Print(dict["foo"]["baz"]:String)
+end

@@ -1,4 +1,4 @@
-function Printer(msg|s)
+function Printer(msg:String)
     Print(msg)
 end
 

@@ -84,7 +84,7 @@ bool IsUnaryOp(int type) {
 }
 
 bool IsType(int type) {
-    return type >= TOK_INT && type <= TOK_REF;
+    return type >= TOK_INT && type <= TOK_RAW;
 }
 
 int GetType(int type) {
@@ -97,10 +97,10 @@ int GetType(int type) {
         return TYPE_STRING;
     case TOK_LIST:
         return TYPE_LIST;
-    case TOK_HASH:
-        return TYPE_HASH;
-    case TOK_REF:
-        return TYPE_REF;
+    case TOK_DICT:
+        return TYPE_DICT;
+    case TOK_RAW:
+        return TYPE_RAW;
     default:
         return TYPE_VOID;
     }
@@ -261,7 +261,6 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("/");
         symbols.push_back("=");
         symbols.push_back(",");
-        symbols.push_back(":");
         symbols.push_back(";");
         symbols.push_back("(");
         symbols.push_back(")");
@@ -269,12 +268,13 @@ string CheckSymbol(const Lexer& lexer) {
         symbols.push_back("]");
         symbols.push_back("{");
         symbols.push_back("}");
-        symbols.push_back("|i");
-        symbols.push_back("|f");
-        symbols.push_back("|s");
-        symbols.push_back("|l");
-        symbols.push_back("|h");
-        symbols.push_back("|w");
+        symbols.push_back(":Int");
+        symbols.push_back(":Float");
+        symbols.push_back(":String");
+        symbols.push_back(":List");
+        symbols.push_back(":Dict");
+        symbols.push_back(":Raw");
+        symbols.push_back(":");
     }
     for (size_t i = 0; i < symbols.size(); ++i) {
         string str = "";
@@ -325,12 +325,12 @@ int TokenType(const string& str) {
         types["while"] = TOK_WHILE;
         types["return"] = TOK_RETURN;
         types["function"] = TOK_FUNCTION;
-        types["|i"] = TOK_INT;
-        types["|f"] = TOK_FLOAT;
-        types["|s"] = TOK_STRING;
-        types["|l"] = TOK_LIST;
-        types["|h"] = TOK_HASH;
-        types["|w"] = TOK_REF;
+        types[":Int"] = TOK_INT;
+        types[":Float"] = TOK_FLOAT;
+        types[":String"] = TOK_STRING;
+        types[":List"] = TOK_LIST;
+        types[":Dict"] = TOK_DICT;
+        types[":Raw"] = TOK_RAW;
         types["null"] = TOK_NULLLITERAL;
         types["true"] = TOK_TRUELITERAL;
         types["false"] = TOK_FALSELITERAL;
