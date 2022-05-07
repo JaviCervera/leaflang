@@ -1,27 +1,27 @@
-CreateHashAndAddField()
-CreateHashWithHash()
-CreateHashAndAddAnotherHash()
+CreateDictAndAddField()
+CreateDictWithDict()
+CreateDictAndAddAnotherDict()
 
-function CreateHashAndAddField()
-    hash = {"msg": "Hello"}
-    Print(hash["msg"]|s)
-    hash["otherMsg"] = "Bye"
-    Print(hash["otherMsg"]|s)
+function CreateDictAndAddField()
+    dict = {"msg": "Hello"}
+    Print(dict["msg"]:String)
+    dict["otherMsg"] = "Bye"
+    Print(dict["otherMsg"]:String)
 end
 
-function CreateHashWithHash()
-    hash = {
+function CreateDictWithDict()
+    dict = {
         "foo": {
             "bar": "A message"
         }
     }
-    Print(hash["foo"]["bar"]|s)
+    Print(dict["foo"]["bar"]:String)
 end
 
-function CreateHashAndAddAnotherHash()
-    hash = {}
-    hash["foo"] = {
+function CreateDictAndAddAnotherDict()
+    dict = {}
+    dict["foo"] = {
         "baz": "Another message"
     }
-    Print(hash["foo"]["baz"]|s)
+    Print(dict["foo"]["baz"]:String)
 end

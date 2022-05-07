@@ -1,4 +1,4 @@
-function Message|s()
+function Message:String()
     msg = "Hello from function!"
     return msg
 end

@@ -148,7 +148,7 @@ string Generator::GenList(const vector<Expression>& values) const {
         case TYPE_DICT:
             funcName = "_SetListDict";
             break;
-        case TYPE_REF:
+        case TYPE_RAW:
             funcName = "_SetListRef";
             break;
         }
@@ -180,7 +180,7 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
         case TYPE_DICT:
             funcName = "_SetDictDict";
             break;
-        case TYPE_REF:
+        case TYPE_RAW:
             funcName = "_SetDictRef";
             break;
         }
@@ -263,7 +263,7 @@ string Generator::GenListGetter(int type, const string& listCode, const std::str
     case TYPE_DICT:
         funcName = "_ListDict";
         break;
-    case TYPE_REF:
+    case TYPE_RAW:
         funcName = "_ListRef";
         break;
     }
@@ -290,7 +290,7 @@ string Generator::GenListSetter(const string& listCode, const std::string& index
     case TYPE_DICT:
         funcName = "_SetListDict";
         break;
-    case TYPE_REF:
+    case TYPE_RAW:
         funcName = "_SetListRef";
         break;
     }
@@ -318,7 +318,7 @@ string Generator::GenDictGetter(int type, const string& dictCode, const std::str
     case TYPE_DICT:
         funcName = "_DictDict";
         break;
-    case TYPE_REF:
+    case TYPE_RAW:
         funcName = "_DictRef";
         break;
     }
@@ -345,7 +345,7 @@ string Generator::GenDictSetter(const string& dictCode, const std::string& index
     case TYPE_DICT:
         funcName = "_SetDictDict";
         break;
-    case TYPE_REF:
+    case TYPE_RAW:
         funcName = "_SetDictRef";
         break;
     }

@@ -205,7 +205,7 @@ Value ValueFromDict(struct Dict* h) {
 
 Value ValueFromRef(void* r) {
     Value v = {0};
-    v.type = TYPE_REF;
+    v.type = TYPE_RAW;
     v.value.r = r;
     return v;
 }
@@ -241,7 +241,7 @@ const char* ValueToString(const Value v) {
 
 struct List* ValueToList(const Value v) {
     switch (v.type) {
-    case TYPE_REF: return (struct List*)v.value.r;
+    case TYPE_RAW: return (struct List*)v.value.r;
     case TYPE_LIST: return v.value.l;
     default: return _CreateList();
     }
@@ -249,7 +249,7 @@ struct List* ValueToList(const Value v) {
 
 struct Dict* ValueToDict(const Value v) {
     switch (v.type) {
-    case TYPE_REF: return (struct Dict*)v.value.r;
+    case TYPE_RAW: return (struct Dict*)v.value.r;
     case TYPE_DICT: return v.value.h;
     default: return _CreateDict();
     }

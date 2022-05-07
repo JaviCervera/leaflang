@@ -77,7 +77,7 @@ string GenTypeName(int type) {
         return "List* ";
     case TYPE_DICT:
         return "Dict* ";
-    case TYPE_REF:
+    case TYPE_RAW:
         return "void* ";
     default:
         return "";
@@ -96,7 +96,7 @@ string GenLuaArg(const Var& param) {
         return "(List*)lua_topointer";
     case TYPE_DICT:
         return "(Dict*)lua_topointer";
-    case TYPE_REF:
+    case TYPE_RAW:
         return "(void*)lua_topointer";
     default:
         return "";
@@ -127,7 +127,7 @@ string GenLuaReturn(int type) {
         return "    lua_pushstring(L, result);\n";
     case TYPE_LIST:
     case TYPE_DICT:
-    case TYPE_REF:
+    case TYPE_RAW:
         return "    lua_pushlightuserdata(L, result);\n";
     default:
         return "";
@@ -188,17 +188,17 @@ string GenFunction(const Function* func) {
 string GenTypeSuffix(int type) {
     switch (type) {
     case TYPE_INT:
-        return "|i";
+        return ":Int";
     case TYPE_FLOAT:
-        return "|f";
+        return ":Float";
     case TYPE_STRING:
-        return "|s";
+        return ":String";
     case TYPE_LIST:
-        return "|l";
+        return ":List";
     case TYPE_DICT:
-        return "|h";
-    case TYPE_REF:
-        return "|w";
+        return ":Dict";
+    case TYPE_RAW:
+        return ":Raw";
     default:
         return "";
     }

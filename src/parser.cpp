@@ -630,7 +630,7 @@ Expression Parser::ParseAtomicExp() {
     case TOK_STRINGLITERAL:
         return Expression(TYPE_STRING, generator.GenLiteral(token));
     case TOK_NULLLITERAL:
-        return Expression(TYPE_REF, generator.GenLiteral(token));
+        return Expression(TYPE_RAW, generator.GenLiteral(token));
     case TOK_TRUELITERAL:
     case TOK_FALSELITERAL:
         return Expression(TYPE_INT, generator.GenLiteral(token));
