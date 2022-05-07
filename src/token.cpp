@@ -97,8 +97,8 @@ int GetType(int type) {
         return TYPE_STRING;
     case TOK_LIST:
         return TYPE_LIST;
-    case TOK_HASH:
-        return TYPE_HASH;
+    case TOK_DICT:
+        return TYPE_DICT;
     case TOK_REF:
         return TYPE_REF;
     default:
@@ -329,7 +329,7 @@ int TokenType(const string& str) {
         types["|f"] = TOK_FLOAT;
         types["|s"] = TOK_STRING;
         types["|l"] = TOK_LIST;
-        types["|h"] = TOK_HASH;
+        types["|h"] = TOK_DICT;
         types["|w"] = TOK_REF;
         types["null"] = TOK_NULLLITERAL;
         types["true"] = TOK_TRUELITERAL;

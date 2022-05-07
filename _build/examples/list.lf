@@ -1,5 +1,5 @@
 CreateListAndAddElement()
-CreateCombinedListAndHash()
+CreateCombinedListAndDict()
 
 function CreateListAndAddElement()
     list = ["One", "Two", "Three"]
@@ -10,11 +10,11 @@ function CreateListAndAddElement()
     end
 end
 
-function CreateCombinedListAndHash()
+function CreateCombinedListAndDict()
     list = [{
         "names": ["John", "Laura"]
     }]
-    hash = list[0]|h
-    names = hash["names"]|l
+    dict = list[0]|h
+    names = dict["names"]|l
     Print(names[1]|s)
 end

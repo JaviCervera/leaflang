@@ -163,7 +163,7 @@ typedef struct {
         float f;
         char* s;
         struct List* l;
-        struct Hash* h;
+        struct Dict* h;
         void* r;
     } value;
 } Value;
@@ -196,9 +196,9 @@ Value ValueFromList(struct List* l) {
     return v;
 }
 
-Value ValueFromHash(struct Hash* h) {
+Value ValueFromDict(struct Dict* h) {
     Value v = {0};
-    v.type = TYPE_HASH;
+    v.type = TYPE_DICT;
     lmem_assign(v.value.h, h);
     return v;
 }
@@ -234,7 +234,7 @@ const char* ValueToString(const Value v) {
     case TYPE_FLOAT: return StrF(v.value.f);
     case TYPE_STRING: return v.value.s;
     case TYPE_LIST: return _ListToString(v.value.l);
-    case TYPE_HASH: return _HashToString(v.value.h);
+    case TYPE_DICT: return _DictToString(v.value.h);
     default: return lstr_get("");
     }
 }
@@ -247,11 +247,11 @@ struct List* ValueToList(const Value v) {
     }
 }
 
-struct Hash* ValueToHash(const Value v) {
+struct Dict* ValueToDict(const Value v) {
     switch (v.type) {
-    case TYPE_REF: return (struct Hash*)v.value.r;
-    case TYPE_HASH: return v.value.h;
-    default: return _CreateHash();
+    case TYPE_REF: return (struct Dict*)v.value.r;
+    case TYPE_DICT: return v.value.h;
+    default: return _CreateDict();
     }
 }
 
@@ -261,13 +261,13 @@ void* ValueToRef(const Value v) {
     case TYPE_FLOAT: return NULL;
     case TYPE_STRING: return v.value.s;
     case TYPE_LIST: return v.value.l;
-    case TYPE_HASH: return v.value.h;
+    case TYPE_DICT: return v.value.h;
     default: return v.value.r;
     }
 }
 
 int ValueIsManaged(const Value v) {
-    return v.type == TYPE_STRING || v.type == TYPE_LIST || v.type == TYPE_HASH;
+    return v.type == TYPE_STRING || v.type == TYPE_LIST || v.type == TYPE_DICT;
 }
 
 typedef struct List {
@@ -329,11 +329,11 @@ List* _SetListList(List* list, size_t index, List* value) {
     return list;
 }
 
-List* _SetListHash(List* list, size_t index, struct Hash* value) {
+List* _SetListDict(List* list, size_t index, struct Dict* value) {
     _IncRef((char*)value);
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
-    list->elems[index] = ValueFromHash(value);
+    list->elems[index] = ValueFromDict(value);
     _DecRef((char*)value);
     return list;
 }
@@ -369,10 +369,10 @@ List* _ListList(List* list, size_t index) {
         : _CreateList();
 }
 
-struct Hash* _ListHash(List* list, size_t index) {
+struct Dict* _ListDict(List* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
-        ? ValueToHash(list->elems[index])
-        : _CreateHash();
+        ? ValueToDict(list->elems[index])
+        : _CreateDict();
 }
 
 void* _ListRef(List* list, size_t index) {
@@ -415,125 +415,125 @@ void ClearList(List* list) {
 }
 
 // ------------------------------------
-// Hash
+// Dict
 // ------------------------------------
 
 typedef struct {
     const char* key;
     Value value;
-} HashEntry;
+} DictEntry;
 
-typedef struct Hash {
-    HashEntry* entries;
-} Hash;
+typedef struct Dict {
+    DictEntry* entries;
+} Dict;
 
-void _ClearHashValue(Hash* hash, const char* key) {
-    const Value value = shget(hash->entries, key);
-    if (Contains(hash, key) && ValueIsManaged(value)) {
+void _ClearDictValue(Dict* dict, const char* key) {
+    const Value value = shget(dict->entries, key);
+    if (Contains(dict, key) && ValueIsManaged(value)) {
         _DecRef(value.value.r);
     }
 }
 
-void _DestroyHash(Hash* hash) {
-    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
-        if (ValueIsManaged(hash->entries[i].value)) {
-            _DecRef(hash->entries[i].value.value.r);
+void _DestroyDict(Dict* dict) {
+    for (size_t i = 0; i < shlenu(dict->entries); ++i) {
+        if (ValueIsManaged(dict->entries[i].value)) {
+            _DecRef(dict->entries[i].value.value.r);
         }
     }
-    shfree(hash->entries);
-    hash->entries = NULL;
+    shfree(dict->entries);
+    dict->entries = NULL;
 }
 
-Hash* _CreateHash() {
-    Hash* hash = lmem_allocauto(Hash, (void*)_DestroyHash);
-    hash->entries = NULL;
-    return hash;
+Dict* _CreateDict() {
+    Dict* dict = lmem_allocauto(Dict, (void*)_DestroyDict);
+    dict->entries = NULL;
+    return dict;
 }
 
-Hash* _SetHashInt(Hash* hash, const char* key, int value) {
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromInt(value));
-    return hash;
+Dict* _SetDictInt(Dict* dict, const char* key, int value) {
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromInt(value));
+    return dict;
 }
 
-Hash* _SetHashFloat(Hash* hash, const char* key, float value) {
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromFloat(value));
-    return hash;
+Dict* _SetDictFloat(Dict* dict, const char* key, float value) {
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromFloat(value));
+    return dict;
 }
 
-Hash* _SetHashString(Hash* hash, const char* key, const char* value) {
+Dict* _SetDictString(Dict* dict, const char* key, const char* value) {
     _IncRef((char*)value);
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromString(value));
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromString(value));
     _DecRef((char*)value);
-    return hash;
+    return dict;
 }
 
-Hash* _SetHashList(Hash* hash, const char* key, List* value) {
+Dict* _SetDictList(Dict* dict, const char* key, List* value) {
     _IncRef(value);
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromList(value));
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromList(value));
     _DecRef(value);
-    return hash;
+    return dict;
 }
 
-Hash* _SetHashHash(Hash* hash, const char* key, Hash* value) {
+Dict* _SetDictDict(Dict* dict, const char* key, Dict* value) {
     _IncRef(value);
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromHash(value));
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromDict(value));
     _DecRef(value);
-    return hash;
+    return dict;
 }
 
-Hash* _SetHashRef(Hash* hash, const char* key, void* value) {
-    _ClearHashValue(hash, key);
-    shput(hash->entries, key, ValueFromRef(value));
-    return hash;
+Dict* _SetDictRef(Dict* dict, const char* key, void* value) {
+    _ClearDictValue(dict, key);
+    shput(dict->entries, key, ValueFromRef(value));
+    return dict;
 }
 
-int _HashInt(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToInt(shget(hash->entries, key))
+int _DictInt(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToInt(shget(dict->entries, key))
         : 0;
 }
 
-float _HashFloat(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToFloat(shget(hash->entries, key))
+float _DictFloat(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToFloat(shget(dict->entries, key))
         : 0.0f;
 }
 
-const char* _HashString(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToString(shget(hash->entries, key))
+const char* _DictString(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToString(shget(dict->entries, key))
         : lstr_get("");
 }
 
-List* _HashList(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToList(shget(hash->entries, key))
+List* _DictList(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToList(shget(dict->entries, key))
         : _CreateList();
 }
 
-Hash* _HashHash(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToHash(shget(hash->entries, key))
-        : _CreateHash();
+Dict* _DictDict(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToDict(shget(dict->entries, key))
+        : _CreateDict();
 }
 
-void* _HashRef(Hash* hash, const char* key) {
-    return (Contains(hash, key))
-        ? ValueToRef(shget(hash->entries, key))
+void* _DictRef(Dict* dict, const char* key) {
+    return (Contains(dict, key))
+        ? ValueToRef(shget(dict->entries, key))
         : NULL;
 }
 
-const char* _HashToString(Hash* hash) {
+const char* _DictToString(Dict* dict) {
     char content[65536];
     content[0] = '\0';
     strcpy(content, "{");
-    for (size_t i = 0; i < shlenu(hash->entries); ++i) {
-        const HashEntry* entry = &hash->entries[i];
+    for (size_t i = 0; i < shlenu(dict->entries); ++i) {
+        const DictEntry* entry = &dict->entries[i];
         const char* prefix = (entry->value.type == TYPE_STRING)
             ? "\""
             : "";
@@ -549,23 +549,23 @@ const char* _HashToString(Hash* hash) {
     return lstr_get(content);
 }
 
-int Contains(Hash* hash, const char* key) {
-    return shlenu(hash->entries) > 0;
+int Contains(Dict* dict, const char* key) {
+    return shlenu(dict->entries) > 0;
 }
 
-void RemoveKey(Hash* hash, const char* key) {
-    if (Contains(hash, key)) {
-        _ClearHashValue(hash, key);
-        shdel(hash->entries, key);
+void RemoveKey(Dict* dict, const char* key) {
+    if (Contains(dict, key)) {
+        _ClearDictValue(dict, key);
+        shdel(dict->entries, key);
     }
 }
 
-int HashSize(Hash* hash) {
-    return shlenu(hash->entries);
+int DictSize(Dict* dict) {
+    return shlenu(dict->entries);
 }
 
-void ClearHash(Hash* hash) {
-    _DestroyHash(hash);
+void ClearDict(Dict* dict) {
+    _DestroyDict(dict);
 }
 
 // ------------------------------------
