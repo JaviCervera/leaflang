@@ -25,6 +25,11 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "#define _TDict2TString(v) _DictToString(v)\n"
         "const TChar* _strcat(const TChar* a, const TChar* b) { TChar* str = (TChar*)lmem_autorelease(lstr_allocempty(strlen(a) + strlen(b))); strcpy(str, a); return strcat(str, b); }\n\n";
     const string globals = GenVarDefs(definitions.GetGlobals(), GenIndent(0)) + "\n";
+    string functionDeclsStr;
+    for (size_t i = 0; i < definitions.NumFunctions(); ++i) {
+        functionDeclsStr += GenStatement(GenFunctionHeader(*definitions.GetFunction(i)));
+    }
+    functionDeclsStr += "\n";
     string functionsStr;
     for (size_t i = 0; i < functions.size(); ++i) {
         functionsStr += functions[i] + "\n";
@@ -39,6 +44,7 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
     programStr += "}";
     return headerStr
         + globals
+        + functionDeclsStr
         + functionsStr
         + programStr
         + "\n";
