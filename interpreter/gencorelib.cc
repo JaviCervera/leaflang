@@ -68,15 +68,15 @@ string GenFuncArgs(const Function* func) {
 string GenTypeName(int type) {
     switch (type) {
     case TYPE_INT:
-        return "int ";
+        return "TInt ";
     case TYPE_FLOAT:
-        return "float ";
+        return "TFloat ";
     case TYPE_STRING:
-        return "const char* ";
+        return "const TChar* ";
     case TYPE_LIST:
-        return "List* ";
+        return "TList* ";
     case TYPE_DICT:
-        return "Dict* ";
+        return "TDict* ";
     case TYPE_RAW:
         return "void* ";
     default:
@@ -93,9 +93,9 @@ string GenLuaArg(const Var& param) {
     case TYPE_STRING:
         return "lua_tostring";
     case TYPE_LIST:
-        return "(List*)lua_topointer";
+        return "(TList*)lua_topointer";
     case TYPE_DICT:
-        return "(Dict*)lua_topointer";
+        return "(TDict*)lua_topointer";
     case TYPE_RAW:
         return "(void*)lua_topointer";
     default:

@@ -1,6 +1,20 @@
 #ifndef CORE_H
 #define CORE_H
 
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENV64
+#else
+#define ENV32
+#endif
+#else
+#if __x86_64__ || __ppc64__ || __aarch64__
+#define ENV64
+#else
+#define ENV32
+#endif
+#endif
+
 #define TYPE_INT -1
 #define TYPE_FLOAT -2
 #define TYPE_STRING -3
@@ -22,21 +36,31 @@
 extern "C" {
 #endif
 
-#ifndef CORE_IMPL
-typedef void Memory;
+#ifdef ENV64
+typedef long long int TInt;
+typedef double TFloat;
+typedef char TChar;
 #else
-struct Memory;
+typedef long int TInt;
+typedef float TFloat;
+typedef char TChar;
 #endif
-struct List;
-struct Dict;
+
+#ifndef CORE_IMPL
+typedef void TMemory;
+#else
+struct TMemory;
+#endif
+struct TList;
+struct TDict;
 
 // ------------------------------------
 // App
 // ------------------------------------
 
-const char* AppName();
-struct List* AppArgs();
-const char* Run(const char* command);
+const TChar* AppName();
+struct TList* AppArgs();
+const TChar* Run(const TChar* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
 void* _AutoDec(void* ptr);
@@ -46,156 +70,156 @@ void _DoAutoDec();
 // Console
 // ------------------------------------
 
-const char* Input(const char* prompt);
-void Print(const char* msg);
+const TChar* Input(const TChar* prompt);
+void Print(const TChar* msg);
 
 // ------------------------------------
 // Dir
 // ------------------------------------
 
-struct List* DirContents(const char* path);
-const char* CurrentDir();
-void ChangeDir(const char* dir);
-const char* FullPath(const char* filename);
+struct TList* DirContents(const TChar* path);
+const TChar* CurrentDir();
+void ChangeDir(const TChar* dir);
+const TChar* FullPath(const TChar* filename);
 
 // ------------------------------------
 // File
 // ------------------------------------
 
-int FileType(const char* filename);
-void DeleteFile(const char* filename);
+TInt FileType(const TChar* filename);
+void DeleteFile(const TChar* filename);
 
 // ------------------------------------
-// List
+// TList
 // ------------------------------------
 
-struct List* _CreateList();
-struct List* _SetListInt(struct List* list, size_t index, int value);
-struct List* _SetListFloat(struct List* list, size_t index, float value);
-struct List* _SetListString(struct List* list, size_t index, const char* value);
-struct List* _SetListList(struct List* list, size_t index, struct List* value);
-struct List* _SetListDict(struct List* list, size_t index, struct Dict* value);
-struct List* _SetListRef(struct List* list, size_t index, void* value);
-int _ListInt(struct List* list, size_t index);
-float _ListFloat(struct List* list, size_t index);
-const char* _ListString(struct List* list, size_t index);
-struct List* _ListList(struct List* list, size_t index);
-struct Dict* _ListDict(struct List* list, size_t index);
-void* _ListRef(struct List* list, size_t index);
-const char* _ListToString(struct List* list);
-void RemoveIndex(struct List* list, int index);
-int ListSize(struct List* list);
-void ClearList(struct List* list);
+struct TList* _CreateList();
+struct TList* _SetListInt(struct TList* list, size_t index, TInt value);
+struct TList* _SetListFloat(struct TList* list, size_t index, TFloat value);
+struct TList* _SetListString(struct TList* list, size_t index, const TChar* value);
+struct TList* _SetListList(struct TList* list, size_t index, struct TList* value);
+struct TList* _SetListDict(struct TList* list, size_t index, struct TDict* value);
+struct TList* _SetListRef(struct TList* list, size_t index, void* value);
+TInt _ListInt(struct TList* list, size_t index);
+TFloat _ListFloat(struct TList* list, size_t index);
+const TChar* _ListString(struct TList* list, size_t index);
+struct TList* _ListList(struct TList* list, size_t index);
+struct TDict* _ListDict(struct TList* list, size_t index);
+void* _ListRef(struct TList* list, size_t index);
+const TChar* _ListToString(struct TList* list);
+void RemoveIndex(struct TList* list, TInt index);
+TInt ListSize(struct TList* list);
+void ClearList(struct TList* list);
 
 // ------------------------------------
-// Dict
+// TDict
 // ------------------------------------
 
-struct Dict* _CreateDict();
-struct Dict* _SetDictInt(struct Dict* dict, const char* key, int value);
-struct Dict* _SetDictFloat(struct Dict* dict, const char* key, float value);
-struct Dict* _SetDictString(struct Dict* dict, const char* key, const char* value);
-struct Dict* _SetDictList(struct Dict* dict, const char* key, struct List* value);
-struct Dict* _SetDictDict(struct Dict* dict, const char* key, struct Dict* value);
-struct Dict* _SetDictRef(struct Dict* dict, const char* key, void* value);
-int _DictInt(struct Dict* dict, const char* key);
-float _DictFloat(struct Dict* dict, const char* key);
-const char* _DictString(struct Dict* dict, const char* key);
-struct List* _DictList(struct Dict* dict, const char* key);
-struct Dict* _DictDict(struct Dict* dict, const char* key);
-void* _DictRef(struct Dict* dict, const char* key);
-const char* _DictToString(struct Dict* dict);
-int Contains(struct Dict* dict, const char* key);
-void RemoveKey(struct Dict* dict, const char* key);
-int DictSize(struct Dict* dict);
-void ClearDict(struct Dict* dict);
+struct TDict* _CreateDict();
+struct TDict* _SetDictInt(struct TDict* dict, const TChar* key, TInt value);
+struct TDict* _SetDictFloat(struct TDict* dict, const TChar* key, TFloat value);
+struct TDict* _SetDictString(struct TDict* dict, const TChar* key, const TChar* value);
+struct TDict* _SetDictList(struct TDict* dict, const TChar* key, struct TList* value);
+struct TDict* _SetDictDict(struct TDict* dict, const TChar* key, struct TDict* value);
+struct TDict* _SetDictRef(struct TDict* dict, const TChar* key, void* value);
+TInt _DictInt(struct TDict* dict, const TChar* key);
+TFloat _DictFloat(struct TDict* dict, const TChar* key);
+const TChar* _DictString(struct TDict* dict, const TChar* key);
+struct TList* _DictList(struct TDict* dict, const TChar* key);
+struct TDict* _DictDict(struct TDict* dict, const TChar* key);
+void* _DictRef(struct TDict* dict, const TChar* key);
+const TChar* _DictToString(struct TDict* dict);
+TInt Contains(struct TDict* dict, const TChar* key);
+void RemoveKey(struct TDict* dict, const TChar* key);
+TInt DictSize(struct TDict* dict);
+void ClearDict(struct TDict* dict);
 
 // ------------------------------------
 // Math
 // ------------------------------------
 
-float ASin(float x);
-float ATan(float x);
-float ATan2(float x, float y);
-float Abs(float x);
-float Ceil(float x);
-float Clamp(float x, float min, float max);
-float Cos(float x);
-float Exp(float x);
-float Floor(float x);
-float Log(float x);
-float Max(float x, float y);
-float Min(float x, float y);
-float Pow(float x, float y);
-float Sgn(float x);
-float Sin(float x);
-float Sqrt(float x);
-float Tan(float x);
-int Int(float num);
+TFloat ASin(TFloat x);
+TFloat ATan(TFloat x);
+TFloat ATan2(TFloat x, TFloat y);
+TFloat Abs(TFloat x);
+TFloat Ceil(TFloat x);
+TFloat Clamp(TFloat x, TFloat min, TFloat max);
+TFloat Cos(TFloat x);
+TFloat Exp(TFloat x);
+TFloat Floor(TFloat x);
+TFloat Log(TFloat x);
+TFloat Max(TFloat x, TFloat y);
+TFloat Min(TFloat x, TFloat y);
+TFloat Pow(TFloat x, TFloat y);
+TFloat Sgn(TFloat x);
+TFloat Sin(TFloat x);
+TFloat Sqrt(TFloat x);
+TFloat Tan(TFloat x);
+TInt Int(TFloat num);
 
 // ------------------------------------
-// Memory
+// TMemory
 // ------------------------------------
 
-Memory* Dim(int size);
-void Undim(Memory* mem);
-void Redim(Memory* mem, int size);
-Memory* LoadDim(const char* filename);
-void SaveDim(Memory* mem, const char* filename);
-int DimSize(Memory* mem);
-int PeekByte(Memory* mem, int offset);
-int PeekShort(Memory* mem, int offset);
-int PeekInt(Memory* mem, int offset);
-float PeekFloat(Memory* mem, int offset);
-const char* PeekString(Memory* mem, int offset);
-void* PeekRef(Memory* mem, int offset);
-void PokeByte(Memory* mem, int offset, int val);
-void PokeShort(Memory* mem, int offset, int val);
-void PokeInt(Memory* mem, int offset, int val);
-void PokeFloat(Memory* mem, int offset, float val);
-void PokeString(Memory* mem, int offset, const char* val);
-void PokeRef(Memory* mem, int offset, void* val);
+TMemory* Dim(TInt size);
+void Undim(TMemory* mem);
+void Redim(TMemory* mem, TInt size);
+TMemory* LoadDim(const TChar* filename);
+void SaveDim(TMemory* mem, const TChar* filename);
+TInt DimSize(TMemory* mem);
+TInt PeekByte(TMemory* mem, TInt offset);
+TInt PeekShort(TMemory* mem, TInt offset);
+TInt PeekInt(TMemory* mem, TInt offset);
+TFloat PeekFloat(TMemory* mem, TInt offset);
+const TChar* PeekString(TMemory* mem, TInt offset);
+void* PeekRef(TMemory* mem, TInt offset);
+void PokeByte(TMemory* mem, TInt offset, TInt val);
+void PokeShort(TMemory* mem, TInt offset, TInt val);
+void PokeInt(TMemory* mem, TInt offset, TInt val);
+void PokeFloat(TMemory* mem, TInt offset, TFloat val);
+void PokeString(TMemory* mem, TInt offset, const TChar* val);
+void PokeRef(TMemory* mem, TInt offset, void* val);
 
 // ------------------------------------
 // String
 // ------------------------------------
 
-int Len(const char* str);
-const char* Left(const char* str, int count);
-const char* Right(const char* str, int count);
-const char* Mid(const char* str, int offset, int count);
-const char* Lower(const char* str);
-const char* Upper(const char* str);
-int Find(const char* str, const char* find, int offset);
-const char* Replace(const char* str, const char* find, const char* replace);
-const char* Trim(const char* str);
-const char* Join(struct List* list, const char* separator);
-struct List* Split(const char* str, const char* separator);
-const char* StripExt(const char* filename);
-const char* StripDir(const char* filename);
-const char* ExtractExt(const char* filename);
-const char* ExtractDir(const char* filename);
-int Asc(const char* str, int index);
-const char* Chr(int c);
-const char* Str(int val);
-const char* StrF(float val);
-int Val(const char* str);
-float ValF(const char* str);
-const char* LoadString(const char* filename);
-void SaveString(const char* filename, const char* str, int append);
+TInt Len(const TChar* str);
+const TChar* Left(const TChar* str, TInt count);
+const TChar* Right(const TChar* str, TInt count);
+const TChar* Mid(const TChar* str, TInt offset, TInt count);
+const TChar* Lower(const TChar* str);
+const TChar* Upper(const TChar* str);
+TInt Find(const TChar* str, const TChar* find, TInt offset);
+const TChar* Replace(const TChar* str, const TChar* find, const TChar* replace);
+const TChar* Trim(const TChar* str);
+const TChar* Join(struct TList* list, const TChar* separator);
+struct TList* Split(const TChar* str, const TChar* separator);
+const TChar* StripExt(const TChar* filename);
+const TChar* StripDir(const TChar* filename);
+const TChar* ExtractExt(const TChar* filename);
+const TChar* ExtractDir(const TChar* filename);
+TInt Asc(const TChar* str, TInt index);
+const TChar* Chr(TInt c);
+const TChar* Str(TInt val);
+const TChar* StrF(TFloat val);
+TInt Val(const TChar* str);
+TFloat ValF(const TChar* str);
+const TChar* LoadString(const TChar* filename);
+void SaveString(const TChar* filename, const TChar* str, TInt append);
 
 // ------------------------------------
 // Callable
 // ------------------------------------
 
-void AddIntArg(int arg);
-void AddFloatArg(float arg);
-void AddStringArg(const char* arg);
-void Call(const char* name);
-int CallInt(const char* name);
-float CallFloat(const char* name);
-const char* CallString(const char* name);
-int Callable(const char* name);
+void AddIntArg(TInt arg);
+void AddFloatArg(TFloat arg);
+void AddStringArg(const TChar* arg);
+void Call(const TChar* name);
+TInt CallInt(const TChar* name);
+TFloat CallFloat(const TChar* name);
+const TChar* CallString(const TChar* name);
+TInt Callable(const TChar* name);
 
 #ifdef __cplusplus
 }

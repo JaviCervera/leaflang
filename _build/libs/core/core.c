@@ -26,10 +26,10 @@
 #endif
 #endif
 
-typedef struct Memory {
+typedef struct TMemory {
     char* ptr;
     size_t size;
-} Memory;
+} TMemory;
 
 #define CORE_IMPL
 #include "core.h"
@@ -38,32 +38,32 @@ typedef struct Memory {
 // App
 // ------------------------------------
 
-static char* leaf_appName = NULL;
-static struct List* leaf_appArgs = NULL;
+static TChar* leaf_appName = NULL;
+static struct TList* leaf_appArgs = NULL;
 
 void _SetArgs(int argc, const char* argv[]) {
     leaf_appName = lstr_alloc(argv[0]);
-    leaf_appArgs = (struct List*)_IncRef(_CreateList());
-    for (int i = 1; i < argc; ++i) {
+    leaf_appArgs = (struct TList*)_IncRef(_CreateList());
+    for (TInt i = 1; i < argc; ++i) {
         _SetListString(leaf_appArgs, i - 1, argv[i]);
     }
 }
 
-const char* AppName() {
+const TChar* AppName() {
     return leaf_appName;
 }
 
-struct List* AppArgs() {
+struct TList* AppArgs() {
     return leaf_appArgs;
 }
 
-const char* Run(const char* command) {
-    char tmp[65536];
+const TChar* Run(const TChar* command) {
+    TChar tmp[65536];
     tmp[0] = '\0';
     FILE* pipe = popen(command, "rt");
     if (!pipe) return lstr_get("");
     while (!feof(pipe)) {
-        char tmp2[128];
+        TChar tmp2[128];
         if (fgets(tmp2, 128, pipe) != 0) strcat(tmp, tmp2);
     }
     pclose(pipe);
@@ -91,14 +91,14 @@ void _DoAutoDec() {
 // Console
 // ------------------------------------
 
-const char* Input(const char* prompt) {
-    char buffer[1024];
+const TChar* Input(const TChar* prompt) {
+    TChar buffer[1024];
     printf("%s", prompt);
     fgets(buffer, 1024, stdin);
     return lstr_get(buffer);
 }
 
-void Print(const char* msg) {
+void Print(const TChar* msg) {
     printf("%s\n", msg);
     fflush(stdout);
 }
@@ -107,12 +107,12 @@ void Print(const char* msg) {
 // Dir
 // ------------------------------------
 
-struct List* DirContents(const char* path) {
-    struct List* list = _CreateList();
+struct TList* DirContents(const TChar* path) {
+    struct TList* list = _CreateList();
     DIR* d = (DIR*)opendir(path);
     if (d == NULL) return list;
     struct dirent* entry;
-    int i = 0;
+    TInt i = 0;
     while ((entry = (struct dirent*)readdir(d))) {
         _SetListString(list, i++, entry->d_name);
     }
@@ -120,18 +120,18 @@ struct List* DirContents(const char* path) {
     return list;
 }
 
-const char* CurrentDir() {
-    char buf[FILENAME_MAX];
+const TChar* CurrentDir() {
+    TChar buf[FILENAME_MAX];
     _getcwd(buf, FILENAME_MAX);
     return lstr_get(buf);
 }
 
-void ChangeDir(const char* dir) {
+void ChangeDir(const TChar* dir) {
     _chdir(dir);
 }
 
-const char* FullPath(const char* filename) {
-    char out_path[FILENAME_MAX];
+const TChar* FullPath(const TChar* filename) {
+    TChar out_path[FILENAME_MAX];
     realpath(filename, out_path);
     return lstr_get(out_path);
 }
@@ -140,62 +140,62 @@ const char* FullPath(const char* filename) {
 // File
 // ------------------------------------
 
-int FileType(const char* filename) {
+TInt FileType(const TChar* filename) {
     struct stat statbuf;
     if (stat(filename, &statbuf) == -1) return 0;
     else if (S_ISDIR(statbuf.st_mode)) return 2;
     else return 1;
 }
 
-void DeleteFile(const char* filename) {
+void DeleteFile(const TChar* filename) {
     remove(filename);
 }
 
 // ------------------------------------
-// List
+// TList
 // ------------------------------------
 
 typedef struct {
-    int type;
+    TInt type;
     union {
-        int i;
-        float f;
-        char* s;
-        struct List* l;
-        struct Dict* h;
+        TInt i;
+        TFloat f;
+        TChar* s;
+        struct TList* l;
+        struct TDict* h;
         void* r;
     } value;
 } Value;
 
-Value ValueFromInt(int i) {
+Value ValueFromInt(TInt i) {
     Value v = {0};
     v.type = TYPE_INT;
     v.value.i = i;
     return v;
 }
 
-Value ValueFromFloat(float f) {
+Value ValueFromFloat(TFloat f) {
     Value v = {0};
     v.type = TYPE_FLOAT;
     v.value.f = f;
     return v;
 }
 
-Value ValueFromString(const char* s) {
+Value ValueFromString(const TChar* s) {
     Value v = {0};
     v.type = TYPE_STRING;
     lmem_assign(v.value.s, lstr_get(s));
     return v;
 }
 
-Value ValueFromList(struct List* l) {
+Value ValueFromList(struct TList* l) {
     Value v = {0};
     v.type = TYPE_LIST;
     lmem_assign(v.value.l, l);
     return v;
 }
 
-Value ValueFromDict(struct Dict* h) {
+Value ValueFromDict(struct TDict* h) {
     Value v = {0};
     v.type = TYPE_DICT;
     lmem_assign(v.value.h, h);
@@ -209,16 +209,16 @@ Value ValueFromRef(void* r) {
     return v;
 }
 
-int ValueToInt(const Value v) {
+TInt ValueToInt(const Value v) {
     switch (v.type) {
     case TYPE_INT: return v.value.i;
-    case TYPE_FLOAT: return (int)v.value.f;
+    case TYPE_FLOAT: return (TInt)v.value.f;
     case TYPE_STRING: return Val(v.value.s);
     default: return 0;
     }
 }
 
-float ValueToFloat(const Value v) {
+TFloat ValueToFloat(const Value v) {
     switch (v.type) {
     case TYPE_INT: return v.value.i;
     case TYPE_FLOAT: return v.value.f;
@@ -227,7 +227,7 @@ float ValueToFloat(const Value v) {
     }
 }
 
-const char* ValueToString(const Value v) {
+const TChar* ValueToString(const Value v) {
     switch (v.type) {
     case TYPE_INT: return Str(v.value.i);
     case TYPE_FLOAT: return StrF(v.value.f);
@@ -238,17 +238,17 @@ const char* ValueToString(const Value v) {
     }
 }
 
-struct List* ValueToList(const Value v) {
+struct TList* ValueToList(const Value v) {
     switch (v.type) {
-    case TYPE_RAW: return (struct List*)v.value.r;
+    case TYPE_RAW: return (struct TList*)v.value.r;
     case TYPE_LIST: return v.value.l;
     default: return _CreateList();
     }
 }
 
-struct Dict* ValueToDict(const Value v) {
+struct TDict* ValueToDict(const Value v) {
     switch (v.type) {
-    case TYPE_RAW: return (struct Dict*)v.value.r;
+    case TYPE_RAW: return (struct TDict*)v.value.r;
     case TYPE_DICT: return v.value.h;
     default: return _CreateDict();
     }
@@ -265,15 +265,15 @@ void* ValueToRef(const Value v) {
     }
 }
 
-int ValueIsManaged(const Value v) {
+TInt ValueIsManaged(const Value v) {
     return v.type == TYPE_STRING || v.type == TYPE_LIST || v.type == TYPE_DICT;
 }
 
-typedef struct List {
+typedef struct TList {
     Value* elems;
-} List;
+} TList;
 
-void _ClearListValue(List* list, size_t index) {
+void _ClearListValue(TList* list, size_t index) {
     if (index >= 0 && index < ListSize(list)) {
         const Value value = list->elems[index];
         if (ValueIsManaged(value)) {
@@ -282,7 +282,7 @@ void _ClearListValue(List* list, size_t index) {
     }
 }
 
-void _DestroyList(List* list) {
+void _DestroyList(TList* list) {
     for (size_t i = 0; i < arrlenu(list->elems); ++i) {
         _ClearListValue(list, i);
     }
@@ -290,103 +290,103 @@ void _DestroyList(List* list) {
     list->elems = NULL;
 }
 
-List* _CreateList() {
-    List* list = lmem_allocauto(List, (void*)_DestroyList);
+TList* _CreateList() {
+    TList* list = lmem_allocauto(TList, (void*)_DestroyList);
     list->elems = NULL;
     return list;
 }
 
-List* _SetListInt(List* list, size_t index, int value) {
+TList* _SetListInt(TList* list, size_t index, TInt value) {
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromInt(value);
     return list;
 }
 
-List* _SetListFloat(List* list, size_t index, float value) {
+TList* _SetListFloat(TList* list, size_t index, TFloat value) {
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromFloat(value);
     return list;
 }
 
-List* _SetListString(List* list, size_t index, const char* value) {
-    _IncRef((char*)value);
+TList* _SetListString(TList* list, size_t index, const TChar* value) {
+    _IncRef((TChar*)value);
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromString(value);
-    _DecRef((char*)value);
+    _DecRef((TChar*)value);
     return list;
 }
 
-List* _SetListList(List* list, size_t index, List* value) {
-    _IncRef((char*)value);
+TList* _SetListList(TList* list, size_t index, TList* value) {
+    _IncRef((TChar*)value);
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromList(value);
-    _DecRef((char*)value);
+    _DecRef((TChar*)value);
     return list;
 }
 
-List* _SetListDict(List* list, size_t index, struct Dict* value) {
-    _IncRef((char*)value);
+TList* _SetListDict(TList* list, size_t index, struct TDict* value) {
+    _IncRef((TChar*)value);
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromDict(value);
-    _DecRef((char*)value);
+    _DecRef((TChar*)value);
     return list;
 }
 
-List* _SetListRef(List* list, size_t index, void* value) {
+TList* _SetListRef(TList* list, size_t index, void* value) {
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
     list->elems[index] = ValueFromRef(value);
     return list;
 }
 
-int _ListInt(List* list, size_t index) {
+TInt _ListInt(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToInt(list->elems[index])
         : 0;
 }
 
-float _ListFloat(List* list, size_t index) {
+TFloat _ListFloat(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToFloat(list->elems[index])
         : 0.0f;
 }
 
-const char* _ListString(List* list, size_t index) {
+const TChar* _ListString(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToString(list->elems[index])
         : lstr_get("");
 }
 
-List* _ListList(List* list, size_t index) {
+TList* _ListList(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToList(list->elems[index])
         : _CreateList();
 }
 
-struct Dict* _ListDict(List* list, size_t index) {
+struct TDict* _ListDict(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToDict(list->elems[index])
         : _CreateDict();
 }
 
-void* _ListRef(List* list, size_t index) {
+void* _ListRef(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
         ? ValueToRef(list->elems[index])
         : NULL;
 }
 
-const char* _ListToString(List* list) {
-    char content[65536];
+const TChar* _ListToString(TList* list) {
+    TChar content[65536];
     content[0] = '\0';
     strcpy(content, "[");
     for (size_t i = 0; i < arrlenu(list->elems); ++i) {
         const Value value = list->elems[i];
-        const char* prefix = (value.type == TYPE_STRING)
+        const TChar* prefix = (value.type == TYPE_STRING)
             ? "\""
             : "";
         if (i > 0) strcat(content, ", ");
@@ -398,42 +398,42 @@ const char* _ListToString(List* list) {
     return lstr_get(content);
 }
 
-void RemoveIndex(List* list, int index) {
+void RemoveIndex(TList* list, TInt index) {
     if (index >= 0 && index < ListSize(list)) {
         _ClearListValue(list, index);
         arrdel(list->elems, index);
     }
 }
 
-int ListSize(List* list) {
+TInt ListSize(TList* list) {
     return arrlenu(list->elems);
 }
 
-void ClearList(List* list) {
+void ClearList(TList* list) {
     _DestroyList(list);
 }
 
 // ------------------------------------
-// Dict
+// TDict
 // ------------------------------------
 
 typedef struct {
-    const char* key;
+    const TChar* key;
     Value value;
 } DictEntry;
 
-typedef struct Dict {
+typedef struct TDict {
     DictEntry* entries;
-} Dict;
+} TDict;
 
-void _ClearDictValue(Dict* dict, const char* key) {
+void _ClearDictValue(TDict* dict, const TChar* key) {
     const Value value = shget(dict->entries, key);
     if (Contains(dict, key) && ValueIsManaged(value)) {
         _DecRef(value.value.r);
     }
 }
 
-void _DestroyDict(Dict* dict) {
+void _DestroyDict(TDict* dict) {
     for (size_t i = 0; i < shlenu(dict->entries); ++i) {
         if (ValueIsManaged(dict->entries[i].value)) {
             _DecRef(dict->entries[i].value.value.r);
@@ -443,33 +443,33 @@ void _DestroyDict(Dict* dict) {
     dict->entries = NULL;
 }
 
-Dict* _CreateDict() {
-    Dict* dict = lmem_allocauto(Dict, (void*)_DestroyDict);
+TDict* _CreateDict() {
+    TDict* dict = lmem_allocauto(TDict, (void*)_DestroyDict);
     dict->entries = NULL;
     return dict;
 }
 
-Dict* _SetDictInt(Dict* dict, const char* key, int value) {
+TDict* _SetDictInt(TDict* dict, const TChar* key, TInt value) {
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromInt(value));
     return dict;
 }
 
-Dict* _SetDictFloat(Dict* dict, const char* key, float value) {
+TDict* _SetDictFloat(TDict* dict, const TChar* key, TFloat value) {
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromFloat(value));
     return dict;
 }
 
-Dict* _SetDictString(Dict* dict, const char* key, const char* value) {
-    _IncRef((char*)value);
+TDict* _SetDictString(TDict* dict, const TChar* key, const TChar* value) {
+    _IncRef((TChar*)value);
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromString(value));
-    _DecRef((char*)value);
+    _DecRef((TChar*)value);
     return dict;
 }
 
-Dict* _SetDictList(Dict* dict, const char* key, List* value) {
+TDict* _SetDictList(TDict* dict, const TChar* key, TList* value) {
     _IncRef(value);
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromList(value));
@@ -477,7 +477,7 @@ Dict* _SetDictList(Dict* dict, const char* key, List* value) {
     return dict;
 }
 
-Dict* _SetDictDict(Dict* dict, const char* key, Dict* value) {
+TDict* _SetDictDict(TDict* dict, const TChar* key, TDict* value) {
     _IncRef(value);
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromDict(value));
@@ -485,55 +485,55 @@ Dict* _SetDictDict(Dict* dict, const char* key, Dict* value) {
     return dict;
 }
 
-Dict* _SetDictRef(Dict* dict, const char* key, void* value) {
+TDict* _SetDictRef(TDict* dict, const TChar* key, void* value) {
     _ClearDictValue(dict, key);
     shput(dict->entries, key, ValueFromRef(value));
     return dict;
 }
 
-int _DictInt(Dict* dict, const char* key) {
+TInt _DictInt(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToInt(shget(dict->entries, key))
         : 0;
 }
 
-float _DictFloat(Dict* dict, const char* key) {
+TFloat _DictFloat(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToFloat(shget(dict->entries, key))
         : 0.0f;
 }
 
-const char* _DictString(Dict* dict, const char* key) {
+const TChar* _DictString(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToString(shget(dict->entries, key))
         : lstr_get("");
 }
 
-List* _DictList(Dict* dict, const char* key) {
+TList* _DictList(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToList(shget(dict->entries, key))
         : _CreateList();
 }
 
-Dict* _DictDict(Dict* dict, const char* key) {
+TDict* _DictDict(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToDict(shget(dict->entries, key))
         : _CreateDict();
 }
 
-void* _DictRef(Dict* dict, const char* key) {
+void* _DictRef(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
         ? ValueToRef(shget(dict->entries, key))
         : NULL;
 }
 
-const char* _DictToString(Dict* dict) {
-    char content[65536];
+const TChar* _DictToString(TDict* dict) {
+    TChar content[65536];
     content[0] = '\0';
     strcpy(content, "{");
     for (size_t i = 0; i < shlenu(dict->entries); ++i) {
         const DictEntry* entry = &dict->entries[i];
-        const char* prefix = (entry->value.type == TYPE_STRING)
+        const TChar* prefix = (entry->value.type == TYPE_STRING)
             ? "\""
             : "";
         if (i > 0) strcat(content, ", ");
@@ -548,22 +548,22 @@ const char* _DictToString(Dict* dict) {
     return lstr_get(content);
 }
 
-int Contains(Dict* dict, const char* key) {
+TInt Contains(TDict* dict, const TChar* key) {
     return shlenu(dict->entries) > 0;
 }
 
-void RemoveKey(Dict* dict, const char* key) {
+void RemoveKey(TDict* dict, const TChar* key) {
     if (Contains(dict, key)) {
         _ClearDictValue(dict, key);
         shdel(dict->entries, key);
     }
 }
 
-int DictSize(Dict* dict) {
+TInt DictSize(TDict* dict) {
     return shlenu(dict->entries);
 }
 
-void ClearDict(Dict* dict) {
+void ClearDict(TDict* dict) {
     _DestroyDict(dict);
 }
 
@@ -571,187 +571,187 @@ void ClearDict(Dict* dict) {
 // Math
 // ------------------------------------
 
-float ASin(float x) {
+TFloat ASin(TFloat x) {
     return asin(x);
 }
 
-float ATan(float x) {
+TFloat ATan(TFloat x) {
     return atan(x);
 }
 
-float ATan2(float x, float y) {
+TFloat ATan2(TFloat x, TFloat y) {
     return atan2(x, y);
 }
 
-float Abs(float x) {
+TFloat Abs(TFloat x) {
     return fabsf(x);
 }
 
-float Ceil(float x) {
+TFloat Ceil(TFloat x) {
     return ceil(x);
 }
 
-float Clamp(float x, float min, float max) {
+TFloat Clamp(TFloat x, TFloat min, TFloat max) {
     return Min(Max(x, min), max);
 }
 
-float Cos(float x) {
+TFloat Cos(TFloat x) {
     return cos(x);
 }
 
-float Exp(float x) {
+TFloat Exp(TFloat x) {
     return exp(x);
 }
 
-float Floor(float x) {
+TFloat Floor(TFloat x) {
     return floor(x);
 }
 
-float Log(float x) {
+TFloat Log(TFloat x) {
     return log(x);
 }
 
-float Max(float x, float y) {
+TFloat Max(TFloat x, TFloat y) {
     return (x >= y) ? x : y;
 }
 
-float Min(float x, float y) {
+TFloat Min(TFloat x, TFloat y) {
     return (x <= y) ? x : y;
 }
 
-float Pow(float x, float y) {
+TFloat Pow(TFloat x, TFloat y) {
     return pow(x, y);
 }
 
-float Sgn(float x) {
+TFloat Sgn(TFloat x) {
     return (0 < x) - (x < 0);
 }
 
-float Sin(float x) {
+TFloat Sin(TFloat x) {
     return sin(x);
 }
 
-float Sqrt(float x) {
+TFloat Sqrt(TFloat x) {
     return sqrt(x);
 }
 
-float Tan(float x) {
+TFloat Tan(TFloat x) {
     return tan(x);
 }
 
-int Int(float num) {
-    return (int)num;
+TInt Int(TFloat num) {
+    return (TInt)num;
 }
 
 // ------------------------------------
-// Memory
+// TMemory
 // ------------------------------------
 
-Memory* Dim(int size) {
-    Memory* mem = (Memory*)malloc(sizeof(Memory));
+TMemory* Dim(TInt size) {
+    TMemory* mem = (TMemory*)malloc(sizeof(TMemory));
     mem->ptr = (char*)calloc(1, size);
     mem->size = size;
     return mem;
 }
 
-void Undim(Memory* mem) {
+void Undim(TMemory* mem) {
     free(mem->ptr);
     free(mem);
 }
 
-void Redim(Memory* mem, int size) {
+void Redim(TMemory* mem, TInt size) {
     mem->ptr = (char*)realloc(mem->ptr, size);
     mem->size = size;
 }
 
-Memory* LoadDim(const char* filename) {
+TMemory* LoadDim(const TChar* filename) {
     FILE* f = fopen(filename, "rb");
     if (!f) return NULL;
     fseek(f, 0, SEEK_END);
     size_t size = (size_t)ftell(f);
     fseek(f, 0, SEEK_SET);
-    Memory* mem = Dim(size);
+    TMemory* mem = Dim(size);
     fread(mem->ptr, size, 1, f);
     fclose(f);
     return mem;
 }
 
-void SaveDim(Memory* mem, const char* filename) {
+void SaveDim(TMemory* mem, const TChar* filename) {
     FILE* f = fopen(filename, "wb");
     if (!f) return;
     fwrite(mem->ptr, DimSize(mem), 1, f);
     fclose(f);
 }
 
-int DimSize(Memory* mem) {
-    return (int)mem->size;
+TInt DimSize(TMemory* mem) {
+    return (TInt)mem->size;
 }
 
-int PeekByte(Memory* mem, int offset) {
+TInt PeekByte(TMemory* mem, TInt offset) {
     unsigned char v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
-    return (int)v;
+    return (TInt)v;
 }
 
-int PeekShort(Memory* mem, int offset) {
+TInt PeekShort(TMemory* mem, TInt offset) {
     unsigned short v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
-    return (int)v;
+    return (TInt)v;
 }
 
-int PeekInt(Memory* mem, int offset) {
-    int v;
+TInt PeekInt(TMemory* mem, TInt offset) {
+    TInt v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-float PeekFloat(Memory* mem, int offset) {
-    float v;
+TFloat PeekFloat(TMemory* mem, TInt offset) {
+    TFloat v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-const char* PeekString(Memory* mem, int offset) {
-    char result[65536];
+const TChar* PeekString(TMemory* mem, TInt offset) {
+    TChar result[65536];
     result[0] = '\0';
-    int c;
+    TInt c;
     while (offset < DimSize(mem) && (c = PeekByte(mem, offset)) != 0) {
-        char s[] = {(char)c, '\0'};
+        TChar s[] = {(TChar)c, '\0'};
         strcat(result, s);
         ++offset;
     }
     return lstr_get(result);
 }
 
-void* PeekRef(Memory* mem, int offset) {
+void* PeekRef(TMemory* mem, TInt offset) {
     void* v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
 }
 
-void PokeByte(Memory* mem, int offset, int val) {
+void PokeByte(TMemory* mem, TInt offset, TInt val) {
     unsigned char* b = (unsigned char*)&val;
     memcpy(&(mem->ptr[offset]), &b[3], sizeof(unsigned char));
 }
 
-void PokeShort(Memory* mem, int offset, int val) {
+void PokeShort(TMemory* mem, TInt offset, TInt val) {
     unsigned short* s = (unsigned short*)&val;
     memcpy(&(mem->ptr[offset]), &s[1], sizeof(unsigned short));
 }
 
-void PokeInt(Memory* mem, int offset, int val) {
+void PokeInt(TMemory* mem, TInt offset, TInt val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeFloat(Memory* mem, int offset, float val) {
+void PokeFloat(TMemory* mem, TInt offset, TFloat val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
-void PokeString(Memory* mem, int offset, const char* val) {
+void PokeString(TMemory* mem, TInt offset, const TChar* val) {
     memcpy(&(mem->ptr[offset]), val, strlen(val) + 1);
 }
 
-void PokeRef(Memory* mem, int offset, void* val) {
+void PokeRef(TMemory* mem, TInt offset, void* val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 
@@ -759,64 +759,64 @@ void PokeRef(Memory* mem, int offset, void* val) {
 // String
 // ------------------------------------
 
-int Len(const char* str) {
+TInt Len(const TChar* str) {
     return strlen(str);
 }
 
-const char* Left(const char* str, int count) {
-    char* result = lstr_allocempty(count);
+const TChar* Left(const TChar* str, TInt count) {
+    TChar* result = lstr_allocempty(count);
     strncpy(result, str, count);
-    return (const char*)lmem_autorelease(result);
+    return (const TChar*)lmem_autorelease(result);
 }
 
-const char* Right(const char* str, int count) {
-    char* result = lstr_allocempty(count);
+const TChar* Right(const TChar* str, TInt count) {
+    TChar* result = lstr_allocempty(count);
     strncpy(result, str + strlen(str) - count, count);
-    return (const char*)lmem_autorelease(result);
+    return (const TChar*)lmem_autorelease(result);
 }
 
-const char* Mid(const char* str, int offset, int count) {
-    char* result = lstr_allocempty(count);
+const TChar* Mid(const TChar* str, TInt offset, TInt count) {
+    TChar* result = lstr_allocempty(count);
     strncpy(result, str + offset, count);
-    return (const char*)lmem_autorelease(result);
+    return (const TChar*)lmem_autorelease(result);
 }
 
-const char* Lower(const char* str) {
+const TChar* Lower(const TChar* str) {
     const size_t len = strlen(str);
-    char* result = lstr_allocempty(len);
+    TChar* result = lstr_allocempty(len);
     for (size_t i = 0; i < len; ++i) {
-        result[i] = (char)tolower(str[i]);
+        result[i] = (TChar)tolower(str[i]);
     }
-    return (const char*)lmem_autorelease(result);
+    return (const TChar*)lmem_autorelease(result);
 }
 
-const char* Upper(const char* str) {
+const TChar* Upper(const TChar* str) {
     const size_t len = strlen(str);
-    char* result = lstr_allocempty(len);
+    TChar* result = lstr_allocempty(len);
     for (size_t i = 0; i < len; ++i) {
-        result[i] = (char)toupper(str[i]);
+        result[i] = (TChar)toupper(str[i]);
     }
-    return (const char*)lmem_autorelease(result);
+    return (const TChar*)lmem_autorelease(result);
 }
 
-int Find(const char* str, const char* find, int offset) {
-    const char* p = strstr(&str[offset], find);
+TInt Find(const TChar* str, const TChar* find, TInt offset) {
+    const TChar* p = strstr(&str[offset], find);
     if (p == NULL)
         return -1;
     else
         return (p - str);
 }
 
-char* _ReplaceOne(const char* str, size_t pos, size_t len, const char* rep, size_t rlen) {
-    char* result = lstr_allocempty(strlen(str) + rlen - len);
+TChar* _ReplaceOne(const TChar* str, size_t pos, size_t len, const TChar* rep, size_t rlen) {
+    TChar* result = lstr_allocempty(strlen(str) + rlen - len);
     strncpy(result, str, pos);
     strcat(result, rep);
     strcat(result, &str[pos + len]);
-    return (char*)lmem_autorelease(result);
+    return (TChar*)lmem_autorelease(result);
 }
 
-const char* Replace(const char* str, const char* find, const char* replace) {
-    char* result = lstr_get(str);
+const TChar* Replace(const TChar* str, const TChar* find, const TChar* replace) {
+    TChar* result = lstr_get(str);
     const size_t rlen = strlen(replace);
     const size_t find_len = strlen(find);
     size_t find_pos = Find(result, find, 0);
@@ -827,7 +827,7 @@ const char* Replace(const char* str, const char* find, const char* replace) {
     return result;
 }
 
-const char* Trim(const char* str) {
+const TChar* Trim(const TChar* str) {
     const size_t len = strlen(str);
     size_t offset = 0;
     while (offset < len && isspace(str[offset])) ++offset;
@@ -836,45 +836,45 @@ const char* Trim(const char* str) {
     return Mid(str, offset, count + 1);
 }
 
-const char* Join(List* list, const char* separator) {
+const TChar* Join(TList* list, const TChar* separator) {
     size_t current_len = 0;
     size_t current_max = 1000;
-    char* tmp = (char*)calloc(current_max, sizeof(char));
-    const int size = ListSize(list);
+    TChar* tmp = (TChar*)calloc(current_max, sizeof(TChar));
+    const TInt size = ListSize(list);
     const size_t seplen = strlen(separator);
-    for (int i = 0; i < size; ++i) {
-        const char* str = (const char*)_IncRef((void*)_ListString(list, i));
+    for (TInt i = 0; i < size; ++i) {
+        const TChar* str = (const TChar*)_IncRef((void*)_ListString(list, i));
         size_t len = strlen(str);
         if (i > 0) len += seplen;
         if (current_max < current_len + len + 1) {
-            current_max += (int)Max(1000, len + 1);
-            tmp = (char*)realloc(tmp, current_max * sizeof(char));
+            current_max += (TInt)Max(1000, len + 1);
+            tmp = (TChar*)realloc(tmp, current_max * sizeof(TChar));
         }
         if (i > 0) strcat(tmp, separator);
         strcat(tmp, str);
         current_len += len;
         _DecRef((void*)str);
     }
-    char* result = lstr_get(tmp);
+    TChar* result = lstr_get(tmp);
     free(tmp);
     return result;
 }
 
-List* _SplitChars(const char* str) {
-    const int len = Len(str);
-    List* list = _CreateList();
-    for (int i = 0; i < len; ++i) {
+TList* _SplitChars(const TChar* str) {
+    const TInt len = Len(str);
+    TList* list = _CreateList();
+    for (TInt i = 0; i < len; ++i) {
         _SetListString(list, i, Chr(str[i]));
     }
     return list;
 }
 
-List* _SplitBySep(const char* str, const char* separator) {
+TList* _SplitBySep(const TChar* str, const TChar* separator) {
     const size_t seplen = strlen(separator);
-    List* list = _CreateList();
-    int prevoffset = 0;
-    int nextoffset = 0;
-    int i = 0;
+    TList* list = _CreateList();
+    TInt prevoffset = 0;
+    TInt nextoffset = 0;
+    TInt i = 0;
     while ((nextoffset = Find(str, separator, prevoffset)) != -1) {
         _SetListString(list, i++, Mid(str, prevoffset, nextoffset - prevoffset));
         prevoffset = nextoffset + seplen;
@@ -883,7 +883,7 @@ List* _SplitBySep(const char* str, const char* separator) {
     return list;
 }
 
-List* Split(const char* str, const char* separator) {
+TList* Split(const TChar* str, const TChar* separator) {
     if (strcmp(separator, "") == 0) {
         return _SplitChars(str);
     } else {
@@ -891,87 +891,103 @@ List* Split(const char* str, const char* separator) {
     }
 }
 
-const char* StripExt(const char* filename) {
-    const char* endp = strrchr(filename, '.');
+const TChar* StripExt(const TChar* filename) {
+    const TChar* endp = strrchr(filename, '.');
     if (!endp) return lstr_get(filename);
     return Mid(filename, 0, endp - filename);
 }
 
-const char* StripDir(const char* filename) {
-    const char* fendp = strrchr(filename, '/');
-    const char* bendp = strrchr(filename, '\\');
-    const char* endp = (fendp >= bendp) ? fendp : bendp;
+const TChar* StripDir(const TChar* filename) {
+    const TChar* fendp = strrchr(filename, '/');
+    const TChar* bendp = strrchr(filename, '\\');
+    const TChar* endp = (fendp >= bendp) ? fendp : bendp;
     if (!endp) return lstr_get(filename);
     return Mid(filename, 0, endp - filename);
 }
 
-const char* ExtractExt(const char* filename) {
-    const char* endp = strrchr(filename, '.');
+const TChar* ExtractExt(const TChar* filename) {
+    const TChar* endp = strrchr(filename, '.');
     if (!endp) return lstr_get("");
     const size_t offset = endp - filename + 1;
     return Mid(filename, offset, strlen(filename) - offset);
 }
 
-const char* ExtractDir(const char* filename) {
-    const char* fendp = strrchr(filename, '/');
-    const char* bendp = strrchr(filename, '\\');
-    const char* endp = (fendp >= bendp) ? fendp : bendp;
+const TChar* ExtractDir(const TChar* filename) {
+    const TChar* fendp = strrchr(filename, '/');
+    const TChar* bendp = strrchr(filename, '\\');
+    const TChar* endp = (fendp >= bendp) ? fendp : bendp;
     if (!endp) return lstr_get("");
     const size_t size = endp - filename;
     return Mid(filename, 0, size);
 }
 
-int Asc(const char* str, int index) {
-    return (int)str[index];
+TInt Asc(const TChar* str, TInt index) {
+    return (TInt)str[index];
 }
 
-const char* Chr(int c) {
-    const char str[] = {(char)c, '\0'};
+const TChar* Chr(TInt c) {
+    const TChar str[] = {(TChar)c, '\0'};
     return lstr_get(str);
 }
 
-const char* Str(int val) {
-    char str[64];
+const TChar* Str(TInt val) {
+    TChar str[64];
+#ifdef ENV64
+    sprintf(str, "%lli", val);
+#else
     sprintf(str, "%i", val);
+#endif
     return lstr_get(str);
 }
 
-const char* StrF(float val) {
-    char str[64];
+const TChar* StrF(TFloat val) {
+    TChar str[64];
+#ifdef ENV64
+    sprintf(str, "%lf", val);
+#else
     sprintf(str, "%f", val);
+#endif
     return lstr_get(str);
 }
 
-int Val(const char* str) {
-    int val = 0;
+TInt Val(const TChar* str) {
+    TInt val = 0;
+#ifdef ENV64
+    sscanf(str, "%lli", &val);
+#else
     sscanf(str, "%i", &val);
+#endif
     return val;
 }
 
-float ValF(const char* str) {
-    float val = 0;
+TFloat ValF(const TChar* str) {
+    TFloat val = 0;
+#ifdef ENV64
+    sscanf(str, "%lf", &val);
+#else
     sscanf(str, "%f", &val);
+#endif
     return val;
 }
 
-const char* LoadString(const char* filename) {
+const TChar* LoadString(const TChar* filename) {
     FILE* f = fopen(filename, "rb");
     if (!f) return lstr_get("");
     fseek(f, 0, SEEK_END);
     const long size = ftell(f);
     fseek(f, 0, SEEK_SET);
-    char* buf = (char*)malloc(size+1);
-    fread(buf, sizeof(char), size, f);
+    TChar* buf = (TChar*)malloc(size+1);
+    fread(buf, sizeof(TChar), size, f);
     buf[size] = '\0';
-    const char* result = lstr_get(buf);
+    const TChar* result = lstr_get(buf);
     free(buf);
     return result;
 }
 
-void SaveString(const char* filename, const char* str, int append) {
+void SaveString(const TChar* filename, const TChar* str, TInt append) {
     FILE* f = fopen(filename, append ? "ab" : "wb");
     if (!f) return;
-    fwrite(str, sizeof(char), strlen(str), f);
+    fwrite(str, sizeof(TChar), strlen(str), f);
     fclose(f);
 }
 
@@ -979,30 +995,30 @@ void SaveString(const char* filename, const char* str, int append) {
 // Callable
 // ------------------------------------
 
-void AddIntArg(int arg) {
+void AddIntArg(TInt arg) {
 }
 
-void AddFloatArg(float arg) {
+void AddFloatArg(TFloat arg) {
 }
 
-void AddStringArg(const char* arg) {
+void AddStringArg(const TChar* arg) {
 }
 
-void Call(const char* name) {
+void Call(const TChar* name) {
 }
 
-int CallInt(const char* name) {
+TInt CallInt(const TChar* name) {
     return 0;
 }
 
-float CallFloat(const char* name) {
+TFloat CallFloat(const TChar* name) {
     return 0.0f;
 }
 
-const char* CallString(const char* name) {
+const TChar* CallString(const TChar* name) {
     return lstr_get("");
 }
 
-int Callable(const char* name) {
+TInt Callable(const TChar* name) {
     return 0;
 }
