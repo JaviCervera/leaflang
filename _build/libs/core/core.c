@@ -12,7 +12,6 @@
 #include <direct.h>
 #include "dirent.h"
 #endif
-#include "../src/types.h"
 #define LITE_MEM_IMPLEMENTATION
 #include "litemem.h"
 #define STB_DS_IMPLEMENTATION

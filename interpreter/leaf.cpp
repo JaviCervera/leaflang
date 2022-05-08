@@ -1,6 +1,6 @@
 #include "../src/leaf.h"
 #include "../src/swan/platform.hh"
-#include "core.h"
+#include "../_build/libs/core/core.h"
 #include "lua/lua.hpp"
 #include "corelib.h"
 

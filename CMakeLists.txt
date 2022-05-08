@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.6)
 project(leaf)
 
 #Define file groups
-file(GLOB LEAF_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/core.c" "interpreter/lua/*.c")
+file(GLOB LEAF_FILES "src/*.cpp" "interpreter/*.cpp" "interpreter/lua/*.c" "_build/libs/core/core.c")
 
 #Add header and lib directories
 include_directories(${INCLUDE_DIRECTORIES} ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/lua)
