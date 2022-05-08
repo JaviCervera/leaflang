@@ -1,6 +1,8 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <stddef.h>
+
 #if _WIN32 || _WIN64
 #if _WIN64
 #define ENV64
@@ -58,9 +60,11 @@ struct TDict;
 // App
 // ------------------------------------
 
+void _SetArgs(int argc, char* argv[]);
 const TChar* AppName();
 struct TList* AppArgs();
 const TChar* Run(const TChar* command);
+TInt System(const TChar* command);
 void* _IncRef(void* ptr);
 void _DecRef(void* ptr);
 void* _AutoDec(void* ptr);
@@ -90,7 +94,7 @@ TInt FileType(const TChar* filename);
 void DeleteFile(const TChar* filename);
 
 // ------------------------------------
-// TList
+// List
 // ------------------------------------
 
 struct TList* _CreateList();
@@ -112,7 +116,7 @@ TInt ListSize(struct TList* list);
 void ClearList(struct TList* list);
 
 // ------------------------------------
-// TDict
+// Dict
 // ------------------------------------
 
 struct TDict* _CreateDict();

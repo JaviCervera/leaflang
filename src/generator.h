@@ -36,9 +36,11 @@ public:
     std::string GenDictSetter(const std::string& dictCode, const std::string& indexCode, const Expression& valueExp) const;
     std::string GenIndent(int level) const;
 private:
-    static std::string GenFunctionHeader(const Function& func);
-    static std::string GenParams(const Function& func);
+    std::string GenFunctionHeader(const Function& func) const;
+    std::string GenParams(const Function& func) const;
     static std::string GenType(int type);
+    std::string GenVarDefs(const std::vector<Var>& locals, const std::string& indent) const;
+    static std::string GenVarInit(int type);
     static std::string GenFuncId(const std::string& id);
     static std::string GenVarId(const std::string& id);
     static std::string GenFunctionCleanup(const Function* func, const std::vector<Var>& varsInScope, const std::string exclude = "");

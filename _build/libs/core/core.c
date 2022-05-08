@@ -41,7 +41,7 @@ typedef struct TMemory {
 static TChar* leaf_appName = NULL;
 static struct TList* leaf_appArgs = NULL;
 
-void _SetArgs(int argc, const char* argv[]) {
+void _SetArgs(int argc, char* argv[]) {
     leaf_appName = lstr_alloc(argv[0]);
     leaf_appArgs = (struct TList*)_IncRef(_CreateList());
     for (TInt i = 1; i < argc; ++i) {
@@ -60,14 +60,18 @@ struct TList* AppArgs() {
 const TChar* Run(const TChar* command) {
     TChar tmp[65536];
     tmp[0] = '\0';
-    FILE* pipe = popen(command, "rt");
+    FILE* pipe = popen(command, "r");
     if (!pipe) return lstr_get("");
     while (!feof(pipe)) {
-        TChar tmp2[128];
-        if (fgets(tmp2, 128, pipe) != 0) strcat(tmp, tmp2);
+        TChar tmp2[65536];
+        if (fgets(tmp2, 65536, pipe) != 0) strcat(tmp, tmp2);
     }
     pclose(pipe);
     return lstr_get(tmp);
+}
+
+TInt System(const TChar* command) {
+    return system(command);
 }
 
 void* _IncRef(void* ptr) {
@@ -152,7 +156,7 @@ void DeleteFile(const TChar* filename) {
 }
 
 // ------------------------------------
-// TList
+// List
 // ------------------------------------
 
 typedef struct {
@@ -414,7 +418,7 @@ void ClearList(TList* list) {
 }
 
 // ------------------------------------
-// TDict
+// Dict
 // ------------------------------------
 
 typedef struct {
