@@ -160,7 +160,7 @@ string Generator::GenList(const vector<Expression>& values) const {
             funcName = "_SetListDict";
             break;
         case TYPE_RAW:
-            funcName = "_SetListRef";
+            funcName = "_SetListRaw";
             break;
         }
         str = funcName + "("
@@ -192,7 +192,7 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
             funcName = "_SetDictDict";
             break;
         case TYPE_RAW:
-            funcName = "_SetDictRef";
+            funcName = "_SetDictRaw";
             break;
         }
         str = funcName + "("
@@ -279,7 +279,7 @@ string Generator::GenListGetter(int type, const string& listCode, const std::str
         funcName = "_ListDict";
         break;
     case TYPE_RAW:
-        funcName = "_ListRef";
+        funcName = "_ListRaw";
         break;
     }
     return funcName + "("
@@ -306,7 +306,7 @@ string Generator::GenListSetter(const string& listCode, const std::string& index
         funcName = "_SetListDict";
         break;
     case TYPE_RAW:
-        funcName = "_SetListRef";
+        funcName = "_SetListRaw";
         break;
     }
     return funcName + "("
@@ -334,7 +334,7 @@ string Generator::GenDictGetter(int type, const string& dictCode, const std::str
         funcName = "_DictDict";
         break;
     case TYPE_RAW:
-        funcName = "_DictRef";
+        funcName = "_DictRaw";
         break;
     }
     return funcName + "("
@@ -361,7 +361,7 @@ string Generator::GenDictSetter(const string& dictCode, const std::string& index
         funcName = "_SetDictDict";
         break;
     case TYPE_RAW:
-        funcName = "_SetDictRef";
+        funcName = "_SetDictRaw";
         break;
     }
     return funcName + "("

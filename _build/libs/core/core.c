@@ -206,7 +206,7 @@ Value ValueFromDict(struct TDict* h) {
     return v;
 }
 
-Value ValueFromRef(void* r) {
+Value ValueFromRaw(void* r) {
     Value v = {0};
     v.type = TYPE_RAW;
     v.value.r = r;
@@ -258,7 +258,7 @@ struct TDict* ValueToDict(const Value v) {
     }
 }
 
-void* ValueToRef(const Value v) {
+void* ValueToRaw(const Value v) {
     switch (v.type) {
     case TYPE_INT: return NULL;
     case TYPE_FLOAT: return NULL;
@@ -341,10 +341,10 @@ TList* _SetListDict(TList* list, size_t index, struct TDict* value) {
     return list;
 }
 
-TList* _SetListRef(TList* list, size_t index, void* value) {
+TList* _SetListRaw(TList* list, size_t index, void* value) {
     _ClearListValue(list, index);
     if (index >= ListSize(list)) arrsetlen(list->elems, index + 1);
-    list->elems[index] = ValueFromRef(value);
+    list->elems[index] = ValueFromRaw(value);
     return list;
 }
 
@@ -378,9 +378,9 @@ struct TDict* _ListDict(TList* list, size_t index) {
         : _CreateDict();
 }
 
-void* _ListRef(TList* list, size_t index) {
+void* _ListRaw(TList* list, size_t index) {
     return (index >= 0 && index < ListSize(list))
-        ? ValueToRef(list->elems[index])
+        ? ValueToRaw(list->elems[index])
         : NULL;
 }
 
@@ -489,9 +489,9 @@ TDict* _SetDictDict(TDict* dict, const TChar* key, TDict* value) {
     return dict;
 }
 
-TDict* _SetDictRef(TDict* dict, const TChar* key, void* value) {
+TDict* _SetDictRaw(TDict* dict, const TChar* key, void* value) {
     _ClearDictValue(dict, key);
-    shput(dict->entries, key, ValueFromRef(value));
+    shput(dict->entries, key, ValueFromRaw(value));
     return dict;
 }
 
@@ -525,9 +525,9 @@ TDict* _DictDict(TDict* dict, const TChar* key) {
         : _CreateDict();
 }
 
-void* _DictRef(TDict* dict, const TChar* key) {
+void* _DictRaw(TDict* dict, const TChar* key) {
     return (Contains(dict, key))
-        ? ValueToRef(shget(dict->entries, key))
+        ? ValueToRaw(shget(dict->entries, key))
         : NULL;
 }
 
@@ -727,7 +727,7 @@ const TChar* PeekString(TMemory* mem, TInt offset) {
     return lstr_get(result);
 }
 
-void* PeekRef(TMemory* mem, TInt offset) {
+void* PeekRaw(TMemory* mem, TInt offset) {
     void* v;
     memcpy(&v, &mem->ptr[offset], sizeof(v));
     return v;
@@ -755,7 +755,7 @@ void PokeString(TMemory* mem, TInt offset, const TChar* val) {
     memcpy(&(mem->ptr[offset]), val, strlen(val) + 1);
 }
 
-void PokeRef(TMemory* mem, TInt offset, void* val) {
+void PokeRaw(TMemory* mem, TInt offset, void* val) {
     memcpy(&(mem->ptr[offset]), &val, sizeof(val));
 }
 

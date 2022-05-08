@@ -1,4 +1,3 @@
-// TODO: Rename "Ref" functions to "Raw"
 // TODO: Add Callable support
 // TODO: "" should evaluate to true
 
