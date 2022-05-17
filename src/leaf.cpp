@@ -1,4 +1,3 @@
-// TODO: "" should evaluate to true
 // TODO: Add Callable support
 
 #if defined(_WIN32)

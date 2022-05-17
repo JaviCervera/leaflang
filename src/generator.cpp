@@ -8,10 +8,10 @@ string Generator::GenProgram(const vector<string>& functions, const vector<strin
         "#include <string.h>\n"
         "#include <core/core.h>\n"
         "#include <core/litemem.h>\n\n"
-        "#define _bool(a) (a)\n"
-        "#define _and(a, b) (_bool(a) ? b : a)\n"
-        "#define _or(a, b) (_bool(a) ? a : b)\n"
-        "#define _not(a) (_bool(a) ? 0 : 1)\n"
+        "#define _bool(a, is_str) (a && (is_str ? strcmp((const char*)a, \"\") : 1))\n"
+        "#define _and(a, b, is_str) (_bool(a, is_str) ? b : a)\n"
+        "#define _or(a, b, is_str) (_bool(a, is_str) ? a : b)\n"
+        "#define _not(a, is_str) (_bool(a, is_str) ? 0 : 1)\n"
         "#define _TInt2TInt(v) (v)\n"
         "#define _TInt2TFloat(v) ((float)v)\n"
         "#define _TInt2TString(v) (Str(v))\n"
@@ -64,12 +64,12 @@ string Generator::GenStatement(const string& exp) const {
     return exp + ";\n";
 }
 
-string Generator::GenIf(const string& exp, const string& block, const string& elseifs, const string& else_, const string& end) const {
-    return "if (_bool(" + exp + ")) {\n" + block + elseifs + else_ + end;
+string Generator::GenIf(const Expression& exp, const string& block, const string& elseifs, const string& else_, const string& end) const {
+    return "if (" + GenBoolExp(exp.type, exp.code) + ") {\n" + block + elseifs + else_ + end;
 }
 
-string Generator::GenElseIf(const string& exp, const string& block) const {
-    return "} else if (_bool(" + exp + ")) {\n" + block;
+string Generator::GenElseIf(const Expression& exp, const string& block) const {
+    return "} else if (" + GenBoolExp(exp.type, exp.code) + ")) {\n" + block;
 }
 
 string Generator::GenElse(const string& block) const {
@@ -91,8 +91,8 @@ string Generator::GenFor(const Var& _, const string& assignment, const string& t
         + end;
 }
 
-string Generator::GenWhile(const string& exp, const string& block, const string& end) const {
-    return "while (_bool(" + exp + ")) {\n" + block + end;
+string Generator::GenWhile(const Expression& exp, const string& block, const string& end) const {
+    return "while (" + GenBoolExp(exp.type, exp.code) + ") {\n" + block + end;
 }
 
 string Generator::GenReturn(const Function* func, const string& exp, const Definitions& definitions) const {
@@ -133,10 +133,10 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (token.type == TOK_DIV) ? "/" :
         "%";
     return
-        (token.type == TOK_OR) ? ("_or(" + left + ", " + right + ")") : 
-        (token.type == TOK_AND) ? ("_and(" + left + ", " + right + ")") :
+        (token.type == TOK_OR) ? ("_or(" + left + ", " + right + ", " + GenIsStr(expType) + ")") : 
+        (token.type == TOK_AND) ? ("_and(" + left + ", " + right + ", " + GenIsStr(expType) + ")") :
         (token.type == TOK_PLUS && expType == TYPE_STRING) ? ("_strcat(" + left + ", " + right + ")") :
-        (token.type >= TOK_EQUAL && token.type <= TOK_GEQUAL) ? ("_bool(" + left + op + right + ")") :
+        (token.type >= TOK_EQUAL && token.type <= TOK_GEQUAL) ? GenBoolExp(expType, left + op + right) :
         (left + op + right);
 }
 
@@ -204,8 +204,8 @@ string Generator::GenDict(const vector<Expression>& keys, const vector<Expressio
     return str;
 }
 
-string Generator::GenNotExp(const string& exp) const {
-    return "_not(" + exp + ")";
+string Generator::GenNotExp(const Expression& exp) const {
+    return "_not(" + exp.code + ", " + GenIsStr(exp.type) + ")";
 }
 
 string Generator::GenCastExp(int castType, int expType, const std::string& exp) const {
@@ -471,8 +471,8 @@ string Generator::GenFunctionCleanup(const Function* func, const vector<Var>& va
     return str;
 }
 
-std::vector<Var> Generator::GetManagedVars(const std::vector<Var>& vars) {
-    std::vector<Var> result;
+vector<Var> Generator::GetManagedVars(const vector<Var>& vars) {
+    vector<Var> result;
     for (size_t i = 0; i < vars.size(); ++i) {
         const Var& var = vars[i];
         if (var.type == TYPE_LIST || var.type == TYPE_DICT) {
@@ -480,4 +480,12 @@ std::vector<Var> Generator::GetManagedVars(const std::vector<Var>& vars) {
         }
     }
     return result;
+}
+
+string Generator::GenBoolExp(int expType, const std::string& expCode) {
+    return "_bool(" + expCode + ", " + GenIsStr(expType) + ")";
+}
+
+string Generator::GenIsStr(int expType) {
+    return (expType == TYPE_STRING) ? "1" : "0";
 }

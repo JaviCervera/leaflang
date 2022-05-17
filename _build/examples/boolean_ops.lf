@@ -22,6 +22,12 @@ else
     Print("Should not print this")
 end
 
+if not "" then
+    Print("Empty string is false")
+else
+    Print("Should not print this")
+end
+
 counter = 3
 while counter do
     Print(counter:String)
