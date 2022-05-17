@@ -1,8 +1,11 @@
 // App
 function AppName:String()
 function AppArgs:List()
+function AppDir:String()
 function Run:String(command:String)
 function System:Int(command:String)
+function Exit(code:Int)
+function Platform:String()
 
 // Console
 function Input:String(prompt:String)

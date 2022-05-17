@@ -136,6 +136,12 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (token.type == TOK_OR) ? ("_or(" + left + ", " + right + ", " + GenIsStr(expType) + ")") : 
         (token.type == TOK_AND) ? ("_and(" + left + ", " + right + ", " + GenIsStr(expType) + ")") :
         (token.type == TOK_PLUS && expType == TYPE_STRING) ? ("_strcat(" + left + ", " + right + ")") :
+        (token.type == TOK_EQUAL && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") == 0)") :
+        (token.type == TOK_NOTEQUAL && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") != 0)") :
+        (token.type == TOK_LESSER && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") < 0)") :
+        (token.type == TOK_LEQUAL && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") <= 0)") :
+        (token.type == TOK_GREATER && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") > 0)") :
+        (token.type == TOK_GEQUAL && expType == TYPE_STRING) ? ("(strcmp(" + left + ", " + right + ") >= 0)") :
         (token.type >= TOK_EQUAL && token.type <= TOK_GEQUAL) ? GenBoolExp(expType, left + op + right) :
         (left + op + right);
 }

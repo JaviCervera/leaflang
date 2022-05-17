@@ -3,6 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#undef LoadString
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
 #ifndef _MSC_VER
 #include <dirent.h>
 #include <unistd.h>
@@ -57,6 +64,19 @@ struct TList* AppArgs() {
     return leaf_appArgs;
 }
 
+const TChar* AppDir() {
+    char path[FILENAME_MAX];
+#if defined(_WIN32)
+    path[GetModuleFileNameA(NULL, path, FILENAME_MAX)] = 0;
+#elif defined(__APPLE__)
+    unsigned int size = FILENAME_MAX;
+    _NSGetExecutablePath(path, &size);
+#else
+    path[readlink("/proc/self/exe", path, FILENAME_MAX)] = 0;
+#endif
+    return ExtractDir(path);
+}
+
 const TChar* Run(const TChar* command) {
     TChar tmp[65536];
     tmp[0] = '\0';
@@ -72,6 +92,22 @@ const TChar* Run(const TChar* command) {
 
 TInt System(const TChar* command) {
     return system(command);
+}
+
+void Exit(TInt code) {
+    exit(code);
+}
+
+const TChar* Platform() {
+#if defined(_WIN32)
+    return lstr_get("windows");
+#elif defined(__APPLE__)
+    return lstr_get("macos");
+#elif defined(__linux__)
+    return lstr_get("linux");
+#else
+    return lstr_get("");
+#endif
 }
 
 void* _IncRef(void* ptr) {

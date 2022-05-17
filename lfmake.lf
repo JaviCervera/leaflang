@@ -1,0 +1,57 @@
+function Error(msg:String)
+    Print(msg)
+    Exit(-1)
+end
+
+function GetFilename:String()
+    args = AppArgs()
+    if ListSize(args) > 0 then
+        return args[ListSize(args) - 1]:String
+    else
+        Error("No input file specified.")
+    end
+end
+
+function GetRootDir:String()
+    path = Replace(AppDir(), "\\", "/")
+    components = Split(path, "/")
+    RemoveIndex(components, ListSize(components) - 1)
+    dir = Join(components, "/")
+    return dir // If we return Join directly, it crashes
+end
+
+function ShouldRun:Int()
+    args = AppArgs()
+    if ListSize(args) > 0 then
+        return args[0]:String == "-r"
+    else
+        return false
+    end
+end
+
+if Platform() == "windows" then ext = ".exe" else ext = "" end
+filename = GetFilename()
+cfilename = StripExt(filename) + ".c"
+binfilename = StripExt(filename) + ext
+leaf = AppDir() + "/leaf" + ext
+compiler = "gcc"
+    + " -o " + Chr(34) + "$BINFILE" + Chr(34) + ""
+    + " " + Chr(34) + "$CFILE" + Chr(34) + ""
+    + " " + Chr(34) + "$ROOTDIR/libs/core/core.c" + Chr(34) + ""
+    + " -I" + Chr(34) + "$ROOTDIR/libs" + Chr(34) + ""
+    + " -w -lm -O2 -s"
+rootDir = GetRootDir()
+compiler = Replace(Replace(Replace(compiler, "$BINFILE", binfilename), "$CFILE", cfilename), "$ROOTDIR", rootDir)
+
+if System(leaf + " " + Chr(34) + filename + Chr(34)) <> 0 then Exit(-1) end
+compilerResult = System(compiler)
+DeleteFile(cfilename)
+if compilerResult == 0 and ShouldRun() then
+    if ExtractDir(binfilename) == "" then
+        command = "./" + binfilename
+    else
+        command = binfilename
+    end
+    System(command)
+    DeleteFile(binfilename)
+end
