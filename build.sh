@@ -1,13 +1,6 @@
 #!/bin/sh
 cd `dirname $0`
 
-echo "Creating library wrapper..."
-cd interpreter
-g++ -o a.out gencorelib.cc core.c ../src/definitions.cpp ../src/generator.cpp ../src/lib.cpp ../src/parser.cpp ../src/token.cpp
-./a.out
-rm a.out
-cd ..
-
 echo "Creating folder for CMake..."
 mkdir _CMAKE
 

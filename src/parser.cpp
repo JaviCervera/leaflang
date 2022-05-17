@@ -305,7 +305,7 @@ string Parser::ParseIf(int indent) {
         else_ = ParseElse(indent);
     }
     const string end = ParseEnd(indent);
-    return generator.GenIndent(indent) + generator.GenIf(exp.code, block, elseifs, else_, end);
+    return generator.GenIndent(indent) + generator.GenIf(exp, block, elseifs, else_, end);
 }
 
 void Parser::CheckThen() {
@@ -320,7 +320,7 @@ string Parser::ParseElseIf(int indent) {
     const Expression exp = ParseExp();
     CheckThen();
     const string block = ParseBlock(indent + 1);
-    return generator.GenIndent(indent) + generator.GenElseIf(exp.code, block);
+    return generator.GenIndent(indent) + generator.GenElseIf(exp, block);
 }
 
 string Parser::ParseElse(int indent) {
@@ -382,7 +382,7 @@ string Parser::ParseWhile(int indent) {
     CheckDo();
     const string block = ParseBlock(indent + 1);
     const string end = ParseEnd(indent);
-    return generator.GenIndent(indent) + generator.GenWhile(exp.code, block, end);
+    return generator.GenIndent(indent) + generator.GenWhile(exp, block, end);
 }
 
 string Parser::ParseReturn(int indent) {
@@ -578,7 +578,7 @@ Expression Parser::ParseNotExp() {
     const bool isNot = stream.Peek().type == TOK_NOT;
     if (isNot) stream.Skip(1);
     const Expression exp = ParseCastExp();
-    return isNot ? Expression(TYPE_INT, generator.GenNotExp(exp.code)) : exp;
+    return isNot ? Expression(TYPE_INT, generator.GenNotExp(exp)) : exp;
 }
 
 Expression Parser::ParseCastExp() {
