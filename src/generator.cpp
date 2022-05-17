@@ -126,7 +126,7 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (token.type == TOK_LESSER) ? " < " :
         (token.type == TOK_LEQUAL) ? " <= " :
         (token.type == TOK_GREATER) ? " > " :
-        (token.type == TOK_GREATER) ? " >= " :
+        (token.type == TOK_GEQUAL) ? " >= " :
         (token.type == TOK_PLUS) ? "+" :
         (token.type == TOK_MINUS) ? "-" :
         (token.type == TOK_MUL) ? "*" :
@@ -136,6 +136,7 @@ string Generator::GenBinaryExp(int expType, const Token& token, const string& le
         (token.type == TOK_OR) ? ("_or(" + left + ", " + right + ")") : 
         (token.type == TOK_AND) ? ("_and(" + left + ", " + right + ")") :
         (token.type == TOK_PLUS && expType == TYPE_STRING) ? ("_strcat(" + left + ", " + right + ")") :
+        (token.type >= TOK_EQUAL && token.type <= TOK_GEQUAL) ? ("_bool(" + left + op + right + ")") :
         (left + op + right);
 }
 
