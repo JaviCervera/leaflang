@@ -16,7 +16,7 @@ move "_CMAKE\leaf.exe" "_build/bin/leaf.exe"
 
 echo Building lfmake...
 _build\bin\leaf lfmake.lf
-gcc -o _build/bin/lfmake lfmake.c _build/libs/core/core.c -I_build/libs -w -lm -O2 -s
+gcc -o _build/bin/lfmake lfmake.c _build/libs/core/core.c -I_build/libs -w -lm -O2 -s -static -m32
 del lfmake.c
 
 pause

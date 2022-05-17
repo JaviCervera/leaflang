@@ -40,6 +40,7 @@ compiler = "gcc"
     + " " + Chr(34) + "$ROOTDIR/libs/core/core.c" + Chr(34) + ""
     + " -I" + Chr(34) + "$ROOTDIR/libs" + Chr(34) + ""
     + " -w -lm -O2 -s"
+if Platform() == "windows" then compiler = compiler + " -static -m32" end
 rootDir = GetRootDir()
 compiler = Replace(Replace(Replace(compiler, "$BINFILE", binfilename), "$CFILE", cfilename), "$ROOTDIR", rootDir)
 
@@ -47,7 +48,7 @@ if System(leaf + " " + Chr(34) + filename + Chr(34)) <> 0 then Exit(-1) end
 compilerResult = System(compiler)
 DeleteFile(cfilename)
 if compilerResult == 0 and ShouldRun() then
-    if ExtractDir(binfilename) == "" then
+    if ExtractDir(binfilename) == "" and Platform() <> "windows" then
         command = "./" + binfilename
     else
         command = binfilename
