@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
     const string rootDir = GetRootDir();
 #ifdef _WIN32
-    const string binFilename = StripExt(filename.c_str()) + ".exe";
+    const string binFilename = string(StripExt(filename.c_str())) + ".exe";
 #else
     const string binFilename = StripExt(filename.c_str());
 #endif
