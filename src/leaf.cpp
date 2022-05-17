@@ -1,5 +1,5 @@
-// TODO: Add Callable support
 // TODO: "" should evaluate to true
+// TODO: Add Callable support
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN

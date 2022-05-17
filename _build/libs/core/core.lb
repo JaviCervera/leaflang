@@ -89,6 +89,7 @@ function Chr:String(code:Int)
 function LoadString:String(filename:String)
 function SaveString(filename:String, str:String, append:Int)
 
+/*
 // Callable
 function AddIntArg(arg:Int)
 function AddFloatArg(arg:Float)
@@ -98,3 +99,4 @@ function CallInt:Int(name:String)
 function CallFloat:Float(name:String)
 function CallString:String(name:String)
 function Callable:Int(name:String)
+*/
