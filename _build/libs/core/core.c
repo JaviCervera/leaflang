@@ -942,7 +942,8 @@ const TChar* StripDir(const TChar* filename) {
     const TChar* bendp = strrchr(filename, '\\');
     const TChar* endp = (fendp >= bendp) ? fendp : bendp;
     if (!endp) return lstr_get(filename);
-    return Mid(filename, 0, endp - filename);
+    const size_t offset = endp - filename + 1;
+    return Mid(filename, offset, strlen(filename) - offset);
 }
 
 const TChar* ExtractExt(const TChar* filename) {
